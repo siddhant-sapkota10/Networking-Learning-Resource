@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   Circle,
@@ -10,14 +10,13 @@ import {
   RefreshCcw,
   BookOpen,
   MousePointerClick,
-  BadgeCheck,
   Search,
   Play,
   Package,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const travelStops = [
+const stageStops = [
   {
     id: 0,
     key: "device",
@@ -40,7 +39,7 @@ const travelStops = [
     title: "Router / Wi-Fi",
     icon: Router,
     description:
-      "Your device sends the request to the router. The router directs your request out of your home or school network and towards the internet.",
+      "Your device sends the request to the router. The router forwards your request out of your home or school network and towards the internet.",
     badge: "Request sent to the router",
     accent: {
       card: "border-amber-200 bg-amber-50 text-amber-800",
@@ -72,8 +71,8 @@ const travelStops = [
     title: "Web Server",
     icon: Server,
     description:
-      "The web server receives your request and prepares the data needed for the webpage or video.",
-    badge: "Server processing request",
+      "The request has reached the web server. The server finds the correct data and gets it ready to send back.",
+    badge: "Request reached the web server",
     accent: {
       card: "border-emerald-200 bg-emerald-50 text-emerald-800",
       soft: "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -84,12 +83,12 @@ const travelStops = [
   },
   {
     id: 4,
-    key: "back",
-    title: "Back to Your Device",
-    icon: Monitor,
+    key: "return",
+    title: "Packets Return",
+    icon: Package,
     description:
-      "The server sends the website data back across the internet in small pieces called packets. Your device receives them, puts them back together, and loads the video on your screen.",
-    badge: "Data packets returning to your device",
+      "The server sends the data back as packets. Those packets travel all the way back to your device, where they are put back together so the video can load.",
+    badge: "Packets returning to your device",
     accent: {
       card: "border-cyan-200 bg-cyan-50 text-cyan-800",
       soft: "bg-cyan-100 text-cyan-700 border-cyan-200",
@@ -100,23 +99,19 @@ const travelStops = [
   },
 ];
 
-const introSteps = [
-  {
-    title: "Step 1: You ask for something online",
+const journeyNodes = [
+  { key: "device", title: "Your Device", icon: Monitor },
+  { key: "router", title: "Router / Wi-Fi", icon: Router },
+  { key: "internet", title: "The Internet", icon: Globe },
+  { key: "server", title: "Web Server", icon: Server },
+];
 
-  },
-  {
-    title: "Step 2: The request leaves your device",
-  },
-  {
-    title: "Step 3: It travels across the internet",
-  },
-  {
-    title: "Step 4: The server sends data back",
-  },
-  {
-    title: "Step 5: Your device loads the content",
-  },
+const introSteps = [
+  { title: "Step 1: You ask for something online" },
+  { title: "Step 2: The request leaves your device" },
+  { title: "Step 3: It travels across the internet" },
+  { title: "Step 4: The request reaches the web server" },
+  { title: "Step 5: Packets return and your device loads the content" },
 ];
 
 const quizQuestions = [
@@ -139,13 +134,13 @@ const quizQuestions = [
     answer: "It helps direct the request out to the internet",
   },
   {
-    question: "What happens after the server finds the data?",
+    question: "What happens after the request reaches the web server?",
     options: [
-      "The data is sent back to your device",
+      "The server sends the data back as packets",
       "The router stores the video",
       "The internet turns off",
     ],
-    answer: "The data is sent back to your device",
+    answer: "The server sends the data back as packets",
   },
 ];
 
@@ -163,17 +158,68 @@ function SectionCard({ title, icon: Icon, children }) {
   );
 }
 
-function getRequestPosition(index, total) {
-  return `${((index + 0.5) / total) * 100}%`;
+function PacketChip({ className = "" }) {
+  return (
+    <div
+      className={`flex h-7 w-7 items-center justify-center rounded-md border shadow-sm ${className}`}
+    >
+      <Package className="h-4 w-4" />
+    </div>
+  );
+}
+
+function ArrivedPacketDeck() {
+  return (
+    <div className="pointer-events-none absolute left-[12%] top-[8px] z-20 -translate-x-1/2">
+      <div className="relative h-8 w-[62px]">
+        <motion.div
+          initial={{ opacity: 0, x: 5, y: 4 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          transition={{ delay: 0.04 }}
+          className="absolute left-0 top-0"
+        >
+          <PacketChip className="border-cyan-200 bg-cyan-100 text-cyan-700" />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 5, y: 4 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="absolute left-[17px] top-0"
+        >
+          <PacketChip className="border-cyan-200 bg-cyan-100 text-cyan-700" />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 5, y: 4 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          transition={{ delay: 0.16 }}
+          className="absolute left-[34px] top-0"
+        >
+          <PacketChip className="border-cyan-200 bg-cyan-100 text-cyan-700" />
+        </motion.div>
+      </div>
+    </div>
+  );
 }
 
 export default function DataTravel() {
   const [currentStop, setCurrentStop] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
+  const [packetsArrived, setPacketsArrived] = useState(false);
 
-  const stop = travelStops[currentStop];
-  const progressPercent = (currentStop / (travelStops.length - 1)) * 100;
+  const stop = stageStops[currentStop];
+  const progressPercent = (currentStop / (stageStops.length - 1)) * 100;
+
+  useEffect(() => {
+    if (currentStop === 4) {
+      setPacketsArrived(false);
+      const timer = setTimeout(() => setPacketsArrived(true), 2200);
+      return () => clearTimeout(timer);
+    }
+    setPacketsArrived(false);
+  }, [currentStop]);
 
   const score = useMemo(() => {
     return quizQuestions.reduce((total, q, index) => {
@@ -182,7 +228,7 @@ export default function DataTravel() {
   }, [selectedAnswers]);
 
   const handleNextStop = () => {
-    if (currentStop < travelStops.length - 1) {
+    if (currentStop < stageStops.length - 1) {
       setCurrentStop((prev) => prev + 1);
     }
   };
@@ -195,6 +241,7 @@ export default function DataTravel() {
 
   const resetJourney = () => {
     setCurrentStop(0);
+    setPacketsArrived(false);
   };
 
   const handleAnswerSelect = (questionIndex, option) => {
@@ -213,7 +260,36 @@ export default function DataTravel() {
     setSubmittedQuiz(false);
   };
 
-  const showVideoLoaded = currentStop === 4;
+  const showRequestBubble = currentStop <= 3;
+  const showPacketReturn = currentStop === 4;
+  const showVideoLoaded = currentStop === 4 && packetsArrived;
+
+  const explanationText =
+    currentStop === 4 && !packetsArrived
+      ? "The web server has sent the packets back. They are now travelling through the network toward your device."
+      : currentStop === 4 && packetsArrived
+      ? "The packets have reached your device. Your device puts them back together, and the video can now load."
+      : stop.description;
+
+  const lineWidth =
+    currentStop === 0
+      ? "0%"
+      : currentStop === 1
+      ? "25.33%"
+      : currentStop === 2
+      ? "50.66%"
+      : currentStop === 3
+      ? "76%"
+      : "76%";
+
+  const requestLeft =
+    currentStop === 0
+      ? "12%"
+      : currentStop === 1
+      ? "37.33%"
+      : currentStop === 2
+      ? "62.66%"
+      : "88%";
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -226,13 +302,15 @@ export default function DataTravel() {
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
               How Data Travels Through the Internet
             </h1>
-
+            <p className="max-w-3xl leading-7 text-slate-600">
+              Follow a simple step-by-step journey showing how a request leaves
+              your device, reaches a server, and then returns as packets so the
+              content can load on your screen.
+            </p>
           </div>
         </header>
 
         <SectionCard title="General Overview" icon={BookOpen}>
-         
-
           <div className="grid gap-4">
             {introSteps.map((item, index) => (
               <motion.div
@@ -246,35 +324,34 @@ export default function DataTravel() {
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
                   {index + 1}
                 </div>
-                <div className = "flex items-center">
+                <div className="flex items-center">
                   <h3 className="font-semibold text-slate-900">{item.title}</h3>
                 </div>
               </motion.div>
             ))}
           </div>
 
-           <div className=" mt-6 mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="mb-6 mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <h3 className="mb-2 text-lg font-semibold text-slate-900">
               Real-life analogy
             </h3>
-            <p className="text-slate-700 leading-7">
-              Imagine ordering food. You place the order, the restaurant receives
-              it, prepares it, and sends it back to you. The internet works in a
-              similar way. Your device asks for information, the server finds it,
-              and then sends the data back so your screen can show it.
+            <p className="leading-7 text-slate-700">
+              Imagine ordering food. You place the order, the restaurant
+              receives it, prepares it, and sends it back to you. The internet
+              works in a similar way. Your device asks for information, the
+              server finds it, and then sends the data back so your screen can
+              show it.
             </p>
           </div>
         </SectionCard>
 
-
-        <SectionCard
-          title="Interactive Learning Activity"
-          icon={MousePointerClick}
-        >
+        <SectionCard title="Interactive Learning Activity" icon={MousePointerClick}>
           <div className="mb-5">
-            <p className="text-slate-700 leading-7">
-              Click through each stop to follow the journey of data. Read the
-              explanation at every stage so you understand what is happening.
+            <p className="leading-7 text-slate-700">
+              Click through each stop to follow the journey of data. The request
+              stops at the web server first. On the next stop, the server sends
+              packets all the way back to your device, and the video only loads
+              after they arrive.
             </p>
           </div>
 
@@ -282,7 +359,7 @@ export default function DataTravel() {
             <div className="mb-2 flex items-center justify-between text-sm text-slate-600">
               <span>Journey progress</span>
               <span>
-                Stop {currentStop + 1} of {travelStops.length}
+                Stop {currentStop + 1} of {stageStops.length}
               </span>
             </div>
             <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
@@ -294,8 +371,8 @@ export default function DataTravel() {
             </div>
           </div>
 
-          <div className="mb-8 grid gap-3 md:grid-cols-5">
-            {travelStops.map((item, index) => {
+          <div className="mb-8 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            {stageStops.map((item, index) => {
               const Icon = item.icon;
               const isActive = currentStop === index;
               const isCompleted = currentStop > index;
@@ -330,42 +407,135 @@ export default function DataTravel() {
 
           <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
             <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-              <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="text-lg font-semibold text-slate-900">
                   Packet Journey
                 </h3>
                 <div
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${stop.accent.card}`}
+                  className={`w-fit rounded-full border px-3 py-1 text-xs font-semibold ${stop.accent.card}`}
                 >
                   {stop.badge}
                 </div>
               </div>
 
-              <div className="relative rounded-3xl border border-slate-200 bg-white px-4 pt-16 pb-8">
-                <div className="pointer-events-none absolute left-[8%] right-[8%] top-[76px] hidden h-1 rounded-full bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 md:block" />
+              <div className="relative rounded-3xl border border-slate-200 bg-white px-4 py-6 md:px-6">
+                <div className="hidden md:block">
+                  <div className="relative pt-12">
+                    <div className="absolute left-[12%] right-[12%] top-[72px] h-1 rounded-full bg-slate-200" />
 
-{!showVideoLoaded && (
-  <motion.div
-    className="pointer-events-none absolute top-[20px] z-10 hidden h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm md:flex"
-    animate={{ left: getRequestPosition(currentStop, travelStops.length) }}
-    transition={{
-      type: "spring",
-      stiffness: 110,
-      damping: 18,
-      mass: 0.8,
-    }}
-  >
-    <motion.div
-      animate={{ y: [0, -2, 0] }}
-      transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-    >
-      <Search className="h-4 w-4 text-slate-700" />
-    </motion.div>
-  </motion.div>
-)}
+                    <motion.div
+                      className="absolute top-[66px] h-4 rounded-full bg-sky-300/40"
+                      initial={false}
+                      animate={{
+                        left: "12%",
+                        width: lineWidth,
+                      }}
+                      transition={{ duration: 0.45 }}
+                    />
 
-                <div className="grid grid-cols-5 items-start justify-items-center gap-2">
-                  {travelStops.map((item, index) => {
+                    {showRequestBubble && (
+                      <motion.div
+                        key={`request-${currentStop}`}
+                        className="pointer-events-none absolute z-20 -translate-x-1/2"
+                        initial={false}
+                        animate={{
+                          left: requestLeft,
+                          top: 20,
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 120,
+                          damping: 18,
+                        }}
+                      >
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md">
+                          <Search className="h-4 w-4 text-slate-700" />
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {showPacketReturn &&
+                      !packetsArrived &&
+                      [0, 1, 2].map((packet) => (
+                        <motion.div
+                          key={`travel-${packet}`}
+                          className="pointer-events-none absolute top-[18px] z-20 -translate-x-1/2"
+                          initial={{ left: "88%", opacity: 0 }}
+                          animate={{
+                            left: ["88%", "75%", "62%", "50%", "37%", "25%", "12%"],
+                            opacity: [0, 1, 1, 1, 1, 1, 1],
+                          }}
+                          transition={{
+                            duration: 2,
+                            delay: packet * 0.14,
+                            ease: "easeInOut",
+                          }}
+                        >
+                          <PacketChip className="border-cyan-200 bg-cyan-100 text-cyan-700" />
+                        </motion.div>
+                      ))}
+
+                    {showPacketReturn && packetsArrived && <ArrivedPacketDeck />}
+
+                    <div className="relative grid grid-cols-4 gap-4">
+                      {journeyNodes.map((item, index) => {
+                        const Icon = item.icon;
+                        const isActive =
+                          (currentStop === 0 && index === 0) ||
+                          (currentStop === 1 && index === 1) ||
+                          (currentStop === 2 && index === 2) ||
+                          (currentStop === 3 && index === 3) ||
+                          (currentStop === 4 && index === 3);
+
+                        const isCompleted =
+                          (currentStop > 0 && index === 0) ||
+                          (currentStop > 1 && index === 1) ||
+                          (currentStop > 2 && index === 2);
+
+                        const isArrivalTarget = currentStop === 4 && packetsArrived && index === 0;
+
+                        return (
+                          <div
+                            key={item.key}
+                            className="flex flex-col items-center text-center"
+                          >
+                            <motion.div
+                              animate={{
+                                scale:
+                                  isActive || isArrivalTarget
+                                    ? 1.07
+                                    : 1,
+                                y:
+                                  isActive || isArrivalTarget
+                                    ? -2
+                                    : 0,
+                              }}
+                              transition={{ duration: 0.22 }}
+                              className={`relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl border transition ${
+                                isArrivalTarget
+                                  ? "border-blue-200 bg-blue-100 text-blue-800 ring-2 ring-blue-100"
+                                  : isActive
+                                  ? `${stop.accent.soft} ring-2 ${stop.accent.ring}`
+                                  : isCompleted
+                                  ? "border-slate-300 bg-slate-200 text-slate-800"
+                                  : "border-slate-200 bg-white text-slate-500"
+                              }`}
+                            >
+                              <Icon className="h-7 w-7" />
+                            </motion.div>
+
+                            <p className="mt-3 min-h-[44px] max-w-[110px] text-sm font-medium leading-5 text-slate-700">
+                              {item.title}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:hidden">
+                  {stageStops.map((item, index) => {
                     const Icon = item.icon;
                     const isActive = currentStop === index;
                     const isCompleted = currentStop > index;
@@ -373,142 +543,140 @@ export default function DataTravel() {
                     return (
                       <div
                         key={item.key}
-                        className="flex flex-col items-center text-center"
+                        className={`rounded-2xl border p-4 ${
+                          isActive
+                            ? `${item.accent.soft} ring-2 ${item.accent.ring}`
+                            : isCompleted
+                            ? "border-slate-300 bg-slate-100"
+                            : "border-slate-200 bg-white"
+                        }`}
                       >
-                        <motion.div
-                          animate={{
-                            scale: isActive ? 1.08 : 1,
-                            y: isActive ? -2 : 0,
-                          }}
-                          transition={{ duration: 0.25 }}
-                          className={`relative flex h-16 w-16 items-center justify-center rounded-2xl border transition ${
-                            isActive
-                              ? `${item.accent.soft} ring-2 ${item.accent.ring}`
-                              : isCompleted
-                              ? "border-slate-300 bg-slate-200 text-slate-800"
-                              : "border-slate-200 bg-white text-slate-500"
-                          }`}
-                        >
-                          <Icon className="h-7 w-7" />
-
-                          {showVideoLoaded && index === 4 && (
-                            <div className="absolute -top-8 flex gap-1">
-                              {[0, 1, 2].map((packet) => (
-                                <motion.div
-                                  key={packet}
-                                  initial={{ opacity: 0, y: 8 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  transition={{ delay: packet * 0.12 }}
-                                  className="flex h-6 w-6 items-center justify-center rounded-md border border-cyan-200 bg-cyan-100"
-                                >
-                                  <Package className="h-3.5 w-3.5 text-cyan-700" />
-                                </motion.div>
-                              ))}
-                            </div>
-                          )}
-                        </motion.div>
-
-                        <p className="mt-3 max-w-[100px] text-sm font-medium leading-5 text-slate-700">
-                          {item.title}
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${
+                              isActive
+                                ? "border-current/20 bg-white/60"
+                                : "border-slate-200 bg-white"
+                            }`}
+                          >
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-slate-900">
+                              {item.title}
+                            </p>
+                            <p className="text-sm text-slate-500">
+                              Stop {index + 1}
+                            </p>
+                          </div>
+                          {isCompleted ? (
+                            <CheckCircle2 className="h-5 w-5 text-slate-600" />
+                          ) : isActive ? (
+                            <Circle className="h-5 w-5 text-slate-600" />
+                          ) : null}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
 
-                <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                    Current stop
-                  </p>
-                  <h4 className="mt-1 text-xl font-bold text-slate-900">
-                    {stop.title}
-                  </h4>
-                  <p className="mt-2 text-slate-600 leading-7">{stop.short}</p>
+                {currentStop === 4 && !packetsArrived && (
+                  <div className="mt-8 rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
+                    <p className="font-semibold text-cyan-800">
+                      Packets are on the way back
+                    </p>
+                    <p className="mt-1 text-cyan-700">
+                      The server has sent the packets. Your device will load the
+                      video once they arrive.
+                    </p>
+                  </div>
+                )}
 
- 
+                {showVideoLoaded && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-8 rounded-2xl border border-slate-200 bg-white p-4"
+                  >
+                    <div className="mb-3 flex items-center gap-2">
+                      <Play className="h-5 w-5 text-red-500" />
+                      <h5 className="font-semibold text-slate-900">
+                        Video now loaded
+                      </h5>
+                    </div>
 
-                  {showVideoLoaded && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white"
-                    >
-                      <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100">
-                          <Play className="h-4 w-4 fill-red-600 text-red-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900">
-                            YouTube Video Loaded
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            Your device has rebuilt the data
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="relative flex h-48 items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_35%)]" />
-                        <div className="z-10 flex flex-col items-center gap-3 text-center">
-                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm">
-                            <Play className="h-8 w-8 fill-white text-white" />
+                    <div className="overflow-hidden rounded-2xl border border-slate-200">
+                      <div className="aspect-video bg-slate-900">
+                        <div className="flex h-full flex-col justify-between p-4">
+                          <div className="flex items-center justify-between">
+                            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white">
+                              YouTube video
+                            </span>
+                            <span className="text-xs text-slate-300">
+                              Rebuilt from packets
+                            </span>
                           </div>
+
+                          <div className="flex flex-1 items-center justify-center">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 shadow-lg">
+                              <Play className="ml-1 h-7 w-7 fill-white text-white" />
+                            </div>
+                          </div>
+
                           <div>
-                            <p className="text-lg font-semibold text-white">
-                              Roblox Football Skills Video
+                            <p className="text-sm font-semibold text-white">
+                              Roblox gameplay video
                             </p>
-                            <p className="text-sm text-slate-200">
-                              Pretend video player
+                            <p className="mt-1 text-xs text-slate-300">
+                              The packets reached your device and the video can
+                              now be shown on screen.
                             </p>
                           </div>
                         </div>
                       </div>
-                    </motion.div>
-                  )}
-                </div>
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 flex flex-col items-center justify-center text-center">
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-6 text-center">
               <h3 className="mb-4 text-lg font-semibold text-slate-900">
                 What is happening here?
               </h3>
 
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={currentStop}
+                  key={`${currentStop}-${packetsArrived}`}
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -14 }}
                   transition={{ duration: 0.25 }}
                   className={`rounded-2xl border p-4 ${stop.accent.card}`}
                 >
-                  <p className="leading-7">{stop.description}</p>
+                  <p className="leading-7">{explanationText}</p>
                 </motion.div>
               </AnimatePresence>
 
-
-
               <div className="mt-6 gap-3">
                 <div className="mb-4 flex items-center justify-center gap-4">
+                  <button
+                    onClick={handlePrevStop}
+                    disabled={currentStop === 0}
+                    className="rounded-2xl border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Previous Stop
+                  </button>
 
-                
-                <button
-                  onClick={handlePrevStop}
-                  disabled={currentStop === 0}
-                  className="rounded-2xl border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Previous Stop
-                </button>
+                  <button
+                    onClick={handleNextStop}
+                    disabled={currentStop === stageStops.length - 1}
+                    className={`rounded-2xl px-4 py-2 font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-40 ${stop.accent.button}`}
+                  >
+                    Go to Next Stop
+                  </button>
+                </div>
 
-                <button
-                  onClick={handleNextStop}
-                  disabled={currentStop === travelStops.length - 1}
-                  className={`rounded-2xl px-4 py-2 font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-40 ${stop.accent.button}`}
-                >
-                  Go to Next Stop
-                </button>
-</div>
                 <button
                   onClick={resetJourney}
                   className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50"
@@ -518,23 +686,21 @@ export default function DataTravel() {
                 </button>
               </div>
 
-              {currentStop === travelStops.length - 1 && (
+              {currentStop === stageStops.length - 1 && packetsArrived && (
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4"
                 >
-                  <div className="flex items-start gap-3">
-                    <div>
-                      <h4 className="font-semibold text-emerald-800">
-                        Journey complete
-                      </h4>
-                      <p className="mt-1 leading-7 text-emerald-700">
-                        Nice work. Your device asked for the video, the server
-                        found the data, and the data returned so the video could
-                        load on your screen.
-                      </p>
-                    </div>
+                  <div>
+                    <h4 className="font-semibold text-emerald-800">
+                      Journey complete
+                    </h4>
+                    <p className="mt-1 leading-7 text-emerald-700">
+                      Nice work. Your device sent a request, the server found
+                      the data, and the packets travelled back to your device
+                      before the video loaded.
+                    </p>
                   </div>
                 </motion.div>
               )}

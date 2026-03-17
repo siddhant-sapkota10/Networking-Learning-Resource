@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  GripHorizontal,
+  HelpCircle,
   Laptop,
-  Server,
   Package,
   RefreshCcw,
-  CheckCircle2,
-  HelpCircle,
+  Server,
   ShieldCheck,
-  ArrowRight,
-  ArrowLeft,
-  GripHorizontal,
 } from "lucide-react"
-import { motion, AnimatePresence, useMotionValue } from "framer-motion"
+import { AnimatePresence, motion, useMotionValue } from "framer-motion"
 
 const quizQuestions = [
   {
@@ -43,6 +43,15 @@ const quizQuestions = [
   },
 ]
 
+function shuffleArray(array) {
+  const copy = [...array]
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
+}
+
 function SectionCard({ title, icon: Icon, children }) {
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -64,8 +73,8 @@ function StepChip({ active, complete, children }) {
         active
           ? "bg-slate-900 text-white"
           : complete
-          ? "bg-emerald-100 text-emerald-700"
-          : "bg-slate-100 text-slate-500"
+            ? "bg-emerald-100 text-emerald-700"
+            : "bg-slate-100 text-slate-500"
       }`}
     >
       {children}
@@ -73,24 +82,136 @@ function StepChip({ active, complete, children }) {
   )
 }
 
+function StatusStrip({ title, body, tone = "neutral" }) {
+  const toneClasses =
+    tone === "success"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+      : tone === "info"
+        ? "border-blue-200 bg-blue-50 text-blue-800"
+        : "border-slate-200 bg-slate-50 text-slate-700"
+
+  return (
+    <div className={`rounded-2xl border px-4 py-3 ${toneClasses}`}>
+      <div className="flex items-start gap-3">
+        {tone === "success" && (
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
+        )}
+        <div>
+          <p className="font-semibold">{title}</p>
+          {body ? <p className="mt-1 text-sm opacity-90">{body}</p> : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DeviceColumn({ side, title, subtitle }) {
+  const isClient = side === "client"
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+        {isClient ? (
+          <Laptop className="h-9 w-9 text-blue-600" />
+        ) : (
+          <Server className="h-9 w-9 text-emerald-600" />
+        )}
+      </div>
+      <p className="text-2xl font-bold text-slate-900">{title}</p>
+      <p className="text-sm text-slate-500">{subtitle}</p>
+    </div>
+  )
+}
+
+function PacketBox({
+  number,
+  onClick,
+  disabled,
+  success,
+  danger,
+  highlighted,
+  size = "md",
+}) {
+  const sizeClasses =
+    size === "sm"
+      ? "h-12 w-12"
+      : size === "lg"
+        ? "h-20 w-20"
+        : "h-16 w-16"
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex ${sizeClasses} items-center justify-center rounded-2xl border transition ${
+        success
+          ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+          : danger
+            ? "border-rose-300 bg-rose-50 text-rose-700"
+            : highlighted
+              ? "border-blue-300 bg-blue-50 text-blue-700"
+              : "border-slate-200 bg-white text-slate-700"
+      } ${disabled ? "cursor-default" : "hover:border-slate-300 hover:bg-slate-50"}`}
+    >
+      <div className="flex flex-col items-center justify-center">
+        <Package className="h-4 w-4" />
+        <span className="mt-1 text-sm font-bold">{number}</span>
+      </div>
+    </button>
+  )
+}
+
+function PacketDeck({ packets, side = "right" }) {
+  const isRight = side === "right"
+
+  return (
+    <div
+      className={`absolute top-1/2 -translate-y-1/2 ${isRight ? "right-10" : "left-10"}`}
+    >
+      <div className="relative h-14 w-28">
+        {packets.map((packet, index) => (
+          <motion.div
+            key={`deck-${side}-${packet}`}
+            initial={{ opacity: 0, x: isRight ? 10 : -10, scale: 0.96 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ delay: index * 0.08, duration: 0.2 }}
+            className="absolute top-0"
+            style={{
+              left: `${index * 16}px`,
+              zIndex: index + 1,
+            }}
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm">
+              <div className="flex flex-col items-center">
+                <Package className="h-3.5 w-3.5" />
+                <span className="mt-0.5 text-xs font-bold">{packet}</span>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function DraggablePacketLane({
   label,
   direction,
-  disabled,
-  onSuccess,
   helperText,
+  onSuccess,
+  connected = false,
 }) {
-  const x = useMotionValue(0)
   const laneRef = useRef(null)
-  const [maxDrag, setMaxDrag] = useState(220)
-  const [dragging, setDragging] = useState(false)
+  const x = useMotionValue(0)
+  const [travelDistance, setTravelDistance] = useState(280)
 
   useEffect(() => {
     const updateWidth = () => {
       if (!laneRef.current) return
       const width = laneRef.current.offsetWidth
-      const travelSpace = Math.max(140, width / 2 - 70)
-      setMaxDrag(travelSpace)
+      const distance = Math.max(180, width - 250)
+      setTravelDistance(distance)
       x.set(0)
     }
 
@@ -99,11 +220,36 @@ function DraggablePacketLane({
     return () => window.removeEventListener("resize", updateWidth)
   }, [x])
 
-  const targetReached =
-    direction === "right" ? x.get() >= maxDrag * 0.78 : x.get() <= -maxDrag * 0.78
+  const isRight = direction === "right"
+  const startClass = isRight ? "left-4 md:left-6" : "right-4 md:right-6"
+  const threshold = travelDistance * 0.58
+
+  const handleDragEnd = () => {
+    const current = x.get()
+
+    if (isRight && current >= threshold) {
+      x.set(travelDistance)
+      setTimeout(() => {
+        onSuccess()
+        x.set(0)
+      }, 220)
+      return
+    }
+
+    if (!isRight && current <= -threshold) {
+      x.set(-travelDistance)
+      setTimeout(() => {
+        onSuccess()
+        x.set(0)
+      }, 220)
+      return
+    }
+
+    x.set(0)
+  }
 
   return (
-    <div className="mx-auto w-full max-w-3xl">
+    <div className="w-full">
       <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
         <span>Client side</span>
         <span>Server side</span>
@@ -111,53 +257,41 @@ function DraggablePacketLane({
 
       <div
         ref={laneRef}
-        className="relative h-24 overflow-hidden rounded-3xl border border-slate-200 bg-white px-4 shadow-sm"
+        className="relative h-32 overflow-hidden rounded-3xl border border-slate-200 bg-white px-4 shadow-sm md:px-6"
       >
-        <div className="absolute left-4 right-4 top-1/2 h-2 -translate-y-1/2 rounded-full bg-slate-200" />
+        <div
+          className={`absolute left-10 right-10 top-1/2 h-2 -translate-y-1/2 rounded-full ${
+            connected ? "bg-emerald-300" : "bg-slate-200"
+          }`}
+        />
 
-        <div className="absolute left-3 top-1/2 h-10 w-24 -translate-y-1/2 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50/70" />
-        <div className="absolute right-3 top-1/2 h-10 w-24 -translate-y-1/2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/70" />
+        <div className="absolute left-3 top-1/2 h-14 w-28 -translate-y-1/2 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50/80" />
+        <div className="absolute right-3 top-1/2 h-14 w-28 -translate-y-1/2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/80" />
 
-        <div className="absolute left-4 top-3 text-[11px] font-semibold text-blue-600">
+        <div className="absolute left-5 top-4 text-[11px] font-semibold text-blue-600">
           Client
         </div>
-        <div className="absolute right-4 top-3 text-[11px] font-semibold text-emerald-600">
+        <div className="absolute right-5 top-4 text-[11px] font-semibold text-emerald-600">
           Server
         </div>
 
         <motion.div
-          drag={!disabled ? "x" : false}
-          dragConstraints={{ left: -maxDrag, right: maxDrag }}
-          dragElastic={0.03}
+          drag="x"
+          dragConstraints={{
+            left: isRight ? 0 : -travelDistance,
+            right: isRight ? travelDistance : 0,
+          }}
+          dragElastic={0.05}
           style={{ x }}
           whileDrag={{ scale: 1.03 }}
-          onDragStart={() => setDragging(true)}
-          onDragEnd={() => {
-            setDragging(false)
-
-            if (targetReached) {
-              onSuccess()
-            }
-
-            x.set(0)
-          }}
-          className={`absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 ${
-            disabled
-              ? "cursor-not-allowed opacity-50"
-              : "cursor-grab active:cursor-grabbing"
-          }`}
+          onDragEnd={handleDragEnd}
+          className={`absolute top-1/2 z-10 -translate-y-1/2 ${startClass} cursor-grab active:cursor-grabbing`}
         >
-          <div
-            className={`inline-flex min-w-[110px] select-none items-center justify-center gap-2 rounded-2xl border px-4 py-3 shadow-sm transition ${
-              dragging
-                ? "border-slate-400 bg-slate-100"
-                : "border-slate-200 bg-white"
-            }`}
-          >
-            {direction === "left" && <ArrowLeft className="h-4 w-4 text-slate-500" />}
+          <div className="inline-flex min-w-[118px] items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            {!isRight && <ArrowLeft className="h-4 w-4 text-slate-500" />}
             <GripHorizontal className="h-4 w-4 text-slate-400" />
             <span className="font-semibold text-slate-800">{label}</span>
-            {direction === "right" && <ArrowRight className="h-4 w-4 text-slate-500" />}
+            {isRight && <ArrowRight className="h-4 w-4 text-slate-500" />}
           </div>
         </motion.div>
       </div>
@@ -167,77 +301,185 @@ function DraggablePacketLane({
   )
 }
 
-function PacketPill({ number, lost, highlight, onClick, disabled }) {
+function ConnectionEstablishedTrack() {
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={`flex h-16 w-16 items-center justify-center rounded-2xl border transition ${
-        lost
-          ? "border-amber-300 bg-amber-50 text-amber-700"
-          : highlight
-          ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-          : "border-slate-200 bg-white text-slate-700"
-      } ${disabled ? "cursor-default" : "hover:border-slate-300 hover:bg-slate-50"}`}
-    >
-      <div className="flex flex-col items-center">
-        <Package className="h-4 w-4" />
-        <span className="text-xs font-bold">{number}</span>
+    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <span>Client ready</span>
+        <span>Server ready</span>
       </div>
-    </button>
+
+      <div className="relative h-44 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+        <div className="absolute left-8 right-8 top-1/2 h-2 -translate-y-1/2 rounded-full bg-emerald-300" />
+
+        <div className="absolute left-6 top-1/2 -translate-y-1/2">
+          <div className="h-14 w-14 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50" />
+        </div>
+
+        <div className="absolute right-6 top-1/2 -translate-y-1/2">
+          <div className="h-14 w-14 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50" />
+        </div>
+
+        <div className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm ring-1 ring-slate-200">
+          Reliable connection ready
+        </div>
+      </div>
+    </div>
   )
 }
 
-function MissingPacketSlot({ selected, onClick }) {
+function ConnectionTrack({
+  direction = "right",
+  packets = [],
+  slipPacket = null,
+  onSlipClick,
+  lineLabel,
+  connected = false,
+  foundMissing = false,
+  deckPackets,
+}) {
+  const isRight = direction === "right"
+
+  const startX = isRight ? "14%" : "86%"
+  const travelEndX = isRight ? "78%" : "22%"
+
+  const deliveredPackets =
+    deckPackets ??
+    (slipPacket ? packets.filter((packet) => packet !== slipPacket) : packets)
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-dashed transition ${
-        selected
-          ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-          : "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100"
-      }`}
-    >
-      <div className="flex flex-col items-center">
-        <Package className="h-4 w-4" />
-        <span className="text-xs font-bold">?</span>
+    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <span>{isRight ? "Client sending" : "Server sending back"}</span>
+        <span>{isRight ? "Server receiving" : "Client receiving"}</span>
       </div>
-    </button>
+
+      <div className="relative h-44 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+        <div
+          className={`absolute left-8 right-8 top-1/2 h-2 -translate-y-1/2 rounded-full ${
+            connected ? "bg-emerald-300" : "bg-slate-200"
+          }`}
+        />
+
+        <div className="absolute left-6 top-1/2 -translate-y-1/2">
+          <div className="h-14 w-14 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50" />
+        </div>
+
+        <div className="absolute right-6 top-1/2 -translate-y-1/2">
+          <div className="h-14 w-14 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50" />
+        </div>
+
+        {lineLabel && (
+          <div className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm ring-1 ring-slate-200">
+            {lineLabel}
+          </div>
+        )}
+
+        {packets.map((packet, index) => {
+          const shouldSlip = packet === slipPacket
+
+          return (
+            <motion.div
+              key={`${direction}-${packet}`}
+              initial={{
+                left: startX,
+                top: "50%",
+                opacity: 0,
+                scale: 0.95,
+              }}
+              animate={
+                shouldSlip
+                  ? {
+                      left: "50%",
+                      top: foundMissing ? "70%" : ["50%", "50%", "70%"],
+                      opacity: [0, 1, 1],
+                      rotate: foundMissing ? -18 : [0, 0, -18],
+                    }
+                  : {
+                      left: travelEndX,
+                      top: "50%",
+                      opacity: [0, 1, 1, 0],
+                      scale: [0.95, 1, 1, 0.96],
+                    }
+              }
+              transition={{
+                duration: shouldSlip ? 0.9 : 0.85,
+                delay: index * 0.55,
+                ease: "easeInOut",
+              }}
+              className="absolute -translate-x-1/2 -translate-y-1/2"
+            >
+              {shouldSlip ? (
+                <button
+                  type="button"
+                  onClick={onSlipClick}
+                  className={`flex h-16 w-16 items-center justify-center rounded-2xl border shadow-md transition ${
+                    foundMissing
+                      ? "border-emerald-300 bg-emerald-50 text-emerald-700 ring-4 ring-emerald-100"
+                      : "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100"
+                  }`}
+                >
+                  <div className="flex flex-col items-center">
+                    <Package className="h-4 w-4" />
+                    <span className="mt-1 text-sm font-bold">{packet}</span>
+                  </div>
+                </button>
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm">
+                  <div className="flex flex-col items-center">
+                    <Package className="h-4 w-4" />
+                    <span className="mt-1 text-sm font-bold">{packet}</span>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )
+        })}
+
+        {deliveredPackets.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{
+              delay: packets.length * 0.55 + 0.2,
+              duration: 0.25,
+            }}
+          >
+            <PacketDeck
+              packets={deliveredPackets}
+              side={isRight ? "right" : "left"}
+            />
+          </motion.div>
+        )}
+
+        {foundMissing && !isRight && slipPacket && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="absolute left-1/2 bottom-4 -translate-x-1/2"
+          >
+            <div className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+              Missing packet found
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </div>
   )
 }
-
-function shuffleArray(array) {
-  const copy = [...array]
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[copy[i], copy[j]] = [copy[j], copy[i]]
-  }
-  return copy
-}
-
 export default function TCP() {
   const [selectedAnswers, setSelectedAnswers] = useState({})
   const [submittedQuiz, setSubmittedQuiz] = useState(false)
 
-  const [handshakeStep, setHandshakeStep] = useState(0)
-  const [handshakeFeedback, setHandshakeFeedback] = useState(
-    "Drag SYN all the way across from the client to the server to begin the connection."
+  const [phase, setPhase] = useState("syn")
+  const [feedback, setFeedback] = useState(
+    "Drag SYN from the client side into the server area to begin the TCP connection."
   )
-  const [connectionEstablished, setConnectionEstablished] = useState(false)
 
-  const [showPacketPhase, setShowPacketPhase] = useState(false)
-  const [clickedMissingPacket, setClickedMissingPacket] = useState(null)
+  const [slippedFound, setSlippedFound] = useState(false)
   const [resent, setResent] = useState(false)
-  const [rebuilt, setRebuilt] = useState(false)
-
   const [packetOrder, setPacketOrder] = useState([])
   const [scrambledPackets, setScrambledPackets] = useState([])
-
-  const correctMissingPacket = 3
-
-  const stepLabels = ["SYN", "SYN-ACK", "ACK", "Packets", "Resend", "Rebuild"]
 
   useEffect(() => {
     setScrambledPackets(shuffleArray([1, 2, 3, 4]))
@@ -249,8 +491,149 @@ export default function TCP() {
     }, 0)
   }, [selectedAnswers])
 
-  const handleAnswerSelect = (index, option) => {
-    setSelectedAnswers((prev) => ({ ...prev, [index]: option }))
+  const stepLabels = [
+    "SYN",
+    "SYN-ACK",
+    "ACK",
+    "Connected",
+    "Send",
+    "Slip",
+    "Resend",
+    "Rebuild",
+  ]
+
+  const activeStep = (() => {
+    switch (phase) {
+      case "syn":
+        return 0
+      case "synack":
+        return 1
+      case "ack":
+        return 2
+      case "connected":
+        return 3
+      case "send":
+        return 4
+      case "slip":
+        return 5
+      case "resend":
+        return 6
+      case "rebuild":
+      case "done":
+        return 7
+      default:
+        return 0
+    }
+  })()
+
+  const connectionEstablished =
+    phase === "connected" ||
+    phase === "send" ||
+    phase === "slip" ||
+    phase === "resend" ||
+    phase === "rebuild" ||
+    phase === "done"
+
+  const handleHandshakeSuccess = (packet) => {
+    if (packet === "SYN" && phase === "syn") {
+      setPhase("synack")
+      setFeedback(
+        "Great. The server received SYN. Now drag SYN-ACK back into the client area."
+      )
+      return
+    }
+
+    if (packet === "SYN-ACK" && phase === "synack") {
+      setPhase("ack")
+      setFeedback(
+        "Nice. Now drag ACK into the server area to complete the TCP 3-way handshake."
+      )
+      return
+    }
+
+    if (packet === "ACK" && phase === "ack") {
+      setPhase("connected")
+      setFeedback(
+        "The TCP connection is now established. Notice the green line. Click the next step to begin sending data packets."
+      )
+    }
+  }
+
+  const handleStartSending = () => {
+    setPhase("send")
+    setFeedback(
+      "The client now sends the data packets to the server one by one."
+    )
+  }
+
+  const handleStartReturnTrip = () => {
+    setPhase("slip")
+    setFeedback(
+      "The server sends the data back to the client. Packet 3 slips off the line. Tap the fallen packet."
+    )
+  }
+
+  const handleSlipClick = () => {
+    setSlippedFound(true)
+    setFeedback(
+      "Correct. Packet 3 is the missing packet. Packets 1, 2, and 4 already arrived, so TCP only needs to request packet 3 again."
+    )
+  }
+
+  const handleResend = () => {
+    if (!slippedFound) {
+      setFeedback(
+        "Tap the slipped packet first so TCP knows which packet is missing."
+      )
+      return
+    }
+
+    setResent(true)
+    setPhase("resend")
+    setFeedback(
+      "Only packet 3 is resent. The other packets were already received correctly, so the client now has all four packets."
+    )
+  }
+
+  const handleRebuildStart = () => {
+    setPhase("rebuild")
+    setFeedback(
+      "Click the packets in order: 1, 2, 3, 4. This shows how the client reassembles the full message."
+    )
+  }
+
+  const handleRebuildClick = (number) => {
+    if (!resent || phase !== "rebuild") return
+    if (packetOrder.includes(number)) return
+
+    const expected = packetOrder.length + 1
+
+    if (number === expected) {
+      const next = [...packetOrder, number]
+      setPacketOrder(next)
+
+      if (next.length === 4) {
+        setPhase("done")
+        setFeedback(
+          "Excellent. TCP rebuilt the packets in the correct order and the client received the full data."
+        )
+      } else {
+        setFeedback(`Good. Now place packet ${expected + 1} next.`)
+      }
+    } else {
+      setFeedback(`Not quite. Packet ${expected} must come next.`)
+    }
+  }
+
+  const resetSimulation = () => {
+    setPhase("syn")
+    setFeedback(
+      "Drag SYN from the client side into the server area to begin the TCP connection."
+    )
+    setSlippedFound(false)
+    setResent(false)
+    setPacketOrder([])
+    setScrambledPackets(shuffleArray([1, 2, 3, 4]))
   }
 
   const submitQuiz = () => setSubmittedQuiz(true)
@@ -260,106 +643,44 @@ export default function TCP() {
     setSelectedAnswers({})
   }
 
-  const activeStep = rebuilt
-    ? 5
-    : resent
-    ? 4
-    : showPacketPhase
-    ? 3
-    : handshakeStep
-
-  const handleHandshakeSuccess = (packet) => {
-    if (packet === "SYN" && handshakeStep === 0) {
-      setHandshakeStep(1)
-      setHandshakeFeedback(
-        "Great. The server received SYN. Now drag SYN-ACK all the way back to the client."
-      )
-      return
-    }
-
-    if (packet === "SYN-ACK" && handshakeStep === 1) {
-      setHandshakeStep(2)
-      setHandshakeFeedback(
-        "Nice. Now drag ACK all the way back to the server to finish the 3-way handshake."
-      )
-      return
-    }
-
-    if (packet === "ACK" && handshakeStep === 2) {
-      setHandshakeStep(3)
-      setConnectionEstablished(true)
-      setShowPacketPhase(true)
-      setHandshakeFeedback(
-        "Connection established. One packet went missing during transfer. Click the missing packet gap to identify it."
-      )
-    }
-  }
-
-  const handleMissingPacketClick = () => {
-    setClickedMissingPacket(correctMissingPacket)
-    setHandshakeFeedback(
-      "Correct. Packet 3 is missing. TCP detects the missing sequence number and requests packet 3 again."
-    )
-  }
-
-  const handleResend = () => {
-    if (clickedMissingPacket === correctMissingPacket) {
-      setResent(true)
-      setHandshakeFeedback(
-        "Packet 3 has been resent. Now rebuild the message. TCP uses sequence numbers to place packets back into the correct order."
-      )
-    } else {
-      setHandshakeFeedback("First identify which packet is missing.")
-    }
-  }
-
-  const handleRebuildClick = (number) => {
-    if (!resent) return
-    if (packetOrder.includes(number)) return
-
-    const expected = packetOrder.length + 1
-
-    if (number === expected) {
-      const nextOrder = [...packetOrder, number]
-      setPacketOrder(nextOrder)
-
-      if (nextOrder.length === 4) {
-        setRebuilt(true)
-        setHandshakeFeedback(
-          "Excellent. TCP used sequence numbers to rebuild the data in the correct order."
-        )
-      } else {
-        setHandshakeFeedback(
-          `Good. TCP expects packet ${expected + 1} next based on the sequence numbers.`
-        )
-      }
-    } else {
-      setHandshakeFeedback(
-        `Not quite. TCP reorders packets by sequence number, so packet ${expected} must be placed next.`
-      )
-    }
-  }
-
-  const resetSimulation = () => {
-    setHandshakeStep(0)
-    setHandshakeFeedback(
-      "Drag SYN all the way across from the client to the server to begin the connection."
-    )
-    setConnectionEstablished(false)
-    setShowPacketPhase(false)
-    setClickedMissingPacket(null)
-    setResent(false)
-    setRebuilt(false)
-    setPacketOrder([])
-    setScrambledPackets(shuffleArray([1, 2, 3, 4]))
-  }
-
   const packetMotion = {
-    initial: { opacity: 0, y: 8 },
+    initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -8 },
-    transition: { duration: 0.35 },
+    exit: { opacity: 0, y: -10 },
+    transition: { duration: 0.3 },
   }
+
+  const stripTone =
+    phase === "done" || slippedFound
+      ? "success"
+      : phase === "connected" ||
+          phase === "send" ||
+          phase === "slip" ||
+          phase === "resend" ||
+          phase === "rebuild"
+        ? "info"
+        : "neutral"
+
+  const stripTitle =
+    phase === "syn"
+      ? "Step 1: Send SYN"
+      : phase === "synack"
+        ? "Step 2: Return SYN-ACK"
+        : phase === "ack"
+          ? "Step 3: Send ACK"
+          : phase === "connected"
+            ? "Connection established"
+            : phase === "send"
+              ? "Packets are moving to the server"
+              : phase === "slip" && slippedFound
+                ? "Missing packet found"
+                : phase === "slip"
+                  ? "Find the slipped packet"
+                  : phase === "resend"
+                    ? "Packet 3 resent"
+                    : phase === "rebuild"
+                      ? "Rebuild the data"
+                      : "TCP delivery complete"
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -370,23 +691,28 @@ export default function TCP() {
           </span>
 
           <h1 className="mt-2 text-3xl font-extrabold text-slate-900">
-            TCP: Reliable Data Communication
+            Transmission Control Protocol (TCP)
           </h1>
-
-          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-            TCP ensures reliable communication across the internet. It begins
-            with a connection setup called the <strong>3-way handshake</strong>,
-            then sends data in packets. If packets go missing, TCP requests them
-            again and uses <strong>sequence numbers</strong> to rebuild the data
-            in the correct order.
-          </p>
         </header>
+ <SectionCard title="What is TCP?" icon={HelpCircle}>
+<p>
+  TCP is a core protocol of the Internet that enables reliable communication between devices. It establishes a connection, ensures data is delivered in order, and handles any lost packets along the way. TCP is like the postal service of the internet, making sure your messages get to the right place intact.
+</p>
+           <div className=" mt-6 mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <h3 className="mb-2 text-lg font-semibold text-slate-900">
+              Real-life analogy
+            </h3>
+            <p className="text-slate-700 leading-7">
+TCP is like sending a package through the mail with tracking. You put your items in a box (data packets), label it with the destination address (IP address), and drop it off at the post office (network). The postal service (TCP) takes care of delivering it to the recipient, making sure it arrives safely and in the right order. If a package gets lost, you can request a replacement, and the postal service will resend it until it reaches its destination.
+            </p>
+          </div>
+        </SectionCard>
 
         <SectionCard title="Interactive TCP Simulation" icon={ShieldCheck}>
           <p className="mb-6 text-slate-700">
-            Complete the handshake by dragging each packet all the way to the
-            correct side, then identify the missing packet, resend it, and
-            rebuild the message in sequence number order.
+            Complete the handshake, follow the packet boxes, find the slipped
+            packet, request it again, and rebuild the data so the client
+            receives the full message.
           </p>
 
           <div className="mb-6 flex flex-wrap gap-2">
@@ -397,217 +723,211 @@ export default function TCP() {
                 complete={activeStep > index}
               >
                 {label}
-              </StepChip>
+              </StepChip>   
             ))}
           </div>
 
+          <div className="mb-4">
+            <StatusStrip title={stripTitle} body={feedback} tone={stripTone} />
+          </div>
+
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[180px_minmax(0,1fr)_180px] lg:items-start">
-              <div className="flex flex-col items-center gap-2 pt-2">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-                  <Laptop className="h-9 w-9 text-blue-600" />
-                </div>
-                <p className="text-2xl font-bold text-slate-900">Client</p>
-                <p className="text-sm text-slate-500">Your Device</p>
-              </div>
+            <div className="mb-4 flex justify-center">
+              <motion.div
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  connectionEstablished
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-slate-100 text-slate-500"
+                }`}
+                animate={{
+                  opacity: 1,
+                  scale: connectionEstablished ? 1 : 0.98,
+                }}
+              >
+                {connectionEstablished
+                  ? "Connection established"
+                  : "Connection not established"}
+              </motion.div>
+            </div>
 
-              <div className="relative min-h-[360px]">
-                <div className="absolute left-0 right-0 top-8 flex items-center justify-center">
-                  <motion.div
-                    className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700"
-                    initial={false}
-                    animate={{
-                      opacity: connectionEstablished ? 1 : 0.75,
-                      scale: connectionEstablished ? 1 : 0.98,
-                    }}
-                  >
-                    {connectionEstablished
-                      ? "Connection established"
-                      : "Connection not established yet"}
-                  </motion.div>
-                </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[180px_minmax(0,1fr)_180px] lg:items-start">
+              <DeviceColumn side="client" title="Client" subtitle="Your Device" />
 
+              <div className="flex min-h-[360px] flex-col justify-start">
                 <AnimatePresence mode="wait">
-                  {!showPacketPhase && handshakeStep === 0 && (
-                    <motion.div
-                      key="syn-lane"
-                      {...packetMotion}
-                      className="absolute inset-x-0 top-24"
-                    >
+                  {phase === "syn" && (
+                    <motion.div key="syn" {...packetMotion}>
                       <DraggablePacketLane
                         label="SYN"
                         direction="right"
                         onSuccess={() => handleHandshakeSuccess("SYN")}
-                        helperText="Step 1: The client sends SYN to request a TCP connection."
+                        helperText="Drag SYN to the server."
+                        connected={false}
                       />
                     </motion.div>
                   )}
 
-                  {!showPacketPhase && handshakeStep === 1 && (
-                    <motion.div
-                      key="synack-lane"
-                      {...packetMotion}
-                      className="absolute inset-x-0 top-24"
-                    >
+                  {phase === "synack" && (
+                    <motion.div key="synack" {...packetMotion}>
                       <DraggablePacketLane
                         label="SYN-ACK"
                         direction="left"
                         onSuccess={() => handleHandshakeSuccess("SYN-ACK")}
-                        helperText="Step 2: The server replies with SYN-ACK to confirm it is ready."
+                        helperText="Drag SYN-ACK back to the client."
+                        connected={false}
                       />
                     </motion.div>
                   )}
 
-                  {!showPacketPhase && handshakeStep === 2 && (
-                    <motion.div
-                      key="ack-lane"
-                      {...packetMotion}
-                      className="absolute inset-x-0 top-24"
-                    >
+                  {phase === "ack" && (
+                    <motion.div key="ack" {...packetMotion}>
                       <DraggablePacketLane
                         label="ACK"
                         direction="right"
                         onSuccess={() => handleHandshakeSuccess("ACK")}
-                        helperText="Step 3: The client sends ACK back to complete the TCP 3-way handshake."
+                        helperText="Drag ACK to the server to finish the handshake."
+                        connected={false}
                       />
                     </motion.div>
                   )}
 
-                  {showPacketPhase && !resent && (
+                  {phase === "connected" && (
                     <motion.div
-                      key="packet-phase"
+                      key="connected"
                       {...packetMotion}
-                      className="absolute inset-x-0 top-24"
+                      className="space-y-4"
                     >
-                      <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <p className="mb-5 text-center text-sm font-semibold text-slate-700">
-                          During transfer, one packet goes missing. Click the gap
-                          to identify the missing packet.
-                        </p>
+                      <ConnectionEstablishedTrack />
 
-                        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-                          <PacketPill
-                            number={1}
-                            highlight={clickedMissingPacket === 1}
-                            onClick={() =>
-                              setHandshakeFeedback(
-                                "Packet 1 arrived successfully. Look for the missing sequence number."
-                              )
-                            }
-                          />
-                          <PacketPill
-                            number={2}
-                            highlight={clickedMissingPacket === 2}
-                            onClick={() =>
-                              setHandshakeFeedback(
-                                "Packet 2 arrived successfully. Look for the missing sequence number."
-                              )
-                            }
-                          />
-                          <MissingPacketSlot
-                            selected={clickedMissingPacket === 3}
-                            onClick={handleMissingPacketClick}
-                          />
-                          <PacketPill
-                            number={4}
-                            highlight={clickedMissingPacket === 4}
-                            onClick={() =>
-                              setHandshakeFeedback(
-                                "Packet 4 arrived successfully. Look for the missing sequence number."
-                              )
-                            }
-                          />
-                        </div>
-
-                        <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-center text-sm text-slate-600">
-                          TCP can see that packet <strong>3</strong> is missing
-                          because the sequence jumps from <strong>2</strong> to{" "}
-                          <strong>4</strong>.
-                        </div>
+                      <div className="flex justify-center">
+                        <button
+                          type="button"
+                          onClick={handleStartSending}
+                          className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                        >
+                          Start Sending Packets
+                        </button>
                       </div>
                     </motion.div>
                   )}
 
-                  {resent && !rebuilt && (
-                    <motion.div
-                      key="resent-phase"
-                      {...packetMotion}
-                      className="absolute inset-x-0 top-24"
-                    >
-                      <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <div className="mb-5 flex flex-wrap items-center justify-center gap-4 md:gap-6">
-                          {[1, 2, 3, 4].map((num) => (
-                            <PacketPill
-                              key={num}
-                              number={num}
-                              highlight={num === 3}
-                              disabled
-                            />
-                          ))}
-                        </div>
+                  {phase === "send" && (
+                    <motion.div key="send" {...packetMotion} className="space-y-4">
+                      <ConnectionTrack
+                        direction="right"
+                        packets={[1, 2, 3, 4]}
+                        lineLabel="Client → Server"
+                        connected
+                      />
 
-                        <div className="relative mx-auto mb-5 h-16 max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                          <motion.div
-                            initial={{ x: -80, opacity: 0 }}
-                            animate={{ x: "calc(100% - 40px)", opacity: 1 }}
-                            transition={{ duration: 1.2, ease: "easeInOut" }}
-                            className="absolute top-1/2 -translate-y-1/2"
-                          >
-                            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 shadow-sm">
-                              Packet 3 resent
-                            </div>
-                          </motion.div>
-                        </div>
-
-                        <div className="rounded-2xl bg-slate-50 p-4 text-center text-sm text-slate-600">
-                          TCP now has all the packets. Next, it places them back
-                          into the correct order using their{" "}
-                          <strong>sequence numbers</strong>.
-                        </div>
+                      <div className="flex justify-center">
+                        <button
+                          type="button"
+                          onClick={handleStartReturnTrip}
+                          className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                        >
+                          Show Return Trip
+                        </button>
                       </div>
                     </motion.div>
                   )}
 
-                  {resent && (
-                    <motion.div
-                      key="rebuild-area"
-                      {...packetMotion}
-                      className="absolute inset-x-0 bottom-0"
-                    >
-                      <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                  {phase === "slip" && (
+                    <motion.div key="slip" {...packetMotion} className="space-y-4">
+                      <ConnectionTrack
+                        direction="left"
+                        packets={[1, 2, 3, 4]}
+                        slipPacket={3}
+                        onSlipClick={handleSlipClick}
+                        lineLabel="Server → Client"
+                        connected
+                        foundMissing={slippedFound}
+                      />
+
+                      {slippedFound && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                        >
+                          <StatusStrip
+                            title="Packet 3 found"
+                            body="Packets 1, 2, and 4 already arrived. TCP only needs to request packet 3 again."
+                            tone="success"
+                          />
+                        </motion.div>
+                      )}
+
+                      <div className="flex justify-center">
+                        <button
+                          type="button"
+                          onClick={handleResend}
+                          className={`rounded-2xl px-5 py-2 text-white transition ${
+                            slippedFound
+                              ? "bg-slate-900 hover:bg-slate-800"
+                              : "cursor-not-allowed bg-slate-400"
+                          }`}
+                          disabled={!slippedFound}
+                        >
+                          Request Missing Packet Again
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+{phase === "resend" && (
+  <motion.div key="resend" {...packetMotion} className="space-y-4">
+    <ConnectionTrack
+      direction="left"
+      packets={[3]}
+      deckPackets={[1, 2, 4]}
+      lineLabel="Server → Client (only packet 3 resent)"
+      connected
+    />
+
+    <div className="flex justify-center">
+      <button
+        type="button"
+        onClick={handleRebuildStart}
+        className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+      >
+        Rebuild Data in Order
+      </button>
+    </div>
+  </motion.div>
+)}
+
+                  {(phase === "rebuild" || phase === "done") && (
+                    <motion.div key="rebuild" {...packetMotion}>
+                      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                         <p className="mb-3 text-center text-sm font-semibold text-slate-700">
                           Rebuild the data in TCP sequence order: 1, 2, 3, 4
                         </p>
 
                         <p className="mb-5 text-center text-sm text-slate-500">
-                          The packets below are scrambled. Click them in the
-                          correct order to show how TCP reassembles data.
+                          Click the packets in the correct order to show how the
+                          client reassembles the full message.
                         </p>
 
-                        <div className="mb-5 flex flex-wrap items-center justify-center gap-3">
+                        <div className="mb-6 flex flex-wrap items-center justify-center gap-3">
                           {scrambledPackets.map((num) => (
-                            <button
+                            <PacketBox
                               key={num}
-                              type="button"
+                              number={num}
                               onClick={() => handleRebuildClick(num)}
-                              disabled={packetOrder.includes(num) || rebuilt}
-                              className={`flex h-14 w-14 items-center justify-center rounded-2xl border text-sm font-bold transition ${
-                                packetOrder.includes(num)
-                                  ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                                  : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-white"
-                              }`}
-                            >
-                              {num}
-                            </button>
+                              disabled={
+                                packetOrder.includes(num) || phase === "done"
+                              }
+                              success={packetOrder.includes(num)}
+                            />
                           ))}
                         </div>
 
                         <div className="rounded-2xl bg-slate-50 p-4">
                           <p className="mb-3 text-center text-sm font-semibold text-slate-700">
-                            Reassembled stream
+                            Client rebuilds the data here
                           </p>
 
-                          <div className="flex min-h-[56px] flex-wrap items-center justify-center gap-2">
+                          <div className="flex min-h-[64px] flex-wrap items-center justify-center gap-2">
                             {packetOrder.length === 0 ? (
                               <span className="text-sm text-slate-400">
                                 Ordered packets will appear here
@@ -618,7 +938,7 @@ export default function TCP() {
                                   key={num}
                                   initial={{ opacity: 0, y: 8 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-700"
+                                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-700"
                                 >
                                   {num}
                                 </motion.div>
@@ -632,67 +952,21 @@ export default function TCP() {
                 </AnimatePresence>
               </div>
 
-              <div className="flex flex-col items-center gap-2 pt-2">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-                  <Server className="h-9 w-9 text-emerald-600" />
-                </div>
-                <p className="text-2xl font-bold text-slate-900">Server</p>
-                <p className="text-sm text-slate-500">Web Server</p>
-              </div>
+              <DeviceColumn side="server" title="Server" subtitle="Web Server" />
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-center">
-            <h3 className="text-lg font-bold text-slate-900">
-              {rebuilt
-                ? "Data Rebuilt"
-                : resent
-                ? "Packet Resent"
-                : showPacketPhase
-                ? "Find the Missing Packet"
-                : handshakeStep === 0
-                ? "Step 1: SYN"
-                : handshakeStep === 1
-                ? "Step 2: SYN-ACK"
-                : handshakeStep === 2
-                ? "Step 3: ACK"
-                : "Connection Established"}
-            </h3>
-
-            <p className="mx-auto mt-2 max-w-3xl leading-7 text-slate-600">
-              {handshakeFeedback}
-            </p>
-          </div>
-
-          {connectionEstablished && (
-            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
-              <CheckCircle2 className="mx-auto mb-2 h-6 w-6 text-emerald-700" />
-              <p className="font-semibold text-emerald-800">
-                Reliable TCP connection established
-              </p>
-            </div>
-          )}
-
-          {rebuilt && (
-            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
-              <CheckCircle2 className="mx-auto mb-2 h-6 w-6 text-emerald-700" />
-              <p className="font-semibold text-emerald-800">
-                Data successfully reconstructed using TCP sequence numbers
-              </p>
+          {phase === "done" && (
+            <div className="mt-4">
+              <StatusStrip
+                title="Client received the full message"
+                body="TCP used sequence numbers to rebuild the data correctly."
+                tone="success"
+              />
             </div>
           )}
 
           <div className="mt-6 flex justify-center gap-4">
-            {showPacketPhase && !resent && (
-              <button
-                type="button"
-                onClick={handleResend}
-                className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
-              >
-                Resend Missing Packet
-              </button>
-            )}
-
             <button
               type="button"
               onClick={resetSimulation}
@@ -736,8 +1010,14 @@ export default function TCP() {
                     return (
                       <button
                         key={option}
+                        type="button"
                         disabled={submittedQuiz}
-                        onClick={() => handleAnswerSelect(i, option)}
+                        onClick={() =>
+                          setSelectedAnswers((prev) => ({
+                            ...prev,
+                            [i]: option,
+                          }))
+                        }
                         className={`rounded-xl border p-3 text-left transition ${style}`}
                       >
                         {option}
@@ -751,6 +1031,7 @@ export default function TCP() {
 
           <div className="mt-6 flex gap-3">
             <button
+              type="button"
               onClick={submitQuiz}
               className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800"
             >
@@ -758,6 +1039,7 @@ export default function TCP() {
             </button>
 
             <button
+              type="button"
               onClick={resetQuiz}
               className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-50"
             >
@@ -775,8 +1057,8 @@ export default function TCP() {
                 {score === 3
                   ? "Excellent work — you understand how TCP ensures reliable communication."
                   : score === 2
-                  ? "Good job — review the handshake, retransmission, and sequence number steps."
-                  : "Review the simulation and try again."}
+                    ? "Good job — review the handshake, retransmission, and sequence number steps."
+                    : "Review the simulation and try again."}
               </p>
             </div>
           )}
