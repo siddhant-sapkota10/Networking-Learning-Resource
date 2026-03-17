@@ -7,7 +7,7 @@ const modulesData = [
   },
   {
     id: 2,
-    title: "TCP",
+    title: "Transmission Control Protocol (TCP)",
     description: "Understand how computers reliably send and receive data.",
     path: "/tcp",
   },

@@ -23,7 +23,6 @@ const travelStops = [
     key: "device",
     title: "Your Device",
     icon: Monitor,
-    short: "You want to watch a YouTube video.",
     description:
       "You click on a YouTube video. Your device creates a request asking for the video data.",
     badge: "Request created on your device",
@@ -40,7 +39,6 @@ const travelStops = [
     key: "router",
     title: "Router / Wi-Fi",
     icon: Router,
-    short: "Your request is sent to the router.",
     description:
       "Your device sends the request to the router. The router directs your request out of your home or school network and towards the internet.",
     badge: "Request sent to the router",
@@ -57,7 +55,6 @@ const travelStops = [
     key: "internet",
     title: "The Internet",
     icon: Globe,
-    short: "The request travels across many networks.",
     description:
       "The request travels across many connected networks on the internet until it reaches the correct server.",
     badge: "Request travelling across the internet",
@@ -74,7 +71,6 @@ const travelStops = [
     key: "server",
     title: "Web Server",
     icon: Server,
-    short: "The server finds the website data.",
     description:
       "The web server receives your request and prepares the data needed for the webpage or video.",
     badge: "Server processing request",
@@ -91,7 +87,6 @@ const travelStops = [
     key: "back",
     title: "Back to Your Device",
     icon: Monitor,
-    short: "The data returns to you in packets.",
     description:
       "The server sends the website data back across the internet in small pieces called packets. Your device receives them, puts them back together, and loads the video on your screen.",
     badge: "Data packets returning to your device",
@@ -108,23 +103,19 @@ const travelStops = [
 const introSteps = [
   {
     title: "Step 1: You ask for something online",
-    text: "When you click a YouTube video, your device sends a request for that information.",
+
   },
   {
     title: "Step 2: The request leaves your device",
-    text: "Your request goes to the router, which helps send it out to the internet.",
   },
   {
     title: "Step 3: It travels across the internet",
-    text: "The request moves through connected networks until it reaches the correct server.",
   },
   {
     title: "Step 4: The server sends data back",
-    text: "The server sends the webpage or video data back to your device.",
   },
   {
     title: "Step 5: Your device loads the content",
-    text: "Your device receives the data and displays the webpage or video on your screen.",
   },
 ];
 
@@ -172,15 +163,8 @@ function SectionCard({ title, icon: Icon, children }) {
   );
 }
 
-function getRequestPosition(index) {
-  const positions = [
-    "calc(0% + 32px)",
-    "calc(25% + 16px)",
-    "calc(50%)",
-    "calc(75% - 16px)",
-    "calc(100% - 32px)",
-  ];
-  return positions[index];
+function getRequestPosition(index, total) {
+  return `${((index + 0.5) / total) * 100}%`;
 }
 
 export default function DataTravel() {
@@ -242,26 +226,12 @@ export default function DataTravel() {
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
               How Data Travels Through the Internet
             </h1>
-            <p className="max-w-3xl text-base leading-7 text-slate-600">
-              Learn the basic journey of data using a simple example: clicking a
-              YouTube video. You will read the steps, view a diagram placeholder,
-              complete an interactive activity, and finish with a short quiz.
-            </p>
+
           </div>
         </header>
 
-        <SectionCard title="1. Introduction" icon={BookOpen}>
-          <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="mb-2 text-lg font-semibold text-slate-900">
-              Real-life analogy
-            </h3>
-            <p className="text-slate-700 leading-7">
-              Imagine ordering food. You place the order, the restaurant receives
-              it, prepares it, and sends it back to you. The internet works in a
-              similar way. Your device asks for information, the server finds it,
-              and then sends the data back so your screen can show it.
-            </p>
-          </div>
+        <SectionCard title="General Overview" icon={BookOpen}>
+         
 
           <div className="grid gap-4">
             {introSteps.map((item, index) => (
@@ -276,31 +246,29 @@ export default function DataTravel() {
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
                   {index + 1}
                 </div>
-                <div>
+                <div className = "flex items-center">
                   <h3 className="font-semibold text-slate-900">{item.title}</h3>
-                  <p className="mt-1 leading-7 text-slate-600">{item.text}</p>
                 </div>
               </motion.div>
             ))}
           </div>
-        </SectionCard>
 
-        <SectionCard title="2. Diagram" icon={HelpCircle}>
-          <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 p-10 text-center">
-            <p className="text-lg font-semibold text-slate-700">
-              Diagram Placeholder
-            </p>
-            <p className="mt-2 text-slate-500">
-              Add your own diagram here later.
-            </p>
-            <p className="mt-1 text-sm text-slate-400">
-              Suggested diagram flow: Device → Router → Internet → Server → Device
+           <div className=" mt-6 mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <h3 className="mb-2 text-lg font-semibold text-slate-900">
+              Real-life analogy
+            </h3>
+            <p className="text-slate-700 leading-7">
+              Imagine ordering food. You place the order, the restaurant receives
+              it, prepares it, and sends it back to you. The internet works in a
+              similar way. Your device asks for information, the server finds it,
+              and then sends the data back so your screen can show it.
             </p>
           </div>
         </SectionCard>
 
+
         <SectionCard
-          title="3. Interactive Learning Activity"
+          title="Interactive Learning Activity"
           icon={MousePointerClick}
         >
           <div className="mb-5">
@@ -376,20 +344,25 @@ export default function DataTravel() {
               <div className="relative rounded-3xl border border-slate-200 bg-white px-4 pt-16 pb-8">
                 <div className="pointer-events-none absolute left-[8%] right-[8%] top-[76px] hidden h-1 rounded-full bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 md:block" />
 
-                {!showVideoLoaded && (
-                  <motion.div
-                    className="pointer-events-none absolute top-[20px] z-10 hidden h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm md:flex"
-                    animate={{ left: getRequestPosition(currentStop) }}
-                    transition={{ type: "spring", stiffness: 120, damping: 18 }}
-                  >
-                    <motion.div
-                      animate={{ y: [0, -3, 0] }}
-                      transition={{ duration: 1.4, repeat: Infinity }}
-                    >
-                      <Search className="h-4 w-4 text-slate-700" />
-                    </motion.div>
-                  </motion.div>
-                )}
+{!showVideoLoaded && (
+  <motion.div
+    className="pointer-events-none absolute top-[20px] z-10 hidden h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm md:flex"
+    animate={{ left: getRequestPosition(currentStop, travelStops.length) }}
+    transition={{
+      type: "spring",
+      stiffness: 110,
+      damping: 18,
+      mass: 0.8,
+    }}
+  >
+    <motion.div
+      animate={{ y: [0, -2, 0] }}
+      transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <Search className="h-4 w-4 text-slate-700" />
+    </motion.div>
+  </motion.div>
+)}
 
                 <div className="grid grid-cols-5 items-start justify-items-center gap-2">
                   {travelStops.map((item, index) => {
@@ -452,17 +425,7 @@ export default function DataTravel() {
                   </h4>
                   <p className="mt-2 text-slate-600 leading-7">{stop.short}</p>
 
-                  {currentStop === 3 && (
-                    <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                      <p className="font-semibold text-emerald-800">
-                        Server found the website data
-                      </p>
-                      <p className="mt-1 text-sm leading-6 text-emerald-700">
-                        The server is now preparing the video data to send back
-                        to your device.
-                      </p>
-                    </div>
-                  )}
+ 
 
                   {showVideoLoaded && (
                     <motion.div
@@ -506,7 +469,7 @@ export default function DataTravel() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-6">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 flex flex-col items-center justify-center text-center">
               <h3 className="mb-4 text-lg font-semibold text-slate-900">
                 What is happening here?
               </h3>
@@ -524,16 +487,12 @@ export default function DataTravel() {
                 </motion.div>
               </AnimatePresence>
 
-              <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-500">
-                  Packet status
-                </p>
-                <p className="mt-1 text-base font-semibold text-slate-900">
-                  {stop.badge}
-                </p>
-              </div>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+
+              <div className="mt-6 gap-3">
+                <div className="mb-4 flex items-center justify-center gap-4">
+
+                
                 <button
                   onClick={handlePrevStop}
                   disabled={currentStop === 0}
@@ -549,12 +508,12 @@ export default function DataTravel() {
                 >
                   Go to Next Stop
                 </button>
-
+</div>
                 <button
                   onClick={resetJourney}
                   className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50"
                 >
-                  <RefreshCcw className="h-4 w-4" />
+                  <RefreshCcw className="h-5 w-5" />
                   Restart
                 </button>
               </div>
@@ -566,7 +525,6 @@ export default function DataTravel() {
                   className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4"
                 >
                   <div className="flex items-start gap-3">
-                    <BadgeCheck className="mt-0.5 h-5 w-5 text-emerald-600" />
                     <div>
                       <h4 className="font-semibold text-emerald-800">
                         Journey complete
@@ -584,7 +542,7 @@ export default function DataTravel() {
           </div>
         </SectionCard>
 
-        <SectionCard title="4. Quick Quiz" icon={HelpCircle}>
+        <SectionCard title="Quick Quiz" icon={HelpCircle}>
           <div className="space-y-5">
             {quizQuestions.map((q, qIndex) => (
               <div
