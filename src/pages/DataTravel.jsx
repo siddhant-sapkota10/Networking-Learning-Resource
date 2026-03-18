@@ -23,7 +23,7 @@ const stageStops = [
     title: "Your Device",
     icon: Monitor,
     description:
-      "You click on a YouTube video. Your device creates a request asking for the video data.",
+      "You tap a video or website. Your device creates a request to ask for that content.",
     badge: "Request created on your device",
     accent: {
       card: "border-blue-200 bg-blue-50 text-blue-800",
@@ -39,7 +39,7 @@ const stageStops = [
     title: "Router / Wi-Fi",
     icon: Router,
     description:
-      "Your device sends the request to the router. The router forwards your request out of your home or school network and towards the internet.",
+      "Your request is sent to the router. The router helps move it out of your home or school network and towards the internet.",
     badge: "Request sent to the router",
     accent: {
       card: "border-amber-200 bg-amber-50 text-amber-800",
@@ -55,7 +55,7 @@ const stageStops = [
     title: "The Internet",
     icon: Globe,
     description:
-      "The request travels across many connected networks on the internet until it reaches the correct server.",
+      "The request travels across many connected networks until it reaches the correct web server.",
     badge: "Request travelling across the internet",
     accent: {
       card: "border-violet-200 bg-violet-50 text-violet-800",
@@ -71,7 +71,7 @@ const stageStops = [
     title: "Web Server",
     icon: Server,
     description:
-      "The request has reached the web server. The server finds the correct data and gets it ready to send back.",
+      "The web server receives the request, finds the right data, and gets it ready to send back.",
     badge: "Request reached the web server",
     accent: {
       card: "border-emerald-200 bg-emerald-50 text-emerald-800",
@@ -87,7 +87,7 @@ const stageStops = [
     title: "Packets Return",
     icon: Package,
     description:
-      "The server sends the data back as packets. Those packets travel all the way back to your device, where they are put back together so the video can load.",
+      "The server sends the data back in packets. Your device receives those packets and puts them together so the content can appear on screen.",
     badge: "Packets returning to your device",
     accent: {
       card: "border-cyan-200 bg-cyan-50 text-cyan-800",
@@ -107,40 +107,40 @@ const journeyNodes = [
 ];
 
 const introSteps = [
-  { title: "Step 1: You ask for something online" },
+  { title: "Step 1: Your device asks for information" },
   { title: "Step 2: The request leaves your device" },
   { title: "Step 3: It travels across the internet" },
-  { title: "Step 4: The request reaches the web server" },
-  { title: "Step 5: Packets return and your device loads the content" },
+  { title: "Step 4: The web server finds the data" },
+  { title: "Step 5: Packets return and your screen loads the content" },
 ];
 
 const quizQuestions = [
   {
-    question: "What happens first when you click a website or video?",
+    question: "What happens first when you open a website or video?",
     options: [
-      "The router stores the whole website",
       "Your device sends a request",
+      "The router stores the whole website",
       "The server appears on your screen",
     ],
     answer: "Your device sends a request",
   },
   {
-    question: "What is the job of the router in this journey?",
+    question: "What does the router do in this journey?",
     options: [
-      "It helps direct the request out to the internet",
-      "It stores YouTube videos forever",
-      "It rebuilds the webpage on your screen",
+      "It helps send the request out to the internet",
+      "It stores all websites forever",
+      "It puts packets back together on your screen",
     ],
-    answer: "It helps direct the request out to the internet",
+    answer: "It helps send the request out to the internet",
   },
   {
-    question: "What happens after the request reaches the web server?",
+    question: "What does the server send back to your device?",
     options: [
-      "The server sends the data back as packets",
-      "The router stores the video",
-      "The internet turns off",
+      "Packets of data",
+      "A new router",
+      "A keyboard command",
     ],
-    answer: "The server sends the data back as packets",
+    answer: "Packets of data",
   },
 ];
 
@@ -266,9 +266,9 @@ export default function DataTravel() {
 
   const explanationText =
     currentStop === 4 && !packetsArrived
-      ? "The web server has sent the packets back. They are now travelling through the network toward your device."
+      ? "The server has sent the packets back. They are travelling through the network toward your device."
       : currentStop === 4 && packetsArrived
-      ? "The packets have reached your device. Your device puts them back together, and the video can now load."
+      ? "The packets have reached your device. Your device puts them together so the video can load."
       : stop.description;
 
   const lineWidth =
@@ -303,9 +303,9 @@ export default function DataTravel() {
               How Data Travels Through the Internet
             </h1>
             <p className="max-w-3xl leading-7 text-slate-600">
-              Follow a simple step-by-step journey showing how a request leaves
-              your device, reaches a server, and then returns as packets so the
-              content can load on your screen.
+              Learn the basic journey of online data: your device sends a
+              request, a server finds the information, and packets return so the
+              content can appear on your screen.
             </p>
           </div>
         </header>
@@ -336,22 +336,24 @@ export default function DataTravel() {
               Real-life analogy
             </h3>
             <p className="leading-7 text-slate-700">
-              Imagine ordering food. You place the order, the restaurant
-              receives it, prepares it, and sends it back to you. The internet
-              works in a similar way. Your device asks for information, the
-              server finds it, and then sends the data back so your screen can
+              Think about ordering food online. You place the order, the
+              restaurant receives it, prepares it, and sends it back to you. The
+              internet works in a similar way. Your device asks for information,
+              the server finds it, and sends the data back so your screen can
               show it.
             </p>
           </div>
         </SectionCard>
 
-        <SectionCard title="Interactive Learning Activity" icon={MousePointerClick}>
+        <SectionCard
+          title="Interactive Learning Activity"
+          icon={MousePointerClick}
+        >
           <div className="mb-5">
             <p className="leading-7 text-slate-700">
-              Click through each stop to follow the journey of data. The request
-              stops at the web server first. On the next stop, the server sends
-              packets all the way back to your device, and the video only loads
-              after they arrive.
+              Click through each stop to follow the journey. Watch the request
+              travel to the web server, then see the packets come back to your
+              device before the video loads.
             </p>
           </div>
 
@@ -492,7 +494,8 @@ export default function DataTravel() {
                           (currentStop > 1 && index === 1) ||
                           (currentStop > 2 && index === 2);
 
-                        const isArrivalTarget = currentStop === 4 && packetsArrived && index === 0;
+                        const isArrivalTarget =
+                          currentStop === 4 && packetsArrived && index === 0;
 
                         return (
                           <div
@@ -586,8 +589,8 @@ export default function DataTravel() {
                       Packets are on the way back
                     </p>
                     <p className="mt-1 text-cyan-700">
-                      The server has sent the packets. Your device will load the
-                      video once they arrive.
+                      The server has sent the packets. Your device will show the
+                      video after they arrive.
                     </p>
                   </div>
                 )}
@@ -628,8 +631,8 @@ export default function DataTravel() {
                               Roblox gameplay video
                             </p>
                             <p className="mt-1 text-xs text-slate-300">
-                              The packets reached your device and the video can
-                              now be shown on screen.
+                              The packets reached your device and the content
+                              can now be shown on screen.
                             </p>
                           </div>
                         </div>
@@ -698,8 +701,7 @@ export default function DataTravel() {
                     </h4>
                     <p className="mt-1 leading-7 text-emerald-700">
                       Nice work. Your device sent a request, the server found
-                      the data, and the packets travelled back to your device
-                      before the video loaded.
+                      the data, and the packets returned so the video could load.
                     </p>
                   </div>
                 </motion.div>
@@ -789,7 +791,7 @@ export default function DataTravel() {
                 {score === 3
                   ? "Excellent work — you understand the basic journey of data through the internet."
                   : score === 2
-                  ? "Good job — you understand most of the idea. Review the journey once more to lock it in."
+                  ? "Good job — review the journey one more time to lock it in."
                   : "Nice try — go back through the interactive journey and try the quiz again."}
               </p>
             </motion.div>

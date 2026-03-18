@@ -15,25 +15,25 @@ import { AnimatePresence, motion, useMotionValue } from "framer-motion"
 
 const quizQuestions = [
   {
-    question: "What is the purpose of the TCP 3-way handshake?",
+    question: "Why does TCP use a 3-way handshake?",
     options: [
-      "To delete packets",
       "To establish a reliable connection between devices",
       "To turn Wi-Fi on",
+      "To delete packets",
     ],
     answer: "To establish a reliable connection between devices",
   },
   {
     question: "What does TCP do if a packet goes missing?",
     options: [
-      "Ignore it",
       "Ask for the missing packet again",
+      "Ignore it",
       "Restart the internet",
     ],
     answer: "Ask for the missing packet again",
   },
   {
-    question: "Why are packets numbered?",
+    question: "Why are packets numbered in TCP?",
     options: [
       "To rebuild the data in the correct order",
       "To decorate them",
@@ -467,6 +467,7 @@ function ConnectionTrack({
     </div>
   )
 }
+
 export default function TCP() {
   const [selectedAnswers, setSelectedAnswers] = useState({})
   const [submittedQuiz, setSubmittedQuiz] = useState(false)
@@ -693,26 +694,40 @@ export default function TCP() {
           <h1 className="mt-2 text-3xl font-extrabold text-slate-900">
             Transmission Control Protocol (TCP)
           </h1>
+
+          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
+            Learn how TCP helps devices communicate reliably by setting up a
+            connection, resending missing packets, and rebuilding data in the
+            correct order.
+          </p>
         </header>
- <SectionCard title="What is TCP?" icon={HelpCircle}>
-<p>
-  TCP is a core protocol of the Internet that enables reliable communication between devices. It establishes a connection, ensures data is delivered in order, and handles any lost packets along the way. TCP is like the postal service of the internet, making sure your messages get to the right place intact.
-</p>
-           <div className=" mt-6 mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+
+        <SectionCard title="What is TCP?" icon={HelpCircle}>
+          <p className="leading-7 text-slate-700">
+            TCP is a rule used on the internet to make communication reliable.
+            Before data is sent, TCP checks that both devices are ready. It also
+            keeps packets in order and asks for missing packets again if one is
+            lost.
+          </p>
+
+          <div className="mb-6 mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <h3 className="mb-2 text-lg font-semibold text-slate-900">
               Real-life analogy
             </h3>
-            <p className="text-slate-700 leading-7">
-TCP is like sending a package through the mail with tracking. You put your items in a box (data packets), label it with the destination address (IP address), and drop it off at the post office (network). The postal service (TCP) takes care of delivering it to the recipient, making sure it arrives safely and in the right order. If a package gets lost, you can request a replacement, and the postal service will resend it until it reaches its destination.
+            <p className="leading-7 text-slate-700">
+              Think of sending numbered pages in a letter. First, both people
+              make sure they are ready to communicate. If one page goes missing,
+              only that page is sent again. The page numbers help the receiver
+              put everything back in the right order.
             </p>
           </div>
         </SectionCard>
 
         <SectionCard title="Interactive TCP Simulation" icon={ShieldCheck}>
-          <p className="mb-6 text-slate-700">
-            Complete the handshake, follow the packet boxes, find the slipped
-            packet, request it again, and rebuild the data so the client
-            receives the full message.
+          <p className="mb-6 leading-7 text-slate-700">
+            Follow the steps of TCP. Complete the handshake, send the packets,
+            find the missing one, request it again, and rebuild the message in
+            order.
           </p>
 
           <div className="mb-6 flex flex-wrap gap-2">
@@ -723,7 +738,7 @@ TCP is like sending a package through the mail with tracking. You put your items
                 complete={activeStep > index}
               >
                 {label}
-              </StepChip>   
+              </StepChip>
             ))}
           </div>
 
@@ -874,27 +889,27 @@ TCP is like sending a package through the mail with tracking. You put your items
                     </motion.div>
                   )}
 
-{phase === "resend" && (
-  <motion.div key="resend" {...packetMotion} className="space-y-4">
-    <ConnectionTrack
-      direction="left"
-      packets={[3]}
-      deckPackets={[1, 2, 4]}
-      lineLabel="Server → Client (only packet 3 resent)"
-      connected
-    />
+                  {phase === "resend" && (
+                    <motion.div key="resend" {...packetMotion} className="space-y-4">
+                      <ConnectionTrack
+                        direction="left"
+                        packets={[3]}
+                        deckPackets={[1, 2, 4]}
+                        lineLabel="Server → Client (only packet 3 resent)"
+                        connected
+                      />
 
-    <div className="flex justify-center">
-      <button
-        type="button"
-        onClick={handleRebuildStart}
-        className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
-      >
-        Rebuild Data in Order
-      </button>
-    </div>
-  </motion.div>
-)}
+                      <div className="flex justify-center">
+                        <button
+                          type="button"
+                          onClick={handleRebuildStart}
+                          className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                        >
+                          Rebuild Data in Order
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
 
                   {(phase === "rebuild" || phase === "done") && (
                     <motion.div key="rebuild" {...packetMotion}>
@@ -905,7 +920,7 @@ TCP is like sending a package through the mail with tracking. You put your items
 
                         <p className="mb-5 text-center text-sm text-slate-500">
                           Click the packets in the correct order to show how the
-                          client reassembles the full message.
+                          client puts the full message back together.
                         </p>
 
                         <div className="mb-6 flex flex-wrap items-center justify-center gap-3">
@@ -960,7 +975,7 @@ TCP is like sending a package through the mail with tracking. You put your items
             <div className="mt-4">
               <StatusStrip
                 title="Client received the full message"
-                body="TCP used sequence numbers to rebuild the data correctly."
+                body="TCP used packet numbers to rebuild the data correctly."
                 tone="success"
               />
             </div>
@@ -1055,9 +1070,9 @@ TCP is like sending a package through the mail with tracking. You put your items
 
               <p className="mt-2 text-slate-600">
                 {score === 3
-                  ? "Excellent work — you understand how TCP ensures reliable communication."
+                  ? "Excellent work — you understand how TCP makes internet communication reliable."
                   : score === 2
-                    ? "Good job — review the handshake, retransmission, and sequence number steps."
+                    ? "Good job — review the handshake, missing packet, and rebuild steps."
                     : "Review the simulation and try again."}
               </p>
             </div>
