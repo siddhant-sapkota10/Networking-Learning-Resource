@@ -1,117 +1,89 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  BadgeCheck,
+  BookOpen,
   CheckCircle2,
   Circle,
-  Monitor,
-  Router,
-  Server,
   Globe,
   HelpCircle,
-  RefreshCcw,
-  BookOpen,
+  Monitor,
   MousePointerClick,
-  Search,
-  Play,
   Package,
+  Play,
+  RefreshCcw,
+  Router,
+  Search,
+  Server,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
-const stageStops = [
+const stops = [
   {
-    id: 0,
     key: "device",
     title: "Your Device",
     icon: Monitor,
-    description:
-      "You tap a video or website. Your device creates a request to ask for that content.",
-    badge: "Request created on your device",
-    accent: {
-      card: "border-blue-200 bg-blue-50 text-blue-800",
-      soft: "bg-blue-100 text-blue-700 border-blue-200",
-      ring: "ring-blue-100",
-      button: "bg-blue-600 hover:bg-blue-700",
-      progress: "bg-blue-500",
-    },
+    short: "Your device creates a request for the website or video.",
+    fact: "A request is just your device asking for information.",
+    badge: "Request created",
+    accent: "blue",
   },
   {
-    id: 1,
     key: "router",
     title: "Router / Wi-Fi",
     icon: Router,
-    description:
-      "Your request is sent to the router. The router helps move it out of your home or school network and towards the internet.",
-    badge: "Request sent to the router",
-    accent: {
-      card: "border-amber-200 bg-amber-50 text-amber-800",
-      soft: "bg-amber-100 text-amber-700 border-amber-200",
-      ring: "ring-amber-100",
-      button: "bg-amber-600 hover:bg-amber-700",
-      progress: "bg-amber-500",
-    },
+    short: "The router sends the request out of your home or school network.",
+    fact: "The router helps move the request in the right direction.",
+    badge: "Request sent to router",
+    accent: "amber",
   },
   {
-    id: 2,
     key: "internet",
     title: "The Internet",
     icon: Globe,
-    description:
-      "The request travels across many connected networks until it reaches the correct web server.",
-    badge: "Request travelling across the internet",
-    accent: {
-      card: "border-violet-200 bg-violet-50 text-violet-800",
-      soft: "bg-violet-100 text-violet-700 border-violet-200",
-      ring: "ring-violet-100",
-      button: "bg-violet-600 hover:bg-violet-700",
-      progress: "bg-violet-500",
-    },
+    short: "The request travels across many connected networks.",
+    fact: "The internet is a huge network of networks.",
+    badge: "Travelling across internet",
+    accent: "violet",
   },
   {
-    id: 3,
     key: "server",
     title: "Web Server",
     icon: Server,
-    description:
-      "The web server receives the request, finds the right data, and gets it ready to send back.",
-    badge: "Request reached the web server",
-    accent: {
-      card: "border-emerald-200 bg-emerald-50 text-emerald-800",
-      soft: "bg-emerald-100 text-emerald-700 border-emerald-200",
-      ring: "ring-emerald-100",
-      button: "bg-emerald-600 hover:bg-emerald-700",
-      progress: "bg-emerald-500",
-    },
+    short: "The server receives the request and finds the correct data.",
+    fact: "A server stores and sends websites, videos, images, and more.",
+    badge: "Request reached server",
+    accent: "emerald",
   },
   {
-    id: 4,
     key: "return",
     title: "Packets Return",
     icon: Package,
-    description:
-      "The server sends the data back in packets. Your device receives those packets and puts them together so the content can appear on screen.",
-    badge: "Packets returning to your device",
-    accent: {
-      card: "border-cyan-200 bg-cyan-50 text-cyan-800",
-      soft: "bg-cyan-100 text-cyan-700 border-cyan-200",
-      ring: "ring-cyan-100",
-      button: "bg-cyan-600 hover:bg-cyan-700",
-      progress: "bg-cyan-500",
-    },
+    short: "The server sends data back in packets so your device can rebuild it.",
+    fact: "Packets are smaller pieces of data that are easier to send and rebuild.",
+    badge: "Packets returning",
+    accent: "cyan",
   },
 ];
 
-const journeyNodes = [
-  { key: "device", title: "Your Device", icon: Monitor },
-  { key: "router", title: "Router / Wi-Fi", icon: Router },
-  { key: "internet", title: "The Internet", icon: Globe },
-  { key: "server", title: "Web Server", icon: Server },
+const introPoints = [
+  "Your device asks for information.",
+  "The router helps send the request outward.",
+  "The request travels across the internet.",
+  "The server finds the correct content.",
+  "Packets return so the content can load.",
 ];
 
-const introSteps = [
-  { title: "Step 1: Your device asks for information" },
-  { title: "Step 2: The request leaves your device" },
-  { title: "Step 3: It travels across the internet" },
-  { title: "Step 4: The web server finds the data" },
-  { title: "Step 5: Packets return and your screen loads the content" },
+const keyIdeas = [
+  "A router helps move your request onward.",
+  "The internet is many connected networks.",
+  "A server stores and sends online content.",
+  "Packets are smaller pieces of data.",
+];
+
+const packetFacts = [
+  "Smaller pieces are easier to send.",
+  "Packets can be checked and rebuilt.",
+  "Your device puts the pieces back together.",
 ];
 
 const quizQuestions = [
@@ -125,29 +97,38 @@ const quizQuestions = [
     answer: "Your device sends a request",
   },
   {
-    question: "What does the router do in this journey?",
+    question: "What is the router’s job in this journey?",
     options: [
-      "It helps send the request out to the internet",
-      "It stores all websites forever",
-      "It puts packets back together on your screen",
+      "Help send the request out to the internet",
+      "Store every website forever",
+      "Play the video on your screen",
     ],
-    answer: "It helps send the request out to the internet",
+    answer: "Help send the request out to the internet",
   },
   {
-    question: "What does the server send back to your device?",
+    question: "Why is data often sent back in packets?",
     options: [
-      "Packets of data",
-      "A new router",
-      "A keyboard command",
+      "Because smaller pieces are easier to send and rebuild",
+      "Because websites are too colourful",
+      "Because the router wants extra copies",
     ],
-    answer: "Packets of data",
+    answer: "Because smaller pieces are easier to send and rebuild",
+  },
+  {
+    question: "Which order is correct?",
+    options: [
+      "Device → Router → Internet → Server → Packets back",
+      "Server → Router → Device → Internet → Packets back",
+      "Router → Device → Server → Internet → Packets back",
+    ],
+    answer: "Device → Router → Internet → Server → Packets back",
   },
 ];
 
-function SectionCard({ title, icon: Icon, children }) {
+function Section({ title, icon: Icon, children }) {
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-5 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100">
           <Icon className="h-5 w-5 text-slate-700" />
         </div>
@@ -158,329 +139,343 @@ function SectionCard({ title, icon: Icon, children }) {
   );
 }
 
-function PacketChip({ className = "" }) {
+function accentClasses(accent) {
+  switch (accent) {
+    case "blue":
+      return {
+        soft: "bg-blue-50 text-blue-800 border-blue-200",
+        pill: "bg-blue-100 text-blue-700",
+        line: "bg-blue-500",
+      };
+    case "amber":
+      return {
+        soft: "bg-amber-50 text-amber-800 border-amber-200",
+        pill: "bg-amber-100 text-amber-700",
+        line: "bg-amber-500",
+      };
+    case "violet":
+      return {
+        soft: "bg-violet-50 text-violet-800 border-violet-200",
+        pill: "bg-violet-100 text-violet-700",
+        line: "bg-violet-500",
+      };
+    case "emerald":
+      return {
+        soft: "bg-emerald-50 text-emerald-800 border-emerald-200",
+        pill: "bg-emerald-100 text-emerald-700",
+        line: "bg-emerald-500",
+      };
+    default:
+      return {
+        soft: "bg-cyan-50 text-cyan-800 border-cyan-200",
+        pill: "bg-cyan-100 text-cyan-700",
+        line: "bg-cyan-500",
+      };
+  }
+}
+
+function StageChip({ item, active, complete, onClick }) {
+  const Icon = item.icon;
+  const accent = accentClasses(item.accent);
+
   return (
-    <div
-      className={`flex h-7 w-7 items-center justify-center rounded-md border shadow-sm ${className}`}
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-2xl border px-4 py-3 text-left transition ${
+        active
+          ? `${accent.soft} shadow-sm`
+          : complete
+          ? "border-slate-300 bg-slate-100 text-slate-800"
+          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+      }`}
     >
-      <Package className="h-4 w-4" />
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <Icon className="h-5 w-5" />
+        {complete ? (
+          <CheckCircle2 className="h-5 w-5" />
+        ) : active ? (
+          <Circle className="h-5 w-5" />
+        ) : null}
+      </div>
+      <p className="text-sm font-semibold">{item.title}</p>
+    </button>
+  );
+}
+
+function Packet({ label }) {
+  return (
+    <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-100 text-xs font-bold text-cyan-700 shadow-sm">
+      {label}
     </div>
   );
 }
 
-function ArrivedPacketDeck() {
+function QuizOption({
+  option,
+  isSelected,
+  isCorrect,
+  submitted,
+  onClick,
+}) {
+  let styles = "border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
+
+  if (submitted) {
+    if (isCorrect) styles = "border-emerald-300 bg-emerald-50 text-emerald-800";
+    else if (isSelected) styles = "border-rose-300 bg-rose-50 text-rose-800";
+  } else if (isSelected) {
+    styles = "border-slate-900 bg-slate-900 text-white";
+  }
+
   return (
-    <div className="pointer-events-none absolute left-[12%] top-[8px] z-20 -translate-x-1/2">
-      <div className="relative h-8 w-[62px]">
-        <motion.div
-          initial={{ opacity: 0, x: 5, y: 4 }}
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          transition={{ delay: 0.04 }}
-          className="absolute left-0 top-0"
-        >
-          <PacketChip className="border-cyan-200 bg-cyan-100 text-cyan-700" />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 5, y: 4 }}
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="absolute left-[17px] top-0"
-        >
-          <PacketChip className="border-cyan-200 bg-cyan-100 text-cyan-700" />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 5, y: 4 }}
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          transition={{ delay: 0.16 }}
-          className="absolute left-[34px] top-0"
-        >
-          <PacketChip className="border-cyan-200 bg-cyan-100 text-cyan-700" />
-        </motion.div>
-      </div>
-    </div>
+    <button
+      type="button"
+      disabled={submitted}
+      onClick={onClick}
+      className={`rounded-2xl border p-3 text-left transition ${styles}`}
+    >
+      {option}
+    </button>
   );
 }
 
 export default function DataTravel() {
   const [currentStop, setCurrentStop] = useState(0);
+  const [packetsArrived, setPacketsArrived] = useState(false);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
-  const [packetsArrived, setPacketsArrived] = useState(false);
 
-  const stop = stageStops[currentStop];
-  const progressPercent = (currentStop / (stageStops.length - 1)) * 100;
+  const stop = stops[currentStop];
+  const accent = accentClasses(stop.accent);
 
   useEffect(() => {
     if (currentStop === 4) {
       setPacketsArrived(false);
-      const timer = setTimeout(() => setPacketsArrived(true), 2200);
+      const timer = setTimeout(() => setPacketsArrived(true), 1800);
       return () => clearTimeout(timer);
     }
     setPacketsArrived(false);
   }, [currentStop]);
 
   const score = useMemo(() => {
-    return quizQuestions.reduce((total, q, index) => {
-      return total + (selectedAnswers[index] === q.answer ? 1 : 0);
-    }, 0);
+    return quizQuestions.reduce(
+      (total, q, index) => total + (selectedAnswers[index] === q.answer ? 1 : 0),
+      0
+    );
   }, [selectedAnswers]);
 
-  const handleNextStop = () => {
-    if (currentStop < stageStops.length - 1) {
-      setCurrentStop((prev) => prev + 1);
-    }
-  };
-
-  const handlePrevStop = () => {
-    if (currentStop > 0) {
-      setCurrentStop((prev) => prev - 1);
-    }
-  };
-
-  const resetJourney = () => {
-    setCurrentStop(0);
-    setPacketsArrived(false);
-  };
-
-  const handleAnswerSelect = (questionIndex, option) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [questionIndex]: option,
-    }));
-  };
-
-  const handleQuizSubmit = () => {
-    setSubmittedQuiz(true);
-  };
-
-  const resetQuiz = () => {
-    setSelectedAnswers({});
-    setSubmittedQuiz(false);
-  };
-
-  const showRequestBubble = currentStop <= 3;
-  const showPacketReturn = currentStop === 4;
-  const showVideoLoaded = currentStop === 4 && packetsArrived;
-
-  const explanationText =
-    currentStop === 4 && !packetsArrived
-      ? "The server has sent the packets back. They are travelling through the network toward your device."
-      : currentStop === 4 && packetsArrived
-      ? "The packets have reached your device. Your device puts them together so the video can load."
-      : stop.description;
-
-  const lineWidth =
-    currentStop === 0
-      ? "0%"
-      : currentStop === 1
-      ? "25.33%"
-      : currentStop === 2
-      ? "50.66%"
-      : currentStop === 3
-      ? "76%"
-      : "76%";
+  const progressPercent = (currentStop / (stops.length - 1)) * 100;
 
   const requestLeft =
     currentStop === 0
-      ? "12%"
+      ? "10%"
       : currentStop === 1
-      ? "37.33%"
+      ? "33%"
       : currentStop === 2
-      ? "62.66%"
-      : "88%";
+      ? "55%"
+      : "86%";
+
+  const progressWidth =
+    currentStop === 0
+      ? "0%"
+      : currentStop === 1
+      ? "23%"
+      : currentStop === 2
+      ? "46%"
+      : currentStop >= 3
+      ? "76%"
+      : "0%";
+
+  const title =
+    currentStop === 4 && packetsArrived
+      ? "Your device rebuilds the content"
+      : currentStop === 4
+      ? "Packets are travelling back"
+      : stop.title;
+
+  const body =
+    currentStop === 4 && packetsArrived
+      ? "The packets have arrived back at your device. Your device puts the pieces together so the video can appear on screen."
+      : currentStop === 4
+      ? "The server has sent the data back in smaller pieces called packets. They are travelling through the network toward your device."
+      : stop.short;
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 md:px-6">
         <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-3">
-            <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">
-              Module 1
-            </span>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-              How Data Travels Through the Internet
-            </h1>
-            <p className="max-w-3xl leading-7 text-slate-600">
-              Learn the basic journey of online data: your device sends a
-              request, a server finds the information, and packets return so the
-              content can appear on your screen.
-            </p>
-          </div>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
+            Module 1
+          </span>
+          <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
+            How Data Travels Through the Internet
+          </h1>
+          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
+            Follow a simple journey to see how your device asks for information,
+            how a server responds, and how packets help content appear on screen.
+          </p>
         </header>
 
-        <SectionCard title="General Overview" icon={BookOpen}>
-          <div className="grid gap-4">
-            {introSteps.map((item, index) => (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.25, delay: index * 0.04 }}
-                className="flex gap-4 rounded-2xl border border-slate-200 p-4"
+        <Section title="General Overview" icon={BookOpen}>
+          <div className="grid gap-3 md:grid-cols-5">
+            {introPoints.map((point, index) => (
+              <div
+                key={point}
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
+                <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
                   {index + 1}
                 </div>
-                <div className="flex items-center">
-                  <h3 className="font-semibold text-slate-900">{item.title}</h3>
-                </div>
-              </motion.div>
+                <p className="text-sm font-semibold leading-5 text-slate-800">
+                  {point}
+                </p>
+              </div>
             ))}
           </div>
 
-          <div className="mb-6 mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="mb-2 text-lg font-semibold text-slate-900">
-              Real-life analogy
-            </h3>
-            <p className="leading-7 text-slate-700">
-              Think about ordering food online. You place the order, the
-              restaurant receives it, prepares it, and sends it back to you. The
-              internet works in a similar way. Your device asks for information,
-              the server finds it, and sends the data back so your screen can
-              show it.
-            </p>
-          </div>
-        </SectionCard>
-
-        <SectionCard
-          title="Interactive Learning Activity"
-          icon={MousePointerClick}
-        >
-          <div className="mb-5">
-            <p className="leading-7 text-slate-700">
-              Click through each stop to follow the journey. Watch the request
-              travel to the web server, then see the packets come back to your
-              device before the video loads.
-            </p>
-          </div>
-
-          <div className="mb-6">
-            <div className="mb-2 flex items-center justify-between text-sm text-slate-600">
-              <span>Journey progress</span>
-              <span>
-                Stop {currentStop + 1} of {stageStops.length}
-              </span>
+          <div className="mt-6 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">
+                Real-life analogy
+              </h3>
+              <p className="mt-2 leading-7 text-slate-700">
+                Think about ordering food online. You place the order, the
+                restaurant receives it, prepares it, and sends it back to you.
+                The internet works in a similar way. Your device asks for
+                information, the server finds it, and the data returns so your
+                screen can show it.
+              </p>
             </div>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
-              <motion.div
-                className={`h-full rounded-full ${stop.accent.progress}`}
-                animate={{ width: `${progressPercent}%` }}
-                transition={{ duration: 0.45 }}
-              />
-            </div>
-          </div>
 
-          <div className="mb-8 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {stageStops.map((item, index) => {
-              const Icon = item.icon;
-              const isActive = currentStop === index;
-              const isCompleted = currentStop > index;
-
-              return (
-                <motion.button
-                  key={item.key}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => setCurrentStop(index)}
-                  className={`rounded-2xl border p-4 text-left transition ${
-                    isActive
-                      ? `${item.accent.soft} shadow-sm ring-2 ${item.accent.ring}`
-                      : isCompleted
-                      ? "border-slate-300 bg-slate-100 text-slate-800"
-                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <div className="mb-3 flex items-center justify-between">
-                    <Icon className="h-5 w-5" />
-                    {isCompleted ? (
-                      <CheckCircle2 className="h-5 w-5" />
-                    ) : isActive ? (
-                      <Circle className="h-5 w-5" />
-                    ) : null}
+            <div>
+              <h3 className="text-lg font-semibold text-slate-900">
+                Key ideas to remember
+              </h3>
+              <div className="mt-3 grid gap-2">
+                {keyIdeas.map((idea) => (
+                  <div
+                    key={idea}
+                    className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
+                  >
+                    <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
+                    <p className="text-sm leading-6 text-slate-700">{idea}</p>
                   </div>
-                  <p className="text-sm font-semibold">{item.title}</p>
-                </motion.button>
-              );
-            })}
+                ))}
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Interactive Learning Activity" icon={MousePointerClick}>
+          <p className="mb-5 leading-7 text-slate-700">
+            Move through each step to follow the request to the server, then
+            watch the packets return and rebuild the video.
+          </p>
+
+          <div className="mb-5 flex items-center justify-between text-sm text-slate-600">
+            <span>Journey progress</span>
+            <span>
+              Stop {currentStop + 1} of {stops.length}
+            </span>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="mb-6 h-3 overflow-hidden rounded-full bg-slate-200">
+            <motion.div
+              className={`h-full rounded-full ${accent.line}`}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ duration: 0.35 }}
+            />
+          </div>
+
+          <div className="mb-6 grid gap-3 md:grid-cols-5">
+            {stops.map((item, index) => (
+              <StageChip
+                key={item.key}
+                item={item}
+                active={currentStop === index}
+                complete={currentStop > index}
+                onClick={() => setCurrentStop(index)}
+              />
+            ))}
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
             <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mb-4 flex items-center justify-between gap-3">
                 <h3 className="text-lg font-semibold text-slate-900">
                   Packet Journey
                 </h3>
-                <div
-                  className={`w-fit rounded-full border px-3 py-1 text-xs font-semibold ${stop.accent.card}`}
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${accent.pill}`}
                 >
                   {stop.badge}
-                </div>
+                </span>
               </div>
 
-              <div className="relative rounded-3xl border border-slate-200 bg-white px-4 py-6 md:px-6">
+              <div className="rounded-3xl border border-slate-200 bg-white px-4 py-6 md:px-6">
                 <div className="hidden md:block">
-                  <div className="relative pt-12">
-                    <div className="absolute left-[12%] right-[12%] top-[72px] h-1 rounded-full bg-slate-200" />
+                  <div className="relative pt-10">
+                    <div className="absolute left-[10%] right-[14%] top-[70px] h-1 rounded-full bg-slate-200" />
 
                     <motion.div
-                      className="absolute top-[66px] h-4 rounded-full bg-sky-300/40"
-                      initial={false}
-                      animate={{
-                        left: "12%",
-                        width: lineWidth,
-                      }}
-                      transition={{ duration: 0.45 }}
+                      className={`absolute left-[10%] top-[68px] h-[6px] rounded-full ${accent.line}/30`}
+                      animate={{ width: progressWidth }}
+                      transition={{ duration: 0.35 }}
                     />
 
-                    {showRequestBubble && (
+                    {currentStop <= 3 && (
                       <motion.div
-                        key={`request-${currentStop}`}
-                        className="pointer-events-none absolute z-20 -translate-x-1/2"
-                        initial={false}
-                        animate={{
-                          left: requestLeft,
-                          top: 20,
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 120,
-                          damping: 18,
-                        }}
+                        className="pointer-events-none absolute top-[16px] z-20 -translate-x-1/2"
+                        animate={{ left: requestLeft }}
+                        transition={{ type: "spring", stiffness: 120, damping: 18 }}
                       >
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white shadow-md">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm">
                           <Search className="h-4 w-4 text-slate-700" />
                         </div>
                       </motion.div>
                     )}
 
-                    {showPacketReturn &&
-                      !packetsArrived &&
+                    {currentStop === 4 && !packetsArrived &&
                       [0, 1, 2].map((packet) => (
                         <motion.div
-                          key={`travel-${packet}`}
-                          className="pointer-events-none absolute top-[18px] z-20 -translate-x-1/2"
-                          initial={{ left: "88%", opacity: 0 }}
+                          key={packet}
+                          className="pointer-events-none absolute top-[16px] z-20 -translate-x-1/2"
+                          initial={{ left: "86%", opacity: 0 }}
                           animate={{
-                            left: ["88%", "75%", "62%", "50%", "37%", "25%", "12%"],
-                            opacity: [0, 1, 1, 1, 1, 1, 1],
+                            left: ["86%", "72%", "58%", "44%", "30%", "10%"],
+                            opacity: [0, 1, 1, 1, 1, 1],
                           }}
                           transition={{
-                            duration: 2,
-                            delay: packet * 0.14,
+                            duration: 1.7,
+                            delay: packet * 0.12,
                             ease: "easeInOut",
                           }}
                         >
-                          <PacketChip className="border-cyan-200 bg-cyan-100 text-cyan-700" />
+                          <Packet label={packet + 1} />
                         </motion.div>
                       ))}
 
-                    {showPacketReturn && packetsArrived && <ArrivedPacketDeck />}
+                    {currentStop === 4 && packetsArrived && (
+                      <div className="pointer-events-none absolute left-[10%] top-[12px] z-20 -translate-x-1/2">
+                        <div className="relative h-10 w-[74px]">
+                          {[1, 2, 3].map((label, i) => (
+                            <motion.div
+                              key={label}
+                              initial={{ opacity: 0, x: 8, y: 4 }}
+                              animate={{ opacity: 1, x: 0, y: 0 }}
+                              transition={{ delay: i * 0.08 }}
+                              className="absolute top-0"
+                              style={{ left: `${i * 18}px` }}
+                            >
+                              <Packet label={label} />
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                    <div className="relative grid grid-cols-4 gap-4">
-                      {journeyNodes.map((item, index) => {
+                    <div className="grid grid-cols-4 gap-4">
+                      {stops.slice(0, 4).map((item, index) => {
                         const Icon = item.icon;
                         const isActive =
                           (currentStop === 0 && index === 0) ||
@@ -489,45 +484,26 @@ export default function DataTravel() {
                           (currentStop === 3 && index === 3) ||
                           (currentStop === 4 && index === 3);
 
-                        const isCompleted =
-                          (currentStop > 0 && index === 0) ||
-                          (currentStop > 1 && index === 1) ||
-                          (currentStop > 2 && index === 2);
-
-                        const isArrivalTarget =
-                          currentStop === 4 && packetsArrived && index === 0;
+                        const isArrivalTarget = currentStop === 4 && packetsArrived && index === 0;
 
                         return (
-                          <div
-                            key={item.key}
-                            className="flex flex-col items-center text-center"
-                          >
+                          <div key={item.key} className="flex flex-col items-center text-center">
                             <motion.div
                               animate={{
-                                scale:
-                                  isActive || isArrivalTarget
-                                    ? 1.07
-                                    : 1,
-                                y:
-                                  isActive || isArrivalTarget
-                                    ? -2
-                                    : 0,
+                                scale: isActive || isArrivalTarget ? 1.06 : 1,
+                                y: isActive || isArrivalTarget ? -2 : 0,
                               }}
-                              transition={{ duration: 0.22 }}
-                              className={`relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl border transition ${
+                              className={`relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl border ${
                                 isArrivalTarget
-                                  ? "border-blue-200 bg-blue-100 text-blue-800 ring-2 ring-blue-100"
+                                  ? "border-blue-200 bg-blue-100 text-blue-800"
                                   : isActive
-                                  ? `${stop.accent.soft} ring-2 ${stop.accent.ring}`
-                                  : isCompleted
-                                  ? "border-slate-300 bg-slate-200 text-slate-800"
+                                  ? `${accent.soft}`
                                   : "border-slate-200 bg-white text-slate-500"
                               }`}
                             >
                               <Icon className="h-7 w-7" />
                             </motion.div>
-
-                            <p className="mt-3 min-h-[44px] max-w-[110px] text-sm font-medium leading-5 text-slate-700">
+                            <p className="mt-3 max-w-[110px] text-sm font-medium leading-5 text-slate-700">
                               {item.title}
                             </p>
                           </div>
@@ -537,82 +513,53 @@ export default function DataTravel() {
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:hidden">
-                  {stageStops.map((item, index) => {
+                <div className="grid gap-3 md:hidden">
+                  {stops.map((item, index) => {
                     const Icon = item.icon;
-                    const isActive = currentStop === index;
-                    const isCompleted = currentStop > index;
+                    const active = currentStop === index;
+                    const complete = currentStop > index;
 
                     return (
                       <div
                         key={item.key}
                         className={`rounded-2xl border p-4 ${
-                          isActive
-                            ? `${item.accent.soft} ring-2 ${item.accent.ring}`
-                            : isCompleted
+                          active
+                            ? accent.soft
+                            : complete
                             ? "border-slate-300 bg-slate-100"
                             : "border-slate-200 bg-white"
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${
-                              isActive
-                                ? "border-current/20 bg-white/60"
-                                : "border-slate-200 bg-white"
-                            }`}
-                          >
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white">
                             <Icon className="h-5 w-5" />
                           </div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-slate-900">
-                              {item.title}
-                            </p>
-                            <p className="text-sm text-slate-500">
-                              Stop {index + 1}
-                            </p>
+                          <div>
+                            <p className="font-semibold text-slate-900">{item.title}</p>
+                            <p className="text-sm text-slate-500">Stop {index + 1}</p>
                           </div>
-                          {isCompleted ? (
-                            <CheckCircle2 className="h-5 w-5 text-slate-600" />
-                          ) : isActive ? (
-                            <Circle className="h-5 w-5 text-slate-600" />
-                          ) : null}
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {currentStop === 4 && !packetsArrived && (
-                  <div className="mt-8 rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
-                    <p className="font-semibold text-cyan-800">
-                      Packets are on the way back
-                    </p>
-                    <p className="mt-1 text-cyan-700">
-                      The server has sent the packets. Your device will show the
-                      video after they arrive.
-                    </p>
-                  </div>
-                )}
-
-                {showVideoLoaded && (
+                {currentStop === 4 && packetsArrived && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-8 rounded-2xl border border-slate-200 bg-white p-4"
                   >
                     <div className="mb-3 flex items-center gap-2">
                       <Play className="h-5 w-5 text-red-500" />
-                      <h5 className="font-semibold text-slate-900">
-                        Video now loaded
-                      </h5>
+                      <h4 className="font-semibold text-slate-900">Video now loaded</h4>
                     </div>
 
                     <div className="overflow-hidden rounded-2xl border border-slate-200">
-                      <div className="aspect-video bg-slate-900">
-                        <div className="flex h-full flex-col justify-between p-4">
+                      <div className="aspect-video bg-slate-900 p-4">
+                        <div className="flex h-full flex-col justify-between">
                           <div className="flex items-center justify-between">
-                            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white">
+                            <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white">
                               YouTube video
                             </span>
                             <span className="text-xs text-slate-300">
@@ -631,8 +578,7 @@ export default function DataTravel() {
                               Roblox gameplay video
                             </p>
                             <p className="mt-1 text-xs text-slate-300">
-                              The packets reached your device and the content
-                              can now be shown on screen.
+                              The packets reached your device and the content could now be shown on screen.
                             </p>
                           </div>
                         </div>
@@ -643,120 +589,130 @@ export default function DataTravel() {
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white p-6 text-center">
-              <h3 className="mb-4 text-lg font-semibold text-slate-900">
-                What is happening here?
-              </h3>
+            <div className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  What is happening here?
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Read the explanation, then move to the next stop.
+                </p>
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${currentStop}-${packetsArrived}`}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -14 }}
-                  transition={{ duration: 0.25 }}
-                  className={`rounded-2xl border p-4 ${stop.accent.card}`}
-                >
-                  <p className="leading-7">{explanationText}</p>
-                </motion.div>
-              </AnimatePresence>
-
-              <div className="mt-6 gap-3">
-                <div className="mb-4 flex items-center justify-center gap-4">
-                  <button
-                    onClick={handlePrevStop}
-                    disabled={currentStop === 0}
-                    className="rounded-2xl border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${currentStop}-${packetsArrived}`}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    className={`mt-5 rounded-2xl border p-4 ${accent.soft}`}
                   >
-                    Previous Stop
+                    <h4 className="font-semibold">{title}</h4>
+                    <p className="mt-2 leading-7">{body}</p>
+                  </motion.div>
+                </AnimatePresence>
+
+                <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+                  <h4 className="font-semibold text-slate-900">Quick fact</h4>
+                  <p className="mt-2 text-sm leading-6 text-slate-700">
+                    {stop.fact}
+                  </p>
+                </div>
+
+                {currentStop === 4 && (
+                  <div className="mt-4 rounded-2xl bg-cyan-50 p-4">
+                    <h4 className="font-semibold text-cyan-800">Why packets matter</h4>
+                    <div className="mt-3 grid gap-2">
+                      {packetFacts.map((fact) => (
+                        <div
+                          key={fact}
+                          className="rounded-xl bg-white/70 px-3 py-2 text-sm text-cyan-800"
+                        >
+                          {fact}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6">
+                <div className="flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStop((prev) => Math.max(0, prev - 1))}
+                    disabled={currentStop === 0}
+                    className="rounded-2xl border border-slate-300 px-4 py-2 text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Previous
                   </button>
 
                   <button
-                    onClick={handleNextStop}
-                    disabled={currentStop === stageStops.length - 1}
-                    className={`rounded-2xl px-4 py-2 font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-40 ${stop.accent.button}`}
+                    type="button"
+                    onClick={() =>
+                      setCurrentStop((prev) => Math.min(stops.length - 1, prev + 1))
+                    }
+                    disabled={currentStop === stops.length - 1}
+                    className={`rounded-2xl px-4 py-2 text-white transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                      stop.accent === "blue"
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : stop.accent === "amber"
+                        ? "bg-amber-600 hover:bg-amber-700"
+                        : stop.accent === "violet"
+                        ? "bg-violet-600 hover:bg-violet-700"
+                        : stop.accent === "emerald"
+                        ? "bg-emerald-600 hover:bg-emerald-700"
+                        : "bg-cyan-600 hover:bg-cyan-700"
+                    }`}
                   >
-                    Go to Next Stop
+                    Next
                   </button>
                 </div>
 
-                <button
-                  onClick={resetJourney}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50"
-                >
-                  <RefreshCcw className="h-5 w-5" />
-                  Restart
-                </button>
+                <div className="mt-3 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentStop(0);
+                      setPacketsArrived(false);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-4 py-2 text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <RefreshCcw className="h-4 w-4" />
+                    Restart
+                  </button>
+                </div>
               </div>
-
-              {currentStop === stageStops.length - 1 && packetsArrived && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4"
-                >
-                  <div>
-                    <h4 className="font-semibold text-emerald-800">
-                      Journey complete
-                    </h4>
-                    <p className="mt-1 leading-7 text-emerald-700">
-                      Nice work. Your device sent a request, the server found
-                      the data, and the packets returned so the video could load.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
             </div>
           </div>
-        </SectionCard>
+        </Section>
 
-        <SectionCard title="Quick Quiz" icon={HelpCircle}>
+        <Section title="Quick Quiz" icon={HelpCircle}>
           <div className="space-y-5">
             {quizQuestions.map((q, qIndex) => (
               <div
                 key={q.question}
                 className="rounded-2xl border border-slate-200 p-5"
               >
-                <h3 className="text-base font-semibold text-slate-900">
+                <h3 className="font-semibold text-slate-900">
                   {qIndex + 1}. {q.question}
                 </h3>
 
                 <div className="mt-4 grid gap-3">
-                  {q.options.map((option) => {
-                    const isSelected = selectedAnswers[qIndex] === option;
-                    const isCorrect = q.answer === option;
-
-                    let optionStyle =
-                      "border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
-
-                    if (submittedQuiz) {
-                      if (isCorrect) {
-                        optionStyle =
-                          "border-emerald-300 bg-emerald-50 text-emerald-800";
-                      } else if (isSelected && !isCorrect) {
-                        optionStyle =
-                          "border-rose-300 bg-rose-50 text-rose-800";
+                  {q.options.map((option) => (
+                    <QuizOption
+                      key={option}
+                      option={option}
+                      isSelected={selectedAnswers[qIndex] === option}
+                      isCorrect={q.answer === option}
+                      submitted={submittedQuiz}
+                      onClick={() =>
+                        setSelectedAnswers((prev) => ({
+                          ...prev,
+                          [qIndex]: option,
+                        }))
                       }
-                    } else if (isSelected) {
-                      optionStyle =
-                        "border-slate-900 bg-slate-900 text-white";
-                    }
-
-                    return (
-                      <motion.button
-                        key={option}
-                        whileHover={submittedQuiz ? {} : { y: -1 }}
-                        whileTap={submittedQuiz ? {} : { scale: 0.995 }}
-                        onClick={() => handleAnswerSelect(qIndex, option)}
-                        disabled={submittedQuiz}
-                        className={`rounded-2xl border p-3 text-left transition ${optionStyle} ${
-                          submittedQuiz ? "cursor-default" : ""
-                        }`}
-                      >
-                        {option}
-                      </motion.button>
-                    );
-                  })}
+                    />
+                  ))}
                 </div>
               </div>
             ))}
@@ -764,15 +720,20 @@ export default function DataTravel() {
 
           <div className="mt-6 flex flex-wrap gap-3">
             <button
-              onClick={handleQuizSubmit}
-              className="rounded-2xl bg-slate-900 px-5 py-2.5 font-medium text-white transition hover:bg-slate-800"
+              type="button"
+              onClick={() => setSubmittedQuiz(true)}
+              className="rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
             >
               Submit Quiz
             </button>
 
             <button
-              onClick={resetQuiz}
-              className="rounded-2xl border border-slate-300 px-5 py-2.5 font-medium text-slate-700 transition hover:bg-slate-50"
+              type="button"
+              onClick={() => {
+                setSelectedAnswers({});
+                setSubmittedQuiz(false);
+              }}
+              className="rounded-2xl border border-slate-300 px-5 py-2.5 text-slate-700 transition hover:bg-slate-50"
             >
               Reset Quiz
             </button>
@@ -782,21 +743,21 @@ export default function DataTravel() {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5"
+              className="mt-6 rounded-2xl bg-slate-50 p-5"
             >
               <h3 className="text-lg font-semibold text-slate-900">
                 Your Score: {score} / {quizQuestions.length}
               </h3>
               <p className="mt-2 leading-7 text-slate-600">
-                {score === 3
+                {score === 4
                   ? "Excellent work — you understand the basic journey of data through the internet."
-                  : score === 2
-                  ? "Good job — review the journey one more time to lock it in."
-                  : "Nice try — go back through the interactive journey and try the quiz again."}
+                  : score >= 2
+                  ? "Good job — review the journey once more to lock in the order."
+                  : "Nice try — go back through the interactive journey and try again."}
               </p>
             </motion.div>
           )}
-        </SectionCard>
+        </Section>
       </div>
     </div>
   );
