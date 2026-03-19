@@ -471,10 +471,6 @@ export default function Bandwidth() {
           <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
             Bit Rate and Bandwidth
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-            Learn what a bit is, what bit rate means, and how bandwidth affects
-            the amount of data that can move through an internet connection.
-          </p>
         </header>
 
         <Section title="General Overview" icon={BookOpen}>

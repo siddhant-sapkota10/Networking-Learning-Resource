@@ -573,10 +573,6 @@ export default function TCP() {
           <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
             Transmission Control Protocol (TCP)
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-            Learn how TCP creates a reliable connection, resends missing data,
-            and rebuilds packets in the correct order.
-          </p>
         </header>
 
         <Section title="What is TCP?" icon={HelpCircle}>

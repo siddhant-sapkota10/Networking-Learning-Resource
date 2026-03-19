@@ -266,25 +266,19 @@ export default function DataTravel() {
 
   const progressPercent = (currentStop / (stops.length - 1)) * 100;
 
+  const stageCenters = ["12.5%", "37.5%", "62.5%", "87.5%"];
+
   const requestLeft =
-    currentStop === 0
-      ? "10%"
-      : currentStop === 1
-      ? "33%"
-      : currentStop === 2
-      ? "55%"
-      : "86%";
+    currentStop <= 3 ? stageCenters[currentStop] : stageCenters[3];
 
   const progressWidth =
     currentStop === 0
       ? "0%"
       : currentStop === 1
-      ? "23%"
+      ? "25%"
       : currentStop === 2
-      ? "46%"
-      : currentStop >= 3
-      ? "76%"
-      : "0%";
+      ? "50%"
+      : "75%";
 
   const title =
     currentStop === 4 && packetsArrived
@@ -310,10 +304,6 @@ export default function DataTravel() {
           <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
             How Data Travels Through the Internet
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-            Follow a simple journey to see how your device asks for information,
-            how a server responds, and how packets help content appear on screen.
-          </p>
         </header>
 
         <Section title="General Overview" icon={BookOpen}>
@@ -415,10 +405,10 @@ export default function DataTravel() {
               <div className="rounded-3xl border border-slate-200 bg-white px-4 py-6 md:px-6">
                 <div className="hidden md:block">
                   <div className="relative pt-10">
-                    <div className="absolute left-[10%] right-[14%] top-[70px] h-1 rounded-full bg-slate-200" />
+                    <div className="absolute left-[12.5%] top-[70px] h-1 w-[75%] rounded-full bg-slate-200" />
 
                     <motion.div
-                      className={`absolute left-[10%] top-[68px] h-[6px] rounded-full ${accent.line}/30`}
+                      className={`absolute left-[12.5%] top-[68px] h-[6px] rounded-full ${accent.line}/30`}
                       animate={{ width: progressWidth }}
                       transition={{ duration: 0.35 }}
                     />
@@ -435,14 +425,15 @@ export default function DataTravel() {
                       </motion.div>
                     )}
 
-                    {currentStop === 4 && !packetsArrived &&
+                    {currentStop === 4 &&
+                      !packetsArrived &&
                       [0, 1, 2].map((packet) => (
                         <motion.div
                           key={packet}
                           className="pointer-events-none absolute top-[16px] z-20 -translate-x-1/2"
-                          initial={{ left: "86%", opacity: 0 }}
+                          initial={{ left: "87.5%", opacity: 0 }}
                           animate={{
-                            left: ["86%", "72%", "58%", "44%", "30%", "10%"],
+                            left: ["87.5%", "72%", "58%", "44%", "30%", "12.5%"],
                             opacity: [0, 1, 1, 1, 1, 1],
                           }}
                           transition={{
@@ -456,7 +447,7 @@ export default function DataTravel() {
                       ))}
 
                     {currentStop === 4 && packetsArrived && (
-                      <div className="pointer-events-none absolute left-[10%] top-[12px] z-20 -translate-x-1/2">
+                      <div className="pointer-events-none absolute left-[12.5%] top-[12px] z-20 -translate-x-1/2">
                         <div className="relative h-10 w-[74px]">
                           {[1, 2, 3].map((label, i) => (
                             <motion.div
@@ -484,10 +475,14 @@ export default function DataTravel() {
                           (currentStop === 3 && index === 3) ||
                           (currentStop === 4 && index === 3);
 
-                        const isArrivalTarget = currentStop === 4 && packetsArrived && index === 0;
+                        const isArrivalTarget =
+                          currentStop === 4 && packetsArrived && index === 0;
 
                         return (
-                          <div key={item.key} className="flex flex-col items-center text-center">
+                          <div
+                            key={item.key}
+                            className="flex flex-col items-center text-center"
+                          >
                             <motion.div
                               animate={{
                                 scale: isActive || isArrivalTarget ? 1.06 : 1,
@@ -578,7 +573,8 @@ export default function DataTravel() {
                               Roblox gameplay video
                             </p>
                             <p className="mt-1 text-xs text-slate-300">
-                              The packets reached your device and the content could now be shown on screen.
+                              The packets reached your device and the content could now
+                              be shown on screen.
                             </p>
                           </div>
                         </div>
