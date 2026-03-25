@@ -12,6 +12,7 @@ import {
   Search,
   Server,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -35,13 +36,13 @@ const quizQuestions = [
     answer: "Send a request to a server and receive a response",
   },
   {
-    question: "What does a 404 response mean?",
+    question: "What does a browser often need to do to fully load a webpage?",
     options: [
-      "The requested page could not be found",
-      "The internet is turned off forever",
-      "The browser has downloaded everything already",
+      "Send separate requests for different parts like images and videos",
+      "Only ask for one thing and everything appears automatically",
+      "Turn the server into Wi-Fi",
     ],
-    answer: "The requested page could not be found",
+    answer: "Send separate requests for different parts like images and videos",
   },
   {
     question: "What is HTTPS?",
@@ -58,7 +59,8 @@ const keyIdeas = [
   "HTTP stands for HyperText Transfer Protocol.",
   "A browser sends a request to a web server.",
   "The server sends back a response.",
-  "HTTPS is the secure version of HTTP.",
+  "A webpage is often made of many parts, so the browser may need to send a request for all of the parts.",
+  "HTTPS is the more secure version of HTTP.",
 ];
 
 const requestOptions = [
@@ -297,12 +299,17 @@ function BrowserCanvas({ loadedResources, currentRequest }) {
         <div>
           <h4 className="font-semibold text-slate-900">Browser Window</h4>
           <p className="text-sm text-slate-500">
-            Loaded content stays on the page as new files are requested.
+            Loaded content stays on the page as new parts are requested.
           </p>
         </div>
         <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
           Current: {currentRequest.label}
         </div>
+      </div>
+
+      <div className="mb-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-800">
+        To fully load a webpage, the browser may need to send a request for all
+        of the parts, such as the page, images, and videos.
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
@@ -501,7 +508,7 @@ function PreviewSummary({ currentRequest }) {
       />
       <StatusBox
         title="Why this matters"
-        body="HTTP lets the browser ask for content, and the server answers with a response the browser can show."
+        body="HTTP lets the browser ask for content, and the server answers with a response the browser can show. To fully load a webpage, the browser often has to send separate requests for all of the parts, like the page itself, images, and videos."
         tone="info"
       />
     </div>
@@ -599,7 +606,7 @@ export default function HTTP() {
       setMessage(
         currentRequest.status === "404 Not Found"
           ? "The server could not find that page, so the browser shows a 404 error."
-          : `The browser received the ${currentRequest.label.toLowerCase()} and added it to the page.`
+          : `The browser received the ${currentRequest.label.toLowerCase()} and added it to the page. Remember, browsers often need to send separate HTTP requests for all of the parts of a webpage.`
       );
     }, 1700);
   };
@@ -650,12 +657,30 @@ export default function HTTP() {
         </header>
 
         <Section title="What is HTTP?" icon={HelpCircle}>
+          <div className="mb-5 rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white">
+                <Sparkles className="h-5 w-5 text-emerald-700" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-emerald-900">Fun fact</h3>
+                <p className="mt-1 text-sm leading-6 text-emerald-800">
+                  Have you ever seen a website say <span className="font-semibold">HTTP</span> or{" "}
+                  <span className="font-semibold">HTTPS</span>? HTTPS is the more
+                  secure version of HTTP. The extra <span className="font-semibold">S</span> stands for
+                  secure.
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
               <p className="leading-7 text-slate-700">
-                HTTP is a rule used for communication between a browser and a web
-                server. The browser sends a request for a webpage or file, and the
-                server sends back a response.
+                Have you ever seen a website start with HTTP or HTTPS in the
+                address bar? HTTP is a rule used for communication between a
+                browser and a web server. The browser sends a request for a
+                webpage or file, and the server sends back a response.
               </p>
 
               <div className="mt-5">
@@ -667,6 +692,17 @@ export default function HTTP() {
                   receive your order, and they give you back what you asked for.
                   HTTP works in a similar way. The browser asks for a webpage or
                   file, and the server sends back the result.
+                </p>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                <h3 className="text-lg font-semibold text-blue-900">
+                  Important idea
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-blue-800">
+                  A browser does not always send just one request. To fully load a
+                  webpage, it may have to send a request for all of the parts,
+                  such as the page itself, images, and videos.
                 </p>
               </div>
             </div>
@@ -693,7 +729,9 @@ export default function HTTP() {
         <Section title="Interactive Browser Request Lab" icon={ShieldCheck}>
           <p className="mb-5 leading-7 text-slate-700">
             Choose a resource, send an HTTP request, see the server response, and
-            keep building the browser page as new content loads.
+            keep building the browser page as new content loads. This shows that
+            the browser may need to send separate requests for all of the parts of
+            a webpage.
           </p>
 
           <div className="mb-5 flex flex-wrap gap-2">
@@ -981,7 +1019,8 @@ export default function HTTP() {
                 </h3>
                 <div className="mt-3 grid gap-2">
                   <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
-                    HTTP is used when browsers request webpages and files.
+                    Have you ever seen <span className="font-semibold">HTTP</span> or{" "}
+                    <span className="font-semibold">HTTPS</span> in a website address?
                   </div>
                   <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
                     A <span className="font-semibold">200 OK</span> response means
@@ -991,19 +1030,25 @@ export default function HTTP() {
                     A <span className="font-semibold">404 Not Found</span> response
                     means the requested page could not be found.
                   </div>
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
+                    Browsers often need to send separate requests for all of the
+                    parts of a webpage, including images and videos.
+                  </div>
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white">
                     <Lock className="h-5 w-5 text-emerald-700" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">HTTPS</h3>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">
-                      HTTPS is the secure version of HTTP. It helps protect the
-                      information being sent between the browser and server.
+                    <h3 className="text-lg font-semibold text-emerald-900">
+                      Fun fact: HTTPS
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-emerald-800">
+                      HTTPS is the more secure version of HTTP. It helps protect
+                      the information being sent between the browser and server.
                     </p>
                   </div>
                 </div>
@@ -1086,7 +1131,7 @@ export default function HTTP() {
                 {score === 4
                   ? "Excellent work — you understand how HTTP helps browsers and servers communicate."
                   : score >= 2
-                  ? "Good job — review request, response, status codes, and HTTPS once more."
+                  ? "Good job — review request, response, status codes, separate page parts, and HTTPS once more."
                   : "Review the module and try the quiz again."}
               </p>
             </div>
@@ -1110,16 +1155,17 @@ export default function HTTP() {
             </div>
 
             <div className="rounded-3xl bg-slate-50 p-5">
-              <h3 className="font-semibold text-slate-900">Response</h3>
+              <h3 className="font-semibold text-slate-900">All the parts</h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                The server responds with content or an error message.
+                A browser may need to send separate requests for all of the parts
+                of a webpage, such as images and videos.
               </p>
             </div>
 
             <div className="rounded-3xl bg-slate-50 p-5">
               <h3 className="font-semibold text-slate-900">HTTPS</h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                HTTPS is the secure version of HTTP and helps protect data.
+                HTTPS is the more secure version of HTTP and helps protect data.
               </p>
             </div>
           </div>

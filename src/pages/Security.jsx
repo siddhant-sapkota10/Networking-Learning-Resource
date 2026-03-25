@@ -565,6 +565,11 @@ export default function Security() {
 
   const incident = incidents[incidentIndex];
   const isCorrect = selectedDefense === incident.recommendedDefense;
+  const orderedDefenses = incident.defenses.map((id) => defenseMap[id]);
+
+  const totalIncidents = incidents.length;
+  const isLastIncident = incidentIndex === totalIncidents - 1;
+  const activityComplete = phase === "resolved" && isLastIncident && isCorrect;
 
   useEffect(() => {
     setSelectedDefense(incident.defenses[0]);
@@ -581,8 +586,6 @@ export default function Security() {
     );
   }, [selectedAnswers]);
 
-  const orderedDefenses = incident.defenses.map((id) => defenseMap[id]);
-
   const stepLabels = ["Read Incident", "Choose Defense", "Review Outcome"];
   const activeStep = phase === "analyse" ? 1 : phase === "deploy" ? 1 : 2;
 
@@ -595,14 +598,15 @@ export default function Security() {
       ? "info"
       : "neutral";
 
-  const statusTitle =
-    phase === "analyse"
-      ? "Ready to begin"
-      : phase === "deploy"
-      ? "Deploying defense"
-      : isCorrect
-      ? "Correct defense selected"
-      : "Review the result";
+  const statusTitle = activityComplete
+    ? "Completed"
+    : phase === "analyse"
+    ? "Ready to begin"
+    : phase === "deploy"
+    ? "Deploying defense"
+    : isCorrect
+    ? "Correct defense selected"
+    : "Review the result";
 
   const runSimulation = () => {
     if (phase !== "analyse") return;
@@ -614,15 +618,27 @@ export default function Security() {
 
     setTimeout(() => {
       setPhase("resolved");
+
       if (isCorrect) {
         setRoundsCompleted((prev) => prev + 1);
       }
-      setMessage(isCorrect ? incident.safeResult : incident.failResult);
+
+      if (isLastIncident && isCorrect) {
+        setMessage(
+          "Congratulations. You successfully chose the correct defense for all situations."
+        );
+      } else if (isLastIncident && !isCorrect) {
+        setMessage(
+          "You reached the final situation, but the last defense was not the strongest choice. Press Start Again to try for a perfect result."
+        );
+      } else {
+        setMessage(isCorrect ? incident.safeResult : incident.failResult);
+      }
     }, 1300);
   };
 
   const nextIncident = () => {
-    setIncidentIndex((prev) => (prev + 1) % incidents.length);
+    setIncidentIndex((prev) => prev + 1);
   };
 
   const resetActivity = () => {
@@ -739,81 +755,132 @@ export default function Security() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <SecuritySimulation
-                  incident={incident}
-                  phase={phase}
-                  selectedDefense={selectedDefense}
-                  isCorrect={isCorrect}
-                  roundsCompleted={roundsCompleted}
-                />
+              <div className="relative">
+                <div className="space-y-3">
+                  <SecuritySimulation
+                    incident={incident}
+                    phase={phase}
+                    selectedDefense={selectedDefense}
+                    isCorrect={isCorrect}
+                    roundsCompleted={roundsCompleted}
+                  />
 
-                {phase === "resolved" ? (
-                  <div className="grid gap-3">
-                    <StatusBox
-                      title={isCorrect ? incident.safeTitle : incident.failTitle}
-                      body={isCorrect ? incident.safeResult : incident.failResult}
-                      tone={isCorrect ? "success" : "danger"}
-                    />
-                    <StatusBox
-                      title="Why this is the best answer"
-                      body={incident.why}
-                      tone="info"
-                    />
-                  </div>
-                ) : (
-                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
-                    Choose a defense on the left, then press deploy to watch the
-                    result here.
-                  </div>
-                )}
+                  {!activityComplete &&
+                    (phase === "resolved" ? (
+                      <div className="grid gap-3">
+                        <StatusBox
+                          title={isCorrect ? incident.safeTitle : incident.failTitle}
+                          body={isCorrect ? incident.safeResult : incident.failResult}
+                          tone={isCorrect ? "success" : "danger"}
+                        />
 
-                <div className="flex flex-wrap gap-3">
-                  {phase === "resolved" ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={nextIncident}
-                        className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
-                      >
-                        Next Incident
-                      </button>
+                        <StatusBox
+                          title="Why this is the best answer"
+                          body={incident.why}
+                          tone="info"
+                        />
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+                        Choose a defense on the left, then press deploy to watch
+                        the result here.
+                      </div>
+                    ))}
 
-                      <button
-                        type="button"
-                        onClick={resetActivity}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 transition hover:bg-slate-50"
-                      >
-                        <RefreshCcw className="h-4 w-4" />
-                        Start Again
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={runSimulation}
-                        disabled={phase !== "analyse"}
-                        className={`rounded-2xl px-5 py-2 font-medium text-white transition ${
-                          phase !== "analyse"
-                            ? "cursor-not-allowed bg-slate-400"
-                            : "bg-slate-900 hover:bg-slate-800"
-                        }`}
-                      >
-                        Deploy Defense
-                      </button>
+                  {!activityComplete && (
+                    <div className="flex flex-wrap gap-3">
+                      {phase === "resolved" ? (
+                        <>
+                          {!isLastIncident && (
+                            <button
+                              type="button"
+                              onClick={nextIncident}
+                              className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                            >
+                              Next Incident
+                            </button>
+                          )}
 
-                      <button
-                        type="button"
-                        onClick={resetActivity}
-                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 transition hover:bg-slate-50"
-                      >
-                        <RefreshCcw className="h-4 w-4" />
-                        Reset Activity
-                      </button>
-                    </>
+                          <button
+                            type="button"
+                            onClick={resetActivity}
+                            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 transition hover:bg-slate-50"
+                          >
+                            <RefreshCcw className="h-4 w-4" />
+                            Start Again
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            onClick={runSimulation}
+                            disabled={phase !== "analyse"}
+                            className={`rounded-2xl px-5 py-2 font-medium text-white transition ${
+                              phase !== "analyse"
+                                ? "cursor-not-allowed bg-slate-400"
+                                : "bg-slate-900 hover:bg-slate-800"
+                            }`}
+                          >
+                            Deploy Defense
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={resetActivity}
+                            className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 transition hover:bg-slate-50"
+                          >
+                            <RefreshCcw className="h-4 w-4" />
+                            Reset Activity
+                          </button>
+                        </>
+                      )}
+                    </div>
                   )}
                 </div>
+
+                <AnimatePresence>
+                  {activityComplete && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-slate-900/45 p-4 backdrop-blur-[2px]"
+                    >
+                      <motion.div
+                        initial={{ scale: 0.96, y: 8, opacity: 0 }}
+                        animate={{ scale: 1, y: 0, opacity: 1 }}
+                        exit={{ scale: 0.98, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl"
+                      >
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100">
+                          <ShieldCheck className="h-8 w-8 text-emerald-700" />
+                        </div>
+
+                        <h3 className="mt-4 text-2xl font-bold text-slate-900">
+                          Congratulations!
+                        </h3>
+
+                        <p className="mt-3 text-sm leading-6 text-slate-600">
+                          You successfully chose the correct defense for all
+                          situations.
+                        </p>
+
+                        <div className="mt-5">
+                          <button
+                            type="button"
+                            onClick={resetActivity}
+                            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+                          >
+                            <RefreshCcw className="h-4 w-4" />
+                            Play Again
+                          </button>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
