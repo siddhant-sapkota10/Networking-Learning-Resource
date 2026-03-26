@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   BadgeCheck,
@@ -56,42 +56,100 @@ const keyIdeas = [
   "A high bit rate needs enough bandwidth to work smoothly.",
 ];
 
-const quizQuestions = [
+const baseQuizQuestions = [
   {
-    question: "What is a bit?",
+    question:
+      "A student says, “Bit rate and bandwidth mean the same thing because both involve data.” Which response is most accurate?",
     options: [
-      "A tiny piece of digital information",
-      "A type of internet cable",
-      "A screen brightness setting",
+      "They are related, but bit rate is how much data is used each second, while bandwidth is how much data the connection can carry at one time",
+      "They are the same idea, but bandwidth is only used for videos and bit rate is only used for music",
+      "Bandwidth measures the quality of a video, while bit rate measures the size of the screen",
+      "Bit rate describes the internet speed of the router, while bandwidth describes the number of files on a server",
     ],
-    answer: "A tiny piece of digital information",
+    answer:
+      "They are related, but bit rate is how much data is used each second, while bandwidth is how much data the connection can carry at one time",
   },
   {
-    question: "What does bit rate describe?",
+    question:
+      "In the module’s pipe analogy, what does a wider pipe mainly represent?",
     options: [
-      "How much data is used each second",
-      "How heavy a computer is",
-      "How many apps are open",
+      "More bandwidth, meaning more data can move through the connection at one time",
+      "A higher bit rate, meaning the video automatically becomes higher quality",
+      "A larger file size, meaning the content takes up more storage",
+      "A stronger Wi-Fi password, meaning the connection is more secure",
     ],
-    answer: "How much data is used each second",
+    answer:
+      "More bandwidth, meaning more data can move through the connection at one time",
   },
   {
-    question: "What does bandwidth describe?",
+    question:
+      "Which situation is most likely to cause buffering in the interactive activity?",
     options: [
-      "How much data can move through a connection at one time",
-      "How many websites a server stores",
-      "How big a laptop screen is",
+      "The selected bit rate is higher than the selected bandwidth",
+      "The selected bandwidth is higher than the selected bit rate",
+      "The video is low quality and the bandwidth is medium",
+      "The bit rate and bandwidth are both low",
     ],
-    answer: "How much data can move through a connection at one time",
+    answer: "The selected bit rate is higher than the selected bandwidth",
   },
   {
-    question: "What can happen if bit rate is high but bandwidth is low?",
+    question:
+      "A video uses more data each second to improve image quality. In the language of this module, what has increased?",
     options: [
-      "The video may buffer or drop quality",
-      "The keyboard stops working",
-      "The router turns into a server",
+      "The bit rate has increased",
+      "The bandwidth has increased",
+      "The number of bits stored on the router has increased",
+      "The connection width has automatically doubled",
     ],
-    answer: "The video may buffer or drop quality",
+    answer: "The bit rate has increased",
+  },
+  {
+    question:
+      "Which statement best explains why a high bit rate may still perform badly on some connections?",
+    options: [
+      "A high bit rate needs enough bandwidth, and without it the connection may not carry the data smoothly",
+      "A high bit rate only works on wired internet and always fails on Wi-Fi",
+      "A high bit rate reduces the number of bits in the video, which causes freezing",
+      "A high bit rate makes the video too short for the bandwidth to understand",
+    ],
+    answer:
+      "A high bit rate needs enough bandwidth, and without it the connection may not carry the data smoothly",
+  },
+  {
+    question:
+      "Two users watch the same clip. User A has high bandwidth and medium bit rate. User B has low bandwidth and high bit rate. Based on the module, who is more likely to experience buffering?",
+    options: [
+      "User B, because the video is trying to use more data each second than the connection can comfortably support",
+      "User A, because medium bit rate always causes buffering on fast connections",
+      "Both users equally, because buffering depends only on the video title",
+      "Neither user, because bit rate does not affect playback",
+    ],
+    answer:
+      "User B, because the video is trying to use more data each second than the connection can comfortably support",
+  },
+  {
+    question:
+      "What is the best definition of a bit in this learning module?",
+    options: [
+      "A tiny unit of digital information used as part of larger files and data",
+      "A measure of how wide a network connection is",
+      "A label for how smoothly a video plays",
+      "A device that sends data between screens",
+    ],
+    answer:
+      "A tiny unit of digital information used as part of larger files and data",
+  },
+  {
+    question:
+      "Which option best matches the relationship shown in the module?",
+    options: [
+      "Bandwidth is the connection’s carrying room, while bit rate is the amount of data the content tries to use each second",
+      "Bandwidth is the amount of data in a file, while bit rate is the amount of storage on a computer",
+      "Bandwidth and bit rate both describe file quality only, not movement through a connection",
+      "Bandwidth is how much data a server stores, while bit rate is how many screens are connected",
+    ],
+    answer:
+      "Bandwidth is the connection’s carrying room, while bit rate is the amount of data the content tries to use each second",
   },
 ];
 
@@ -100,6 +158,22 @@ const levelValue = {
   medium: 2,
   high: 3,
 };
+
+function shuffleArray(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function buildShuffledQuiz(questions) {
+  return questions.map((q) => ({
+    ...q,
+    options: shuffleArray(q.options),
+  }));
+}
 
 function Section({ title, icon: Icon, children }) {
   return (
@@ -449,17 +523,26 @@ export default function Bandwidth() {
   const [bitrateLevel, setBitrateLevel] = useState("medium");
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState([]);
+
+  useEffect(() => {
+    setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
+  }, []);
 
   const score = useMemo(() => {
     return quizQuestions.reduce(
       (total, q, index) => total + (selectedAnswers[index] === q.answer ? 1 : 0),
       0
     );
-  }, [selectedAnswers]);
+  }, [selectedAnswers, quizQuestions]);
 
   const bandwidthValue = levelValue[bandwidthLevel];
   const bitrateValue = levelValue[bitrateLevel];
   const isBuffering = bitrateValue > bandwidthValue;
+
+  const allAnswered =
+    quizQuestions.length > 0 &&
+    quizQuestions.every((_, index) => typeof selectedAnswers[index] === "string");
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -638,6 +721,14 @@ export default function Bandwidth() {
         </Section>
 
         <Section title="Quick Quiz" icon={HelpCircle}>
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm leading-6 text-slate-700">
+              These questions are designed to reward real understanding. Many of
+              the options are deliberately similar, so users need to understand
+              the difference between bits, bit rate, bandwidth, and buffering.
+            </p>
+          </div>
+
           <div className="space-y-5">
             {quizQuestions.map((q, qIndex) => (
               <div
@@ -673,7 +764,8 @@ export default function Bandwidth() {
             <button
               type="button"
               onClick={() => setSubmittedQuiz(true)}
-              className="rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+              disabled={!allAnswered}
+              className="rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Submit Quiz
             </button>
@@ -683,6 +775,7 @@ export default function Bandwidth() {
               onClick={() => {
                 setSelectedAnswers({});
                 setSubmittedQuiz(false);
+                setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
               }}
               className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2.5 text-slate-700 transition hover:bg-slate-50"
             >
@@ -690,6 +783,12 @@ export default function Bandwidth() {
               Reset Quiz
             </button>
           </div>
+
+          {!allAnswered && !submittedQuiz && (
+            <p className="mt-3 text-sm text-slate-500">
+              Answer every question before submitting.
+            </p>
+          )}
 
           {submittedQuiz && (
             <motion.div
@@ -701,11 +800,13 @@ export default function Bandwidth() {
                 Your Score: {score} / {quizQuestions.length}
               </h3>
               <p className="mt-2 leading-7 text-slate-600">
-                {score === 4
+                {score === quizQuestions.length
                   ? "Excellent work — you understand bits, bit rate, bandwidth, and how they work together."
-                  : score >= 2
-                  ? "Good job — review the difference between bit rate and bandwidth, and remember that a high bit rate needs enough bandwidth."
-                  : "Nice try — go back through the module and try the quiz again."}
+                  : score >= 6
+                  ? "Good job — you understand most of the topic, but review the exact difference between bit rate and bandwidth and why buffering happens."
+                  : score >= 4
+                  ? "Decent effort — revisit the interactive activity and pay attention to how bandwidth and bit rate interact."
+                  : "This quiz is meant to reward real understanding. Go back through the module and focus on the relationship between bit rate, bandwidth, and playback."}
               </p>
             </motion.div>
           )}

@@ -153,44 +153,119 @@ const defenseMap = {
   },
 };
 
-const quizQuestions = [
+const baseQuizQuestions = [
   {
-    question: "What does HTTPS mainly protect?",
+    question:
+      "A student is logging into a school website and their username and password are travelling across the internet. Which protection best fits that exact risk?",
     options: [
-      "Data while it travels across the internet",
-      "The size of a file",
-      "The brightness of the screen",
+      "HTTPS, because it helps protect data while it is travelling",
+      "Firewall, because it mainly makes passwords longer",
+      "Phishing awareness, because every login page is a scam",
+      "Strong passwords only, because travel across the internet does not matter",
     ],
-    answer: "Data while it travels across the internet",
+    answer: "HTTPS, because it helps protect data while it is travelling",
   },
   {
-    question: "What is a firewall mainly used for?",
+    question:
+      "A device is downloading something from the internet and the main concern is harmful traffic reaching the device. Which defense is the best match?",
     options: [
-      "Blocking or filtering harmful traffic",
-      "Making passwords shorter",
-      "Creating a new browser",
+      "Firewall, because it can filter or block suspicious traffic before it reaches the device",
+      "HTTPS, because it replaces all other security protections",
+      "Phishing awareness, because downloads are always email scams",
+      "Strong passwords, because they directly scan files during download",
     ],
-    answer: "Blocking or filtering harmful traffic",
+    answer:
+      "Firewall, because it can filter or block suspicious traffic before it reaches the device",
   },
   {
-    question: "What is phishing?",
+    question:
+      "A message tells a student to click a link urgently and enter personal details. What is the most accurate description of the main risk?",
     options: [
-      "A trick used to steal personal information",
-      "A type of encryption",
-      "A faster Wi-Fi signal",
+      "It could be phishing, which tries to trick the user into giving away information",
+      "It is mainly a password length problem",
+      "It is a firewall problem only",
+      "It means HTTPS has stopped working forever",
     ],
-    answer: "A trick used to steal personal information",
+    answer:
+      "It could be phishing, which tries to trick the user into giving away information",
   },
   {
-    question: "Why are strong passwords important?",
+    question:
+      "Why are strong passwords and MFA the best protection in the account-security incident?",
     options: [
-      "They make accounts harder to break into",
-      "They replace firewalls",
-      "They increase internet speed",
+      "Because the main goal is making the account harder for an attacker to access",
+      "Because they block harmful traffic before it reaches the network",
+      "Because they encrypt every website on the internet automatically",
+      "Because they turn phishing emails into safe emails",
     ],
-    answer: "They make accounts harder to break into",
+    answer:
+      "Because the main goal is making the account harder for an attacker to access",
+  },
+  {
+    question:
+      "A student says, “Internet security just means using one tool for everything.” Which response best matches this module?",
+    options: [
+      "Different threats need different protections, so the best defense depends on the situation",
+      "That is correct, because HTTPS solves every online risk by itself",
+      "That is correct, because firewalls and phishing awareness are the same thing",
+      "That is correct, because passwords replace every other type of protection",
+    ],
+    answer:
+      "Different threats need different protections, so the best defense depends on the situation",
+  },
+  {
+    question:
+      "Which statement best explains the difference between HTTPS and a firewall?",
+    options: [
+      "HTTPS mainly protects data while it travels, while a firewall mainly filters harmful traffic",
+      "HTTPS and firewalls are identical, just with different names",
+      "HTTPS protects only passwords, while a firewall protects only emails",
+      "A firewall encrypts data in transit, while HTTPS mainly guesses passwords",
+    ],
+    answer:
+      "HTTPS mainly protects data while it travels, while a firewall mainly filters harmful traffic",
+  },
+  {
+    question:
+      "Which sequence best matches the logic of the interactive activity?",
+    options: [
+      "Read the situation, choose the defense, deploy it, then review the outcome",
+      "Deploy the defense first, then guess the threat afterward",
+      "Read the outcome first, then the situation chooses the defense",
+      "Choose a defense, skip the situation, and the result is always the same",
+    ],
+    answer:
+      "Read the situation, choose the defense, deploy it, then review the outcome",
+  },
+  {
+    question:
+      "A student chooses phishing awareness for a weak-password problem. Why is that not the strongest answer?",
+    options: [
+      "Because phishing awareness helps spot scams, but it does not directly make the account harder to break into",
+      "Because phishing awareness only works when a firewall is turned off",
+      "Because phishing awareness is the same as encryption, so it is too strong",
+      "Because weak passwords can only be fixed by HTTPS",
+    ],
+    answer:
+      "Because phishing awareness helps spot scams, but it does not directly make the account harder to break into",
   },
 ];
+
+function shuffleArray(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function buildShuffledQuiz(questions) {
+  return questions.map((q) => ({
+    ...q,
+    options: shuffleArray(q.options),
+  }));
+}
 
 /* ===================== HELPERS ===================== */
 
@@ -562,6 +637,7 @@ export default function Security() {
 
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState([]);
 
   const incident = incidents[incidentIndex];
   const isCorrect = selectedDefense === incident.recommendedDefense;
@@ -579,12 +655,20 @@ export default function Security() {
     );
   }, [incidentIndex, incident.defenses]);
 
+  useEffect(() => {
+    setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
+  }, []);
+
   const score = useMemo(() => {
     return quizQuestions.reduce(
       (total, q, i) => total + (selectedAnswers[i] === q.answer ? 1 : 0),
       0
     );
-  }, [selectedAnswers]);
+  }, [selectedAnswers, quizQuestions]);
+
+  const allAnswered =
+    quizQuestions.length > 0 &&
+    quizQuestions.every((_, index) => typeof selectedAnswers[index] === "string");
 
   const stepLabels = ["Read Incident", "Choose Defense", "Review Outcome"];
   const activeStep = phase === "analyse" ? 1 : phase === "deploy" ? 1 : 2;
@@ -887,6 +971,12 @@ export default function Security() {
         </Section>
 
         <Section title="Quick Quiz" icon={HelpCircle}>
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm leading-6 text-slate-700">
+              These questions are harder to guess because the incorrect answers sound more believable. Users need to understand which protection matches which threat.
+            </p>
+          </div>
+
           <div className="space-y-5">
             {quizQuestions.map((q, i) => (
               <div
@@ -922,7 +1012,8 @@ export default function Security() {
             <button
               type="button"
               onClick={() => setSubmittedQuiz(true)}
-              className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800"
+              disabled={!allAnswered}
+              className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Submit Quiz
             </button>
@@ -932,12 +1023,19 @@ export default function Security() {
               onClick={() => {
                 setSubmittedQuiz(false);
                 setSelectedAnswers({});
+                setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
               }}
               className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-50"
             >
               Reset Quiz
             </button>
           </div>
+
+          {!allAnswered && !submittedQuiz && (
+            <p className="mt-3 text-sm text-slate-500">
+              Answer every question before submitting.
+            </p>
+          )}
 
           {submittedQuiz && (
             <div className="mt-6 rounded-2xl bg-slate-50 p-5">
@@ -946,10 +1044,12 @@ export default function Security() {
               </h3>
 
               <p className="mt-2 text-slate-600">
-                {score === 4
+                {score === quizQuestions.length
                   ? "Excellent work — you understand how different online threats need different types of protection."
-                  : score >= 2
-                  ? "Good work — review HTTPS, firewalls, phishing, and strong passwords one more time."
+                  : score >= 6
+                  ? "Good work — you understand most of the protections, but review HTTPS, firewalls, phishing, and strong passwords one more time."
+                  : score >= 4
+                  ? "Decent effort — revisit the activity and pay attention to why each situation needs a different defense."
                   : "Review the module and try the quiz again."}
               </p>
             </div>

@@ -18,40 +18,99 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const quizQuestions = [
   {
-    question: "What does HTTP stand for?",
+    question:
+      "A browser is trying to fully load a webpage. Based on this module, which action best explains what HTTP helps the browser do?",
     options: [
-      "HyperText Transfer Protocol",
-      "High Technology Transfer Process",
-      "Home Tool Transfer Program",
+      "Send requests to the server and receive responses for the page and its files",
+      "Translate the website name into an IP address before every click",
+      "Turn the web server into a browser window",
+      "Increase Wi-Fi strength so pages appear faster",
     ],
-    answer: "HyperText Transfer Protocol",
+    answer:
+      "Send requests to the server and receive responses for the page and its files",
   },
   {
-    question: "What does HTTP help a browser do?",
+    question:
+      "In the interactive activity, why might the browser need to request the homepage, image, and video separately instead of only sending one request?",
     options: [
-      "Send a request to a server and receive a response",
-      "Charge the computer battery",
-      "Make Wi-Fi signals stronger",
+      "Because a webpage is often made of multiple parts, so the browser may need separate requests for each part",
+      "Because HTTP can only load text and cannot load media files",
+      "Because the server can only send one word at a time",
+      "Because images and videos are downloaded from DNS, not the server",
     ],
-    answer: "Send a request to a server and receive a response",
+    answer:
+      "Because a webpage is often made of multiple parts, so the browser may need separate requests for each part",
   },
   {
-    question: "What does a browser often need to do to fully load a webpage?",
+    question:
+      "A student says, “HTTP is the webpage itself.” Which correction is the most accurate?",
     options: [
-      "Send separate requests for different parts like images and videos",
-      "Only ask for one thing and everything appears automatically",
-      "Turn the server into Wi-Fi",
+      "HTTP is the communication rule used when the browser asks for content and the server responds",
+      "HTTP is the visual layout of the homepage after it loads",
+      "HTTP is the storage space where websites are kept",
+      "HTTP is the error page shown when a file cannot be found",
     ],
-    answer: "Send separate requests for different parts like images and videos",
+    answer:
+      "HTTP is the communication rule used when the browser asks for content and the server responds",
   },
   {
-    question: "What is HTTPS?",
+    question:
+      "What does a 200 OK response mean in the activity?",
     options: [
-      "The secure version of HTTP",
-      "A type of keyboard cable",
-      "A way to remove web servers",
+      "The server found the requested resource and sent it back to the browser",
+      "The browser no longer needs to send any more requests",
+      "The server changed the request into a secure HTTPS message",
+      "The resource was blocked because the browser used GET",
     ],
-    answer: "The secure version of HTTP",
+    answer:
+      "The server found the requested resource and sent it back to the browser",
+  },
+  {
+    question:
+      "What does a 404 Not Found response most accurately mean in this module?",
+    options: [
+      "The browser asked for something the server could not find",
+      "The browser failed to connect to Wi-Fi",
+      "The server found the file but refused to show it because it was an image",
+      "The request was automatically converted into HTTPS",
+    ],
+    answer:
+      "The browser asked for something the server could not find",
+  },
+  {
+    question:
+      "Which sequence best matches the HTTP process shown in your interactive activity?",
+    options: [
+      "Browser chooses a resource → sends request → server sends response → browser displays the result",
+      "Server chooses a resource → browser sends a response → DNS displays the result",
+      "Browser displays the page → server checks Wi-Fi → browser sends request",
+      "Browser sends request → browser sends response → server displays the file",
+    ],
+    answer:
+      "Browser chooses a resource → sends request → server sends response → browser displays the result",
+  },
+  {
+    question:
+      "Why does the activity include both successful resources and a missing page?",
+    options: [
+      "To show that servers can return different HTTP responses depending on whether the requested resource exists",
+      "To show that HTTP only works for errors and not for real webpages",
+      "To prove that browsers should never request images or videos",
+      "To demonstrate that 404 means the browser has fully loaded the webpage",
+    ],
+    answer:
+      "To show that servers can return different HTTP responses depending on whether the requested resource exists",
+  },
+  {
+    question:
+      "What is the best explanation of HTTPS compared with HTTP?",
+    options: [
+      "HTTPS is the more secure version of HTTP",
+      "HTTPS is a different type of server used only for videos",
+      "HTTPS removes the need for browser requests",
+      "HTTPS is what turns a 404 error into 200 OK",
+    ],
+    answer: "HTTPS is the more secure version of HTTP",
   },
 ];
 
@@ -548,6 +607,10 @@ export default function HTTP() {
       0
     );
   }, [selectedAnswers]);
+
+  const allAnswered = quizQuestions.every(
+    (_, index) => typeof selectedAnswers[index] === "string"
+  );
 
   const stepLabels = [
     "Choose Resource",
@@ -1069,6 +1132,14 @@ export default function HTTP() {
         </Section>
 
         <Section title="Quick Quiz" icon={HelpCircle}>
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm leading-6 text-slate-700">
+              These questions are harder to guess because the wrong answers sound
+              plausible. Users need to understand requests, responses, page parts,
+              status codes, and HTTPS.
+            </p>
+          </div>
+
           <div className="space-y-5">
             {quizQuestions.map((q, i) => (
               <div
@@ -1104,7 +1175,8 @@ export default function HTTP() {
             <button
               type="button"
               onClick={() => setSubmittedQuiz(true)}
-              className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800"
+              disabled={!allAnswered}
+              className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Submit Quiz
             </button>
@@ -1121,6 +1193,12 @@ export default function HTTP() {
             </button>
           </div>
 
+          {!allAnswered && !submittedQuiz && (
+            <p className="mt-3 text-sm text-slate-500">
+              Answer every question before submitting.
+            </p>
+          )}
+
           {submittedQuiz && (
             <div className="mt-6 rounded-2xl bg-slate-50 p-5">
               <h3 className="font-semibold text-slate-900">
@@ -1128,10 +1206,12 @@ export default function HTTP() {
               </h3>
 
               <p className="mt-2 text-slate-600">
-                {score === 4
+                {score === quizQuestions.length
                   ? "Excellent work — you understand how HTTP helps browsers and servers communicate."
-                  : score >= 2
-                  ? "Good job — review request, response, status codes, separate page parts, and HTTPS once more."
+                  : score >= 5
+                  ? "Good job — you understand most of HTTP, but review request, response, page parts, status codes, and HTTPS once more."
+                  : score >= 3
+                  ? "Decent effort — revisit the activity and pay attention to why browsers may need separate requests for different files."
                   : "Review the module and try the quiz again."}
               </p>
             </div>

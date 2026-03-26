@@ -14,42 +14,100 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 
-const quizQuestions = [
+const baseQuizQuestions = [
   {
-    question: "Why does TCP use a 3-way handshake?",
+    question:
+      "A client wants to send data using TCP. According to the simulation, which event must happen before normal packet transfer begins?",
     options: [
-      "To establish a reliable connection between devices",
-      "To turn Wi-Fi on",
-      "To delete packets",
+      "The 3-way handshake must confirm both devices are ready",
+      "The server must first send packet numbers to the client",
+      "The router must rebuild the packets in the correct order",
+      "The internet must resend every packet once as a safety check",
     ],
-    answer: "To establish a reliable connection between devices",
+    answer: "The 3-way handshake must confirm both devices are ready",
   },
   {
-    question: "What does TCP do if a packet goes missing?",
+    question:
+      "Why is the 3-way handshake shown as SYN, SYN-ACK, and ACK rather than a single message?",
     options: [
-      "Ask for the missing packet again",
-      "Ignore it",
-      "Restart the internet",
+      "It confirms both sides can send and receive before the connection is treated as established",
+      "It encrypts every packet before the data begins travelling",
+      "It makes the internet choose the fastest website automatically",
+      "It breaks the whole file into four numbered pieces",
     ],
-    answer: "Ask for the missing packet again",
+    answer:
+      "It confirms both sides can send and receive before the connection is treated as established",
   },
   {
-    question: "Why are packets numbered in TCP?",
+    question:
+      "In the TCP module, what is the best reason packets are numbered?",
     options: [
-      "To rebuild the data in the correct order",
-      "To decorate them",
-      "To slow down the network",
+      "So the receiver can rebuild the message in the correct sequence",
+      "So the server can decide which packets should be deleted",
+      "So the client can turn the connection back into Wi-Fi",
+      "So missing packets can be ignored without affecting the data",
     ],
-    answer: "To rebuild the data in the correct order",
+    answer: "So the receiver can rebuild the message in the correct sequence",
   },
   {
-    question: "Which idea best describes TCP?",
+    question:
+      "During the return trip in the simulation, packet 3 slips off the line. What does TCP do next?",
     options: [
-      "A rule that helps internet data arrive reliably",
-      "A screen brightness setting",
-      "A type of keyboard cable",
+      "It requests only the missing packet again because the others already arrived",
+      "It deletes packets 1, 2, and 4 and starts the internet again",
+      "It sends a brand-new handshake before every resent packet",
+      "It ignores packet 3 and rebuilds the message from the remaining packets",
     ],
-    answer: "A rule that helps internet data arrive reliably",
+    answer:
+      "It requests only the missing packet again because the others already arrived",
+  },
+  {
+    question:
+      "Which statement best matches what the simulation is teaching about TCP reliability?",
+    options: [
+      "TCP checks the connection, tracks order, and handles missing packets so data arrives reliably",
+      "TCP mainly increases screen brightness so packets are easier to identify",
+      "TCP stores websites permanently on the client before they are requested",
+      "TCP replaces servers by allowing devices to communicate without packet transfer",
+    ],
+    answer:
+      "TCP checks the connection, tracks order, and handles missing packets so data arrives reliably",
+  },
+  {
+    question:
+      "A student says, “If one packet goes missing, TCP has to send the entire message again.” Based on the simulation, what is the best correction?",
+    options: [
+      "TCP can resend only the missing packet if the others were received correctly",
+      "TCP cannot detect missing packets, so the message is usually left incomplete",
+      "TCP sends the handshake again but never resends data packets",
+      "TCP changes the packet numbers so the missing one is no longer needed",
+    ],
+    answer:
+      "TCP can resend only the missing packet if the others were received correctly",
+  },
+  {
+    question:
+      "Which sequence best reflects the order shown in the learning resource?",
+    options: [
+      "SYN → SYN-ACK → ACK → connection established → send packets → find missing packet → resend missing packet → rebuild in order",
+      "ACK → SYN → connection established → SYN-ACK → rebuild → resend → send packets",
+      "SYN → ACK → SYN-ACK → send packets → rebuild → connection established",
+      "Connection established → SYN → SYN-ACK → ACK → resend all packets → rebuild",
+    ],
+    answer:
+      "SYN → SYN-ACK → ACK → connection established → send packets → find missing packet → resend missing packet → rebuild in order",
+  },
+  {
+    question:
+      "At the rebuild stage, why does the simulation require the packets to be clicked in order 1, 2, 3, 4?",
+    options: [
+      "To show that TCP uses sequence information to reconstruct the original message correctly",
+      "To prove packets always arrive alphabetically before numerically",
+      "To show the server no longer matters once a connection is open",
+      "To demonstrate that packet order only affects the speed of Wi-Fi, not the data itself",
+    ],
+    answer:
+      "To show that TCP uses sequence information to reconstruct the original message correctly",
   },
 ];
 
@@ -78,6 +136,13 @@ function shuffleArray(array) {
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
+}
+
+function buildShuffledQuiz(questions) {
+  return questions.map((q) => ({
+    ...q,
+    options: shuffleArray(q.options),
+  }));
 }
 
 function Section({ title, icon: Icon, children }) {
@@ -429,6 +494,7 @@ function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
 export default function TCP() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState([]);
 
   const [phase, setPhase] = useState("syn");
   const [feedback, setFeedback] = useState(
@@ -441,6 +507,7 @@ export default function TCP() {
 
   useEffect(() => {
     setScrambledPackets(shuffleArray([1, 2, 3, 4]));
+    setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
   }, []);
 
   const score = useMemo(() => {
@@ -448,7 +515,11 @@ export default function TCP() {
       (total, q, i) => total + (selectedAnswers[i] === q.answer ? 1 : 0),
       0
     );
-  }, [selectedAnswers]);
+  }, [selectedAnswers, quizQuestions]);
+
+  const allAnswered =
+    quizQuestions.length > 0 &&
+    quizQuestions.every((_, index) => typeof selectedAnswers[index] === "string");
 
   const activeStep = (() => {
     switch (phase) {
@@ -533,6 +604,12 @@ export default function TCP() {
     setSlippedFound(false);
     setPacketOrder([]);
     setScrambledPackets(shuffleArray([1, 2, 3, 4]));
+  };
+
+  const resetQuiz = () => {
+    setSubmittedQuiz(false);
+    setSelectedAnswers({});
+    setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
   };
 
   const stripTone =
@@ -932,6 +1009,14 @@ export default function TCP() {
         </Section>
 
         <Section title="Quick Quiz" icon={HelpCircle}>
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm leading-6 text-slate-700">
+              These questions are designed to check whether the user actually
+              understood the TCP process. The options are intentionally close, so
+              they need to know the handshake, retransmission, and rebuild stages.
+            </p>
+          </div>
+
           <div className="space-y-5">
             {quizQuestions.map((q, i) => (
               <div
@@ -967,22 +1052,26 @@ export default function TCP() {
             <button
               type="button"
               onClick={() => setSubmittedQuiz(true)}
-              className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800"
+              disabled={!allAnswered}
+              className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Submit Quiz
             </button>
 
             <button
               type="button"
-              onClick={() => {
-                setSubmittedQuiz(false);
-                setSelectedAnswers({});
-              }}
+              onClick={resetQuiz}
               className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-50"
             >
               Reset Quiz
             </button>
           </div>
+
+          {!allAnswered && !submittedQuiz && (
+            <p className="mt-3 text-sm text-slate-500">
+              Answer every question before submitting.
+            </p>
+          )}
 
           {submittedQuiz && (
             <div className="mt-6 rounded-2xl bg-slate-50 p-5">
@@ -991,11 +1080,13 @@ export default function TCP() {
               </h3>
 
               <p className="mt-2 text-slate-600">
-                {score === 4
-                  ? "Excellent work — you understand how TCP helps internet communication stay reliable."
-                  : score >= 2
-                  ? "Good job — review the handshake, missing packet, and rebuild steps once more."
-                  : "Review the simulation and try again."}
+                {score === quizQuestions.length
+                  ? "Excellent work — you clearly understand how TCP establishes reliability, handles missing packets, and rebuilds data."
+                  : score >= 6
+                  ? "Good job — you understand most of TCP, but review the handshake sequence and exactly what happens when a packet goes missing."
+                  : score >= 4
+                  ? "Decent effort — revisit the interactive simulation, especially the difference between connection setup, retransmission, and rebuilding."
+                  : "This quiz is meant to reward real understanding. Go back through the full module and pay close attention to the order of steps."}
               </p>
             </div>
           )}

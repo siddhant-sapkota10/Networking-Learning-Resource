@@ -86,42 +86,104 @@ const packetFacts = [
   "Your device puts the pieces back together.",
 ];
 
+/*
+  Harder quiz design:
+  - distractors are all plausible
+  - wording is tighter and less giveaway-based
+  - focuses on sequencing, role distinction, and application
+*/
 const quizQuestions = [
   {
-    question: "What happens first when you open a website or video?",
+    question:
+      "A student taps a YouTube video and it begins loading. Which event happens first in the journey shown in this learning resource?",
     options: [
-      "Your device sends a request",
-      "The router stores the whole website",
-      "The server appears on your screen",
+      "The device creates a request for the content",
+      "The router breaks the video into packets",
+      "The server appears on the user's screen",
+      "The internet chooses which app to open",
     ],
-    answer: "Your device sends a request",
+    answer: "The device creates a request for the content",
   },
   {
-    question: "What is the router’s job in this journey?",
+    question:
+      "In this model, what is the router mainly responsible for?",
     options: [
-      "Help send the request out to the internet",
-      "Store every website forever",
-      "Play the video on your screen",
+      "Helping send the request out of the local network toward the internet",
+      "Storing the whole website until the user opens it",
+      "Rebuilding returning packets into the final video",
+      "Choosing which files the web server should keep",
     ],
-    answer: "Help send the request out to the internet",
+    answer:
+      "Helping send the request out of the local network toward the internet",
   },
   {
-    question: "Why is data often sent back in packets?",
+    question:
+      "Which option best explains the role of the internet in the sequence shown?",
     options: [
-      "Because smaller pieces are easier to send and rebuild",
-      "Because websites are too colourful",
-      "Because the router wants extra copies",
+      "It carries the request across many connected networks",
+      "It permanently stores the website content for the server",
+      "It replaces the router once the request leaves home",
+      "It converts the request into a video before sending it back",
     ],
-    answer: "Because smaller pieces are easier to send and rebuild",
+    answer: "It carries the request across many connected networks",
   },
   {
-    question: "Which order is correct?",
+    question:
+      "A web server in this lesson is best described as the part that:",
     options: [
-      "Device → Router → Internet → Server → Packets back",
-      "Server → Router → Device → Internet → Packets back",
-      "Router → Device → Server → Internet → Packets back",
+      "Receives the request and sends back the needed data",
+      "Builds the request before it leaves the device",
+      "Connects the user to Wi-Fi and checks the password",
+      "Displays the finished video directly onto the screen",
     ],
-    answer: "Device → Router → Internet → Server → Packets back",
+    answer: "Receives the request and sends back the needed data",
+  },
+  {
+    question:
+      "Why does the lesson say data often returns in packets instead of one giant piece?",
+    options: [
+      "Smaller pieces are easier to send, check, and rebuild",
+      "Routers can only understand information when it is colour-coded",
+      "Servers are unable to send full files over the internet",
+      "The internet deletes large files unless they are split first",
+    ],
+    answer: "Smaller pieces are easier to send, check, and rebuild",
+  },
+  {
+    question:
+      "Which sequence matches the full journey most accurately?",
+    options: [
+      "Device creates request → Router sends it outward → Request travels across the internet → Server finds data → Packets return to device",
+      "Router creates request → Device sends it to server → Internet stores it → Packets return to router → Device loads content",
+      "Server creates request → Internet sends it to the router → Device receives packets → Router loads content",
+      "Device creates request → Server receives it immediately → Router checks packets → Internet loads the video",
+    ],
+    answer:
+      "Device creates request → Router sends it outward → Request travels across the internet → Server finds data → Packets return to device",
+  },
+  {
+    question:
+      "A user says, “My device gets the website straight from the router.” Based on the resource, what is the best correction?",
+    options: [
+      "The router helps forward the request, but the actual website data is sent back from the server",
+      "The router stores every website and sends the correct one when asked",
+      "The router turns into a server once the request leaves the house",
+      "The router is the same thing as the internet, so both answers are correct",
+    ],
+    answer:
+      "The router helps forward the request, but the actual website data is sent back from the server",
+  },
+  {
+    question:
+      "At the final stage of the animation, what allows the video or webpage to actually appear on screen?",
+    options: [
+      "The returning packets reach the device and are put back together",
+      "The internet finishes deciding which server should own the file",
+      "The router converts the request into a playable file",
+      "The server joins the local Wi-Fi and loads itself on the monitor",
+    ],
+    answer:
+      "The returning packets reach the device and are put back together",
   },
 ];
 
@@ -263,6 +325,10 @@ export default function DataTravel() {
       0
     );
   }, [selectedAnswers]);
+
+  const allAnswered = quizQuestions.every(
+    (_, index) => typeof selectedAnswers[index] === "string"
+  );
 
   const progressPercent = (currentStop / (stops.length - 1)) * 100;
 
@@ -683,6 +749,14 @@ export default function DataTravel() {
         </Section>
 
         <Section title="Quick Quiz" icon={HelpCircle}>
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm leading-6 text-slate-700">
+              These questions are designed to check whether you actually understood
+              the journey of data through the internet. Many answers look similar,
+              so think carefully before choosing.
+            </p>
+          </div>
+
           <div className="space-y-5">
             {quizQuestions.map((q, qIndex) => (
               <div
@@ -718,7 +792,8 @@ export default function DataTravel() {
             <button
               type="button"
               onClick={() => setSubmittedQuiz(true)}
-              className="rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+              disabled={!allAnswered}
+              className="rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Submit Quiz
             </button>
@@ -735,6 +810,12 @@ export default function DataTravel() {
             </button>
           </div>
 
+          {!allAnswered && !submittedQuiz && (
+            <p className="mt-3 text-sm text-slate-500">
+              Answer every question before submitting.
+            </p>
+          )}
+
           {submittedQuiz && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -745,11 +826,13 @@ export default function DataTravel() {
                 Your Score: {score} / {quizQuestions.length}
               </h3>
               <p className="mt-2 leading-7 text-slate-600">
-                {score === 4
-                  ? "Excellent work — you understand the basic journey of data through the internet."
-                  : score >= 2
-                  ? "Good job — review the journey once more to lock in the order."
-                  : "Nice try — go back through the interactive journey and try again."}
+                {score === quizQuestions.length
+                  ? "Excellent work — you clearly understood the full data journey and the role of each part."
+                  : score >= 6
+                  ? "Good effort — you understand most of the journey, but review the exact role of the router, server, and packets."
+                  : score >= 4
+                  ? "Decent start — some of the options were very close, so go back through the interactive activity and check the sequence again."
+                  : "This quiz is meant to reward real understanding. Revisit the learning activity carefully, especially the order of steps and why packets matter."}
               </p>
             </motion.div>
           )}

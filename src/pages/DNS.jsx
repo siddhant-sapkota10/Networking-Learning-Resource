@@ -13,42 +13,99 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const quizQuestions = [
+const baseQuizQuestions = [
   {
-    question: "What does DNS stand for?",
+    question:
+      "A student types youtube.com into a browser. Based on this module, what is the main job DNS performs before the browser can reach the correct website?",
     options: [
-      "Domain Name System",
-      "Data Network Service",
-      "Digital Number Server",
+      "It matches the website name to the correct IP address",
+      "It downloads the full website onto the device before opening it",
+      "It increases the connection speed so the page can load faster",
+      "It replaces the web server with a simpler browser version",
     ],
-    answer: "Domain Name System",
+    answer: "It matches the website name to the correct IP address",
   },
   {
-    question: "What does DNS do?",
+    question:
+      "Why does the internet use DNS instead of expecting people to type IP addresses for every website?",
     options: [
-      "It matches a website name to an IP address",
-      "It increases Wi-Fi speed",
-      "It stores videos on your device",
+      "Website names are easier for humans to remember than long numbers",
+      "IP addresses only work on school networks, not the public internet",
+      "DNS makes every website use the same IP address format",
+      "Browsers cannot display a website unless DNS stores it first",
     ],
-    answer: "It matches a website name to an IP address",
+    answer: "Website names are easier for humans to remember than long numbers",
   },
   {
-    question: "Why is DNS useful?",
+    question:
+      "A student says, “DNS stores the whole website and sends it to my browser.” Which correction is the most accurate?",
     options: [
-      "People can remember names more easily than numbers",
-      "It makes the screen brighter",
-      "It removes all internet cables",
+      "DNS helps find the correct IP address, but the website content comes from the web server",
+      "DNS stores the whole website, but only for videos and search engines",
+      "DNS and the web server are the same thing, so both explanations are correct",
+      "DNS sends the website first, then later asks the server for permission",
     ],
-    answer: "People can remember names more easily than numbers",
+    answer:
+      "DNS helps find the correct IP address, but the website content comes from the web server",
   },
   {
-    question: "Without DNS, what would users need to do?",
+    question:
+      "In the learning activity, what happens immediately after DNS finds the IP address linked to a website name?",
     options: [
-      "Remember IP addresses for websites",
-      "Build their own router",
-      "Restart the internet each time",
+      "The browser can use that IP address to find the correct server",
+      "The IP address is converted back into a new website name",
+      "The DNS system turns off because its job is finished forever",
+      "The browser no longer needs a server to load the site",
     ],
-    answer: "Remember IP addresses for websites",
+    answer: "The browser can use that IP address to find the correct server",
+  },
+  {
+    question:
+      "Which statement best shows the difference between a domain name and an IP address?",
+    options: [
+      "A domain name is the human-friendly website name, while an IP address is the numeric address computers use",
+      "A domain name is the number a router uses, while an IP address is the colour of the website",
+      "A domain name is a saved file, while an IP address is the speed of the connection",
+      "A domain name and an IP address are identical labels for the same browser tab",
+    ],
+    answer:
+      "A domain name is the human-friendly website name, while an IP address is the numeric address computers use",
+  },
+  {
+    question:
+      "A user enters sec.act.edu.au. Which explanation best matches what DNS does in this situation?",
+    options: [
+      "DNS looks up the numeric address linked to that name so the browser can reach the correct school server",
+      "DNS checks whether the website is popular enough to open in the browser",
+      "DNS turns the school server into a search engine before the page loads",
+      "DNS removes the need for the browser to contact any server",
+    ],
+    answer:
+      "DNS looks up the numeric address linked to that name so the browser can reach the correct school server",
+  },
+  {
+    question:
+      "Which option best explains why DNS is often compared to an address book or contacts list?",
+    options: [
+      "Because it links easy-to-remember names to the number-based addresses needed behind the scenes",
+      "Because it stores every website permanently like a list of downloaded apps",
+      "Because it changes internet speeds depending on which name is searched",
+      "Because it creates new domain names every time a user opens a page",
+    ],
+    answer:
+      "Because it links easy-to-remember names to the number-based addresses needed behind the scenes",
+  },
+  {
+    question:
+      "Without DNS, what would be the most likely extra task for a normal user trying to visit websites?",
+    options: [
+      "They would need to remember and type the IP addresses for websites instead of names",
+      "They would need to build a separate server for every website they visit",
+      "They would need to manually increase their Wi-Fi speed before browsing",
+      "They would need to reinstall the browser each time they opened a site",
+    ],
+    answer:
+      "They would need to remember and type the IP addresses for websites instead of names",
   },
 ];
 
@@ -105,6 +162,13 @@ function shuffleArray(array) {
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
+}
+
+function buildShuffledQuiz(questions) {
+  return questions.map((q) => ({
+    ...q,
+    options: shuffleArray(q.options),
+  }));
 }
 
 function Section({ title, icon: Icon, children }) {
@@ -297,6 +361,7 @@ function MeaningOption({
 export default function DNS() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState([]);
 
   const [selectedSiteIndex, setSelectedSiteIndex] = useState(0);
   const [lookupPhase, setLookupPhase] = useState("choose");
@@ -311,6 +376,10 @@ export default function DNS() {
   const [meaningCorrect, setMeaningCorrect] = useState(false);
 
   const currentSite = lookupSets[selectedSiteIndex];
+
+  useEffect(() => {
+    setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
+  }, []);
 
   useEffect(() => {
     setMeaningChoices(
@@ -333,7 +402,11 @@ export default function DNS() {
       (total, q, i) => total + (selectedAnswers[i] === q.answer ? 1 : 0),
       0
     );
-  }, [selectedAnswers]);
+  }, [selectedAnswers, quizQuestions]);
+
+  const allAnswered =
+    quizQuestions.length > 0 &&
+    quizQuestions.every((_, index) => typeof selectedAnswers[index] === "string");
 
   const stepLabels = ["Choose Name", "Lookup", "Reveal IP", "Connect"];
   const activeStep =
@@ -442,6 +515,12 @@ export default function DNS() {
       "Choose a website name. DNS will help translate it into the correct IP address."
     );
     setRoundsCompleted(0);
+  };
+
+  const resetQuiz = () => {
+    setSubmittedQuiz(false);
+    setSelectedAnswers({});
+    setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
   };
 
   return (
@@ -859,6 +938,15 @@ export default function DNS() {
         </Section>
 
         <Section title="Quick Quiz" icon={HelpCircle}>
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm leading-6 text-slate-700">
+              These questions are designed to reward actual understanding of DNS.
+              The answers are intentionally similar, so users need to understand
+              what DNS does, what it does not do, and how it helps the browser reach
+              the correct server.
+            </p>
+          </div>
+
           <div className="space-y-5">
             {quizQuestions.map((q, i) => (
               <div
@@ -894,22 +982,26 @@ export default function DNS() {
             <button
               type="button"
               onClick={() => setSubmittedQuiz(true)}
-              className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800"
+              disabled={!allAnswered}
+              className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Submit Quiz
             </button>
 
             <button
               type="button"
-              onClick={() => {
-                setSubmittedQuiz(false);
-                setSelectedAnswers({});
-              }}
+              onClick={resetQuiz}
               className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-50"
             >
               Reset Quiz
             </button>
           </div>
+
+          {!allAnswered && !submittedQuiz && (
+            <p className="mt-3 text-sm text-slate-500">
+              Answer every question before submitting.
+            </p>
+          )}
 
           {submittedQuiz && (
             <div className="mt-6 rounded-2xl bg-slate-50 p-5">
@@ -918,11 +1010,13 @@ export default function DNS() {
               </h3>
 
               <p className="mt-2 text-slate-600">
-                {score === 4
-                  ? "Excellent work — you understand how DNS helps users reach the correct website."
-                  : score >= 2
-                  ? "Good job — review how DNS translates names into IP addresses."
-                  : "Review the module and try the quiz again."}
+                {score === quizQuestions.length
+                  ? "Excellent work — you clearly understand how DNS translates names into IP addresses and helps the browser find the correct server."
+                  : score >= 6
+                  ? "Good job — you understand most of DNS, but review the exact difference between DNS, IP addresses, and the web server."
+                  : score >= 4
+                  ? "Decent effort — revisit the module and pay close attention to what DNS actually does versus what the server does."
+                  : "This quiz is meant to reward real understanding. Go back through the module and focus on how names, IP addresses, and servers connect together."}
               </p>
             </div>
           )}
