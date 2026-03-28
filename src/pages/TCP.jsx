@@ -1631,14 +1631,13 @@ export default function TCP() {
                         Back to Activity
                       </button>
 
-                      <button
+                     <a href="#module2"><button
                         type="button"
-                        onClick={goToNextModule}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
                       >
                         Go to Next Module
                         <ChevronRight className="h-4 w-4" />
-                      </button>
+                      </button></a> 
                     </div>
                   </motion.div>
                 )}

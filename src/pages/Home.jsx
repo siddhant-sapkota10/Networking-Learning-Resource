@@ -61,11 +61,13 @@ export default function Home() {
   const [isIntroAnimating, setIsIntroAnimating] = useState(false)
   const [introReady, setIntroReady] = useState(false)
 
+  const roadmapSectionRef = useRef(null)
   const roadmapInnerRef = useRef(null)
   const rowRefs = useRef([])
   const cardRefs = useRef([])
   const hasAnimatedOnLoadRef = useRef(false)
   const introTimeoutsRef = useRef([])
+  const hasScrolledForHashRef = useRef(false)
 
   useEffect(() => {
     const load = () => {
@@ -122,6 +124,46 @@ export default function Home() {
   const shouldRunIntroAnimation = useMemo(() => {
     return completedCount === 0 && activeCheckpointIndex === 1 && totalModules > 0
   }, [completedCount, activeCheckpointIndex, totalModules])
+
+  useEffect(() => {
+    if (modules.length === 0) return
+    if (!roadmapSectionRef.current) return
+    if (hasScrolledForHashRef.current) return
+
+    const hash = window.location.hash
+    if (!hash) return
+
+    const scrollToTarget = () => {
+      if (hash === "#roadmap") {
+        roadmapSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        })
+        return
+      }
+
+      const target = document.querySelector(hash)
+      if (target) {
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        })
+      } else {
+        roadmapSectionRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        })
+      }
+    }
+
+    const delay = shouldRunIntroAnimation ? 700 : 1050
+    const timeoutId = window.setTimeout(() => {
+      scrollToTarget()
+      hasScrolledForHashRef.current = true
+    }, delay)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [modules.length, shouldRunIntroAnimation])
 
   useLayoutEffect(() => {
     let frameId = null
@@ -185,16 +227,19 @@ export default function Home() {
 
           const moveTimeout = setTimeout(() => {
             setPelicanPoint(allPoints[1])
-          }, 180)
+          }, 260)
 
-          const finishTimeout = setTimeout(() => {
-            setIsIntroAnimating(false)
-            setIntroReady(true)
-            hasAnimatedOnLoadRef.current = true
-            localStorage.setItem(PELICAN_STORAGE_KEY, "1")
-          }, 1650)
+const unlockTimeout = setTimeout(() => {
+  setIntroReady(true)
+}, 900)
 
-          introTimeoutsRef.current.push(moveTimeout, finishTimeout)
+const finishTimeout = setTimeout(() => {
+  setIsIntroAnimating(false)
+  hasAnimatedOnLoadRef.current = true
+  localStorage.setItem(PELICAN_STORAGE_KEY, "1")
+}, 3200)
+
+introTimeoutsRef.current.push(moveTimeout, unlockTimeout, finishTimeout)
           return
         }
 
@@ -211,17 +256,32 @@ export default function Home() {
 
         const startPointForPelican = allPoints[startIndex] || currentPoint
 
+        setIntroReady(false)
+        setIsIntroAnimating(startIndex !== activeCheckpointIndex)
         setPelicanPoint(startPointForPelican)
 
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            setPelicanPoint(currentPoint)
-            setIntroReady(true)
-            hasAnimatedOnLoadRef.current = true
-            localStorage.setItem(
-              PELICAN_STORAGE_KEY,
-              String(activeCheckpointIndex)
-            )
+            const moveTimeout = setTimeout(() => {
+              setPelicanPoint(currentPoint)
+            }, 260)
+
+const unlockTimeout = setTimeout(() => {
+  setIntroReady(true)
+}, startIndex !== activeCheckpointIndex ? 900 : 250)
+
+const finishTimeout = setTimeout(() => {
+  setIsIntroAnimating(false)
+  hasAnimatedOnLoadRef.current = true
+  localStorage.setItem(
+    PELICAN_STORAGE_KEY,
+    String(activeCheckpointIndex)
+  )
+}, startIndex !== activeCheckpointIndex ? 3200 : 400)
+
+introTimeoutsRef.current.push(moveTimeout, unlockTimeout, finishTimeout)
+
+            introTimeoutsRef.current.push(moveTimeout, finishTimeout)
           })
         })
       } else {
@@ -303,6 +363,8 @@ export default function Home() {
                   ? "You finished the full learning resource."
                   : shouldRunIntroAnimation && !introReady
                   ? "The roadmap is opening..."
+                  : isIntroAnimating
+                  ? "Your pelican is travelling to the next checkpoint."
                   : "You are currently at this checkpoint on the roadmap."}
               </p>
             </div>
@@ -343,6 +405,7 @@ export default function Home() {
                 resetAllProgress()
                 localStorage.removeItem(PELICAN_STORAGE_KEY)
                 hasAnimatedOnLoadRef.current = false
+                hasScrolledForHashRef.current = false
                 setIsIntroAnimating(false)
                 setIntroReady(false)
                 setModules(getModuleState(modulesData))
@@ -358,7 +421,8 @@ export default function Home() {
 
       <section
         id="roadmap"
-        className="overflow-hidden bg-gradient-to-b from-[#0a4aa3] via-[#0d5bd3] to-[#0f6df0] pt-16 pb-28 text-white"
+        ref={roadmapSectionRef}
+        className="roadmap-anchor-target overflow-hidden bg-gradient-to-b from-[#0a4aa3] via-[#0d5bd3] to-[#0f6df0] pt-16 pb-28 text-white"
       >
         <div className="mx-auto max-w-7xl px-6">
           <h2 className="mb-12 text-3xl font-bold text-white">
@@ -422,20 +486,7 @@ export default function Home() {
                     top: `${point.y}px`,
                   }}
                 >
-                  {isCurrent && !isStart && !isFinish && (
-                    <>
-                      <div className="roadmap-current-pulse" />
-                      <div
-                        className={`roadmap-current-label ${
-                          point.side === "left"
-                            ? "roadmap-current-label-right"
-                            : "roadmap-current-label-left"
-                        }`}
-                      >
-                        YOU ARE HERE
-                      </div>
-                    </>
-                  )}
+
                 </div>
               )
             })}
@@ -489,10 +540,11 @@ export default function Home() {
                 return (
                   <div
                     key={module.id}
+                    id={`module-${index + 1}`}
                     ref={(el) => {
                       rowRefs.current[index] = el
                     }}
-                    className={`relative flex min-h-[250px] items-center ${
+                    className={`roadmap-anchor-target relative flex min-h-[250px] items-center ${
                       isLeft ? "justify-start" : "justify-end"
                     }`}
                   >

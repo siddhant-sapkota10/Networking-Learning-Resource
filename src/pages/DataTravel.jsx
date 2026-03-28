@@ -27,6 +27,8 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { markActivityComplete, markQuizPassed } from "../utils/progress";
 import m1Diagram from "../assets/m1diagram.png";
+import { useNavigate } from "react-router-dom";
+
 
 const ST_EDS = {
   navy: "#073674",
@@ -443,6 +445,7 @@ function ModuleProgress({ currentPage }) {
 }
 
 export default function DataTravel() {
+  const navigate = useNavigate();
   const [currentStop, setCurrentStop] = useState(0);
   const [packetsArrived, setPacketsArrived] = useState(false);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -542,7 +545,7 @@ export default function DataTravel() {
   };
 
   const goToNextModule = () => {
-    alert("Great job! You finished this module. You can now move to the next one.");
+   navigate("/");
   };
 
   return (
@@ -1337,15 +1340,14 @@ export default function DataTravel() {
                         <ChevronLeft className="h-4 w-4" />
                         Back to Activity
                       </button>
-
-                      <button
+<a href="/#module1">   <button
                         type="button"
-                        onClick={goToNextModule}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
                       >
                         Go to Next Module
                         <ChevronRight className="h-4 w-4" />
-                      </button>
+                      </button></a>
+                   
                     </div>
                   </motion.div>
                 )}
