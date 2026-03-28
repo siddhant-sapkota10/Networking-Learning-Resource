@@ -1,20 +1,85 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   FileImage,
   FileVideo,
   Globe,
   HelpCircle,
+  Info,
+  Lightbulb,
   Lock,
+  MousePointerClick,
   RefreshCcw,
   Search,
   Server,
   ShieldCheck,
-  Sparkles,
+  Target,
+  X,
+  XCircle,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { markActivityComplete, markQuizPassed } from "../utils/progress"
+const overviewSteps = [
+  {
+    step: 1,
+    title: "The browser wants something",
+    text:
+      "When you open a webpage, image, or video, the browser needs to ask the server for that resource.",
+  },
+  {
+    step: 2,
+    title: "HTTP sends the request",
+    text:
+      "HTTP is the communication rule that helps the browser send a request to the server.",
+  },
+  {
+    step: 3,
+    title: "The server sends a response",
+    text:
+      "The server replies with a response, such as the file you asked for or an error message.",
+  },
+  {
+    step: 4,
+    title: "Webpages have many parts",
+    text:
+      "A full webpage often includes text, images, and videos, so the browser may need separate requests for all of the parts.",
+  },
+  {
+    step: 5,
+    title: "The browser displays the result",
+    text:
+      "If the response is successful, the browser shows the content. If it fails, the browser may show an error like 404 Not Found.",
+  },
+];
+
+const keyIdeas = [
+  "HTTP stands for HyperText Transfer Protocol.",
+  "A browser sends a request to a web server.",
+  "The server sends back a response.",
+  "A webpage is often made of many parts, so the browser may need to send a request for all of the parts.",
+  "HTTPS is the more secure version of HTTP.",
+];
+
+const misconceptionCards = [
+  {
+    wrong: "HTTP is the webpage itself.",
+    right:
+      "HTTP is the communication rule the browser and server use when asking for and sending content.",
+  },
+  {
+    wrong: "One request always loads the whole webpage.",
+    right:
+      "A browser may need separate requests for the homepage, images, videos, and other parts.",
+  },
+  {
+    wrong: "HTTP and HTTPS are completely unrelated.",
+    right: "HTTPS is the more secure version of HTTP.",
+  },
+];
 
 const quizQuestions = [
   {
@@ -54,8 +119,7 @@ const quizQuestions = [
       "HTTP is the communication rule used when the browser asks for content and the server responds",
   },
   {
-    question:
-      "What does a 200 OK response mean in the activity?",
+    question: "What does a 200 OK response mean in the activity?",
     options: [
       "The server found the requested resource and sent it back to the browser",
       "The browser no longer needs to send any more requests",
@@ -74,8 +138,7 @@ const quizQuestions = [
       "The server found the file but refused to show it because it was an image",
       "The request was automatically converted into HTTPS",
     ],
-    answer:
-      "The browser asked for something the server could not find",
+    answer: "The browser asked for something the server could not find",
   },
   {
     question:
@@ -114,14 +177,6 @@ const quizQuestions = [
   },
 ];
 
-const keyIdeas = [
-  "HTTP stands for HyperText Transfer Protocol.",
-  "A browser sends a request to a web server.",
-  "The server sends back a response.",
-  "A webpage is often made of many parts, so the browser may need to send a request for all of the parts.",
-  "HTTPS is the more secure version of HTTP.",
-];
-
 const requestOptions = [
   {
     id: "home",
@@ -129,10 +184,9 @@ const requestOptions = [
     path: "/home",
     method: "GET",
     status: "200 OK",
-    responseTitle: "Homepage returned",
-    responseText:
-      "The server found the homepage and sent it back to the browser.",
     type: "page",
+    explanation:
+      "The browser asked for the main homepage, and the server successfully returned it.",
   },
   {
     id: "image",
@@ -140,10 +194,9 @@ const requestOptions = [
     path: "/images/soccer.png",
     method: "GET",
     status: "200 OK",
-    responseTitle: "Image returned",
-    responseText:
-      "The server found the image file and sent it back to the browser.",
     type: "image",
+    explanation:
+      "The browser asked for an image file, and the server successfully returned it.",
   },
   {
     id: "video",
@@ -151,10 +204,9 @@ const requestOptions = [
     path: "/videos/highlights.mp4",
     method: "GET",
     status: "200 OK",
-    responseTitle: "Video returned",
-    responseText:
-      "The server found the video file and sent it back to the browser.",
     type: "video",
+    explanation:
+      "The browser asked for a video file, and the server successfully returned it.",
   },
   {
     id: "missing",
@@ -162,10 +214,9 @@ const requestOptions = [
     path: "/missing-page",
     method: "GET",
     status: "404 Not Found",
-    responseTitle: "Page not found",
-    responseText:
-      "The server could not find the page the browser asked for.",
     type: "error",
+    explanation:
+      "The browser asked for something the server could not find, so the response was 404 Not Found.",
   },
 ];
 
@@ -198,37 +249,25 @@ function Section({ title, icon: Icon, children }) {
   );
 }
 
-function StatusBox({ title, body, tone = "neutral" }) {
-  const styles =
-    tone === "success"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-      : tone === "info"
-      ? "border-blue-200 bg-blue-50 text-blue-800"
-      : tone === "warning"
-      ? "border-amber-200 bg-amber-50 text-amber-800"
-      : "border-slate-200 bg-slate-50 text-slate-700";
+function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
+  let styles = "border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
+
+  if (submitted) {
+    if (isCorrect) styles = "border-emerald-300 bg-emerald-50 text-emerald-800";
+    else if (isSelected) styles = "border-rose-300 bg-rose-50 text-rose-800";
+  } else if (isSelected) {
+    styles = "border-slate-900 bg-slate-900 text-white";
+  }
 
   return (
-    <div className={`rounded-2xl border p-4 ${styles}`}>
-      <h3 className="font-semibold">{title}</h3>
-      <p className="mt-1 text-sm leading-6 opacity-90">{body}</p>
-    </div>
-  );
-}
-
-function StepChip({ label, active, complete }) {
-  return (
-    <div
-      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-        active
-          ? "bg-slate-900 text-white"
-          : complete
-          ? "bg-emerald-100 text-emerald-700"
-          : "bg-slate-100 text-slate-500"
-      }`}
+    <button
+      type="button"
+      disabled={submitted}
+      onClick={onClick}
+      className={`rounded-2xl border p-3 text-left transition ${styles}`}
     >
-      {label}
-    </div>
+      {option}
+    </button>
   );
 }
 
@@ -270,79 +309,62 @@ function BrowserWindow({ path, method, onSend, disabled }) {
   );
 }
 
-function RequestButton({ label, active, onClick, icon: Icon }) {
+function RequestButton({ label, active, done, disabled, onClick, icon: Icon }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={`rounded-2xl border px-4 py-3 text-left transition ${
-        active
+        done
+          ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+          : active
           ? "border-slate-900 bg-slate-900 text-white"
           : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
       }`}
     >
-      <div className="flex items-center gap-2">
-        <Icon className="h-4 w-4" />
-        <span className="font-medium">{label}</span>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4" />
+          <span className="font-medium">{label}</span>
+        </div>
+
+        {done && (
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100">
+            <CheckCircle2 className="h-4 w-4 text-emerald-700" />
+          </div>
+        )}
       </div>
     </button>
   );
 }
 
-function StageCard({
-  title,
-  subtitle,
-  icon: Icon,
-  tone = "neutral",
-  active = false,
-}) {
-  const tones =
-    tone === "blue"
-      ? "border-blue-200 bg-blue-50 text-blue-800"
-      : tone === "emerald"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-      : tone === "amber"
-      ? "border-amber-200 bg-amber-50 text-amber-800"
-      : "border-slate-200 bg-white text-slate-700";
-
+function RequestChecklist({ loadedResources }) {
   return (
-    <div
-      className={`rounded-3xl border p-4 shadow-sm transition ${
-        active ? "ring-2 ring-slate-200" : ""
-      } ${tones}`}
-    >
-      <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/80 ring-1 ring-black/5">
-          <Icon className="h-5 w-5" />
-        </div>
-        <div>
-          <h3 className="font-semibold">{title}</h3>
-          <p className="mt-1 text-sm leading-6 opacity-90">{subtitle}</p>
-        </div>
-      </div>
+    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      {requestOptions.map((item) => {
+        const done = loadedResources[item.id];
+        return (
+          <div
+            key={item.id}
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              done
+                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                : "border-slate-200 bg-slate-50 text-slate-600"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-semibold">{item.label}</span>
+              {done ? (
+                <CheckCircle2 className="h-4 w-4 text-emerald-700" />
+              ) : (
+                <span className="text-xs">Not yet</span>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
-  );
-}
-
-function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
-  let styles = "border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
-
-  if (submitted) {
-    if (isCorrect) styles = "border-emerald-300 bg-emerald-50 text-emerald-800";
-    else if (isSelected) styles = "border-rose-300 bg-rose-50 text-rose-800";
-  } else if (isSelected) {
-    styles = "border-slate-900 bg-slate-900 text-white";
-  }
-
-  return (
-    <button
-      type="button"
-      disabled={submitted}
-      onClick={onClick}
-      className={`rounded-2xl border p-3 text-left transition ${styles}`}
-    >
-      {option}
-    </button>
   );
 }
 
@@ -353,223 +375,278 @@ function BrowserCanvas({ loadedResources, currentRequest }) {
   const hasError = loadedResources.missing;
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h4 className="font-semibold text-slate-900">Browser Window</h4>
-          <p className="text-sm text-slate-500">
-            Loaded content stays on the page as new parts are requested.
-          </p>
-        </div>
+    <div className="rounded-3xl border border-slate-200 bg-white p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h4 className="font-semibold text-slate-900">Browser Window</h4>
         <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
           Current: {currentRequest.label}
         </div>
       </div>
 
-      <div className="mb-4 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-800">
-        To fully load a webpage, the browser may need to send a request for all
-        of the parts, such as the page, images, and videos.
-      </div>
-
-      <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-        {!hasHome && !hasImage && !hasVideo && !hasError ? (
-          <div className="flex min-h-[260px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white text-center">
-            <div>
-              <Globe className="mx-auto h-8 w-8 text-slate-400" />
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                No content has loaded yet. Send a request to start building the
-                browser page.
-              </p>
-            </div>
+      {!hasHome && !hasImage && !hasVideo && !hasError ? (
+        <div className="flex min-h-[180px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-center">
+          <div>
+            <Globe className="mx-auto h-8 w-8 text-slate-400" />
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              No content has loaded yet.
+            </p>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {hasHome && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl border border-slate-200 bg-white p-4"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-lg font-bold text-slate-900">
-                      School Website
-                    </p>
-                    <p className="text-sm text-slate-500">
-                      Homepage loaded in the browser
+        </div>
+      ) : hasError ? (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex min-h-[220px] items-center justify-center rounded-2xl border border-amber-200 bg-amber-50 p-5"
+        >
+          <div className="text-center">
+            <HelpCircle className="mx-auto h-12 w-12 text-amber-700" />
+            <p className="mt-3 text-3xl font-black text-amber-700">404</p>
+            <p className="mt-2 font-semibold text-amber-800">Page Not Found</p>
+          </div>
+        </motion.div>
+      ) : (
+        <div className="space-y-4">
+          {hasHome && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <p className="text-lg font-bold text-slate-900">School Website</p>
+                  <p className="text-sm text-slate-500">Homepage loaded</p>
+                </div>
+                <Globe className="h-7 w-7 text-blue-600" />
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                {homepageCards.map((card) => (
+                  <div
+                    key={card.title}
+                    className="rounded-2xl border border-slate-200 bg-white p-3"
+                  >
+                    <p className="font-semibold text-slate-900">{card.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                      {card.body}
                     </p>
                   </div>
-                  <Globe className="h-8 w-8 text-blue-600" />
-                </div>
-
-                <div className="mt-4 grid gap-3 md:grid-cols-3">
-                  {homepageCards.map((card) => (
-                    <div
-                      key={card.title}
-                      className="rounded-2xl border border-slate-200 bg-slate-50 p-3"
-                    >
-                      <p className="font-semibold text-slate-900">{card.title}</p>
-                      <p className="mt-1 text-sm leading-6 text-slate-600">
-                        {card.body}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {(hasImage || hasVideo) && (
-              <div className="grid gap-4 md:grid-cols-2">
-                {hasImage && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="rounded-2xl border border-slate-200 bg-white p-4"
-                  >
-                    <div className="mb-3 flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-slate-900">
-                          Loaded Image
-                        </p>
-                        <p className="text-sm text-slate-500">soccer.png</p>
-                      </div>
-                      <FileImage className="h-6 w-6 text-blue-600" />
-                    </div>
-
-                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                      <div className="relative h-48 w-full bg-gradient-to-br from-sky-100 via-emerald-50 to-blue-100">
-                        <div className="absolute inset-x-0 bottom-0 h-16 bg-emerald-300" />
-                        <div className="absolute left-1/2 top-7 h-14 w-14 -translate-x-1/2 rounded-full bg-yellow-200 blur-sm" />
-                        <div className="absolute left-8 bottom-8 h-24 w-24 rounded-full border-[9px] border-white bg-white shadow-md">
-                          <div className="absolute inset-3 rounded-full border-4 border-slate-800" />
-                          <div className="absolute inset-[28px] rounded-full bg-slate-800" />
-                        </div>
-                        <div className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 shadow-md" />
-                        <div className="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-800" />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {hasVideo && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="rounded-2xl border border-slate-200 bg-white p-4"
-                  >
-                    <div className="mb-3 flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-slate-900">
-                          Loaded Video
-                        </p>
-                        <p className="text-sm text-slate-500">highlights.mp4</p>
-                      </div>
-                      <FileVideo className="h-6 w-6 text-emerald-600" />
-                    </div>
-
-                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-900">
-                      <div className="relative h-48 w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.14),transparent_35%)]" />
-                        <div className="absolute inset-x-0 bottom-0 h-14 bg-slate-950/70" />
-
-                        <motion.div
-                          animate={{ x: [0, 80, 160] }}
-                          transition={{
-                            duration: 2.4,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                          className="absolute bottom-16 left-6 h-9 w-9 rounded-full bg-white/90 shadow-lg"
-                        />
-                        <motion.div
-                          animate={{ x: [0, 65, 140] }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                          className="absolute bottom-20 left-16 h-7 w-7 rounded-full bg-emerald-300/90 shadow-lg"
-                        />
-                        <motion.div
-                          animate={{ x: [0, 95, 180] }}
-                          transition={{
-                            duration: 2.7,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                          className="absolute bottom-12 left-10 h-5 w-5 rounded-full bg-blue-300/90 shadow-lg"
-                        />
-
-                        <div className="absolute left-3 top-3 rounded-full bg-black/40 px-3 py-1 text-xs font-semibold text-white">
-                          Now Playing
-                        </div>
-
-                        <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 px-4 py-3 text-white">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
-                            <FileVideo className="h-4 w-4" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="h-2 rounded-full bg-white/20">
-                              <motion.div
-                                animate={{ width: ["18%", "72%", "38%"] }}
-                                transition={{
-                                  duration: 4,
-                                  repeat: Infinity,
-                                  ease: "easeInOut",
-                                }}
-                                className="h-2 rounded-full bg-emerald-300"
-                              />
-                            </div>
-                            <p className="mt-2 text-xs font-medium">
-                              highlights.mp4 loaded in the browser
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
+                ))}
               </div>
-            )}
+            </motion.div>
+          )}
 
-            {hasError && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl border border-amber-200 bg-amber-50 p-5"
-              >
-                <div className="text-center">
-                  <p className="text-3xl font-black text-amber-700">404</p>
-                  <p className="mt-2 font-semibold text-amber-800">
-                    Page Not Found
-                  </p>
-                  <p className="mt-2 text-sm text-amber-700">
-                    The browser keeps the content that already loaded, but this new
-                    request could not be found by the server.
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </div>
-        )}
-      </div>
+          {(hasImage || hasVideo) && (
+            <div className="grid gap-4 md:grid-cols-2">
+              {hasImage && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="font-semibold text-slate-900">Loaded Image</p>
+                    <FileImage className="h-5 w-5 text-blue-600" />
+                  </div>
+
+                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                    <div className="relative h-40 w-full bg-gradient-to-br from-sky-100 via-emerald-50 to-blue-100">
+                      <div className="absolute inset-x-0 bottom-0 h-14 bg-emerald-300" />
+                      <div className="absolute left-1/2 top-5 h-12 w-12 -translate-x-1/2 rounded-full bg-yellow-200 blur-sm" />
+                      <div className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 shadow-md" />
+                      <div className="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-800" />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {hasVideo && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="font-semibold text-slate-900">Loaded Video</p>
+                    <FileVideo className="h-5 w-5 text-emerald-600" />
+                  </div>
+
+                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-900">
+                    <div className="relative h-40 w-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700">
+                      <div className="absolute left-3 top-3 rounded-full bg-black/40 px-3 py-1 text-xs font-semibold text-white">
+                        Now Playing
+                      </div>
+
+                      <motion.div
+                        animate={{ x: [0, 70, 140] }}
+                        transition={{
+                          duration: 2.4,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                        className="absolute bottom-14 left-6 h-8 w-8 rounded-full bg-white/90 shadow-lg"
+                      />
+
+                      <div className="absolute inset-x-0 bottom-0 h-12 bg-slate-950/70 px-4 py-3">
+                        <div className="h-2 rounded-full bg-white/20">
+                          <motion.div
+                            animate={{ width: ["18%", "72%", "38%"] }}
+                            transition={{
+                              duration: 4,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }}
+                            className="h-2 rounded-full bg-emerald-300"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-function PreviewSummary({ currentRequest }) {
+function ResponseStatusCard({ currentRequest, phase }) {
+  if (phase === "choose") {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <h4 className="font-semibold text-slate-900">What will happen?</h4>
+        <p className="mt-2 text-sm leading-6 text-slate-700">
+          First the browser chooses a resource, then it sends an HTTP request,
+          then the server sends back a response, and finally the browser displays
+          the result.
+        </p>
+      </div>
+    );
+  }
+
+  if (phase === "sending") {
+    return (
+      <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+        <h4 className="font-semibold text-blue-900">Request sent</h4>
+        <p className="mt-2 text-sm leading-6 text-blue-800">
+          The browser is sending an HTTP <span className="font-semibold">{currentRequest.method}</span>{" "}
+          request for <span className="font-mono">{currentRequest.path}</span>.
+        </p>
+      </div>
+    );
+  }
+
+  if (phase === "response") {
+    return (
+      <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
+        <h4 className="font-semibold text-violet-900">Server response</h4>
+        <p className="mt-2 text-sm leading-6 text-violet-800">
+          The server checked the request and returned{" "}
+          <span className="font-semibold">{currentRequest.status}</span>.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid gap-3 md:grid-cols-2">
-      <StatusBox
-        title={currentRequest.responseTitle}
-        body={currentRequest.responseText}
-        tone={currentRequest.status === "404 Not Found" ? "warning" : "success"}
-      />
-      <StatusBox
-        title="Why this matters"
-        body="HTTP lets the browser ask for content, and the server answers with a response the browser can show. To fully load a webpage, the browser often has to send separate requests for all of the parts, like the page itself, images, and videos."
-        tone="info"
-      />
+    <div
+      className={`rounded-2xl border p-4 ${
+        currentRequest.status === "200 OK"
+          ? "border-emerald-200 bg-emerald-50"
+          : "border-amber-200 bg-amber-50"
+      }`}
+    >
+      <h4
+        className={`font-semibold ${
+          currentRequest.status === "200 OK"
+            ? "text-emerald-900"
+            : "text-amber-900"
+        }`}
+      >
+        Result displayed
+      </h4>
+      <p
+        className={`mt-2 text-sm leading-6 ${
+          currentRequest.status === "200 OK"
+            ? "text-emerald-800"
+            : "text-amber-800"
+        }`}
+      >
+        {currentRequest.explanation}
+      </p>
+    </div>
+  );
+}
+
+function PhaseSteps({ phase }) {
+  const phaseIndex =
+    phase === "choose" ? 0 : phase === "sending" ? 1 : phase === "response" ? 2 : 3;
+
+  const labels = ["Choose", "Request", "Response", "Display"];
+
+  return (
+    <div className="grid gap-2 sm:grid-cols-4">
+      {labels.map((label, index) => (
+        <div
+          key={label}
+          className={`rounded-2xl border px-4 py-3 text-sm font-medium ${
+            phaseIndex === index
+              ? "border-slate-900 bg-slate-900 text-white"
+              : phaseIndex > index
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-slate-200 bg-slate-50 text-slate-600"
+          }`}
+        >
+          {label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ModuleProgress({ currentPage }) {
+  const pages = [
+    { label: "Overview" },
+    { label: "Activity" },
+    { label: "Quiz" },
+  ];
+
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-slate-900">Module Progress</h2>
+        <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        {pages.map((page, index) => {
+          const active = currentPage === index;
+          const complete = currentPage > index;
+
+          return (
+            <div
+              key={page.label}
+              className={`rounded-2xl border p-4 ${
+                active
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : complete
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-slate-200 bg-slate-50 text-slate-600"
+              }`}
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                  {index + 1}
+                </div>
+                {complete && <CheckCircle2 className="h-5 w-5" />}
+              </div>
+              <p className="font-semibold">{page.label}</p>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -580,10 +657,6 @@ export default function HTTP() {
 
   const [selectedRequestIndex, setSelectedRequestIndex] = useState(0);
   const [phase, setPhase] = useState("choose");
-  const [message, setMessage] = useState(
-    "Choose what the browser wants, then send an HTTP request to the server."
-  );
-  const [roundsCompleted, setRoundsCompleted] = useState(0);
 
   const [loadedResources, setLoadedResources] = useState({
     home: false,
@@ -592,14 +665,50 @@ export default function HTTP() {
     missing: false,
   });
 
+  const [modulePage, setModulePage] = useState(0);
+  const [overviewUnlocked, setOverviewUnlocked] = useState(false);
+  const [activityUnlocked, setActivityUnlocked] = useState(false);
+  const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
+
+  const overviewRef = useRef(null);
   const currentRequest = requestOptions[selectedRequestIndex];
 
   useEffect(() => {
-    setPhase("choose");
-    setMessage(
-      "Choose what the browser wants, then send an HTTP request to the server."
-    );
-  }, [selectedRequestIndex]);
+    if (!loadedResources[currentRequest.id]) {
+      setPhase("choose");
+    }
+  }, [selectedRequestIndex, loadedResources, currentRequest.id]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!overviewRef.current || overviewUnlocked || modulePage !== 0) return;
+      const rect = overviewRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      if (rect.bottom <= viewportHeight - 20) {
+        setOverviewUnlocked(true);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [overviewUnlocked, modulePage]);
+
+useEffect(() => {
+  const allLoaded =
+    loadedResources.home &&
+    loadedResources.image &&
+    loadedResources.video &&
+    loadedResources.missing
+
+  if (allLoaded) {
+    setActivityUnlocked(true)
+    setShowCompletionOverlay(true)
+    markActivityComplete("/http")
+  }
+}, [loadedResources])
 
   const score = useMemo(() => {
     return quizQuestions.reduce(
@@ -607,91 +716,61 @@ export default function HTTP() {
       0
     );
   }, [selectedAnswers]);
-
+useEffect(() => {
+  if (submittedQuiz && score >= 5) {
+    markQuizPassed("/http")
+  }
+}, [submittedQuiz, score])
   const allAnswered = quizQuestions.every(
     (_, index) => typeof selectedAnswers[index] === "string"
   );
 
-  const stepLabels = [
-    "Choose Resource",
-    "Send Request",
-    "Server Response",
-    "Browser Display",
-  ];
-
-  const activeStep =
-    phase === "choose"
-      ? 0
-      : phase === "sending"
-      ? 1
-      : phase === "response"
-      ? 2
-      : 3;
-
-  const statusTone =
-    phase === "displayed"
-      ? currentRequest.status === "404 Not Found"
-        ? "warning"
-        : "success"
-      : phase === "sending" || phase === "response"
-      ? "info"
-      : "neutral";
-
-  const statusTitle =
-    phase === "choose"
-      ? "Step 1: Choose a resource"
-      : phase === "sending"
-      ? "Step 2: Browser sends an HTTP request"
-      : phase === "response"
-      ? "Step 3: Server sends an HTTP response"
-      : "Step 4: Browser displays the result";
+  const completedCount = Object.values(loadedResources).filter(Boolean).length;
+  const remainingRequests = requestOptions.filter((item) => !loadedResources[item.id]);
 
   const handleSendRequest = () => {
+    if (phase !== "choose" || loadedResources[currentRequest.id]) return;
+
     setPhase("sending");
-    setMessage(
-      `The browser is sending ${currentRequest.method} ${currentRequest.path} to the server.`
-    );
 
     setTimeout(() => {
       setPhase("response");
-      setMessage(
-        `The server responded with ${currentRequest.status}. The content is being sent back to the browser.`
-      );
-    }, 950);
+    }, 700);
 
     setTimeout(() => {
       setPhase("displayed");
-      setRoundsCompleted((prev) => prev + 1);
       setLoadedResources((prev) => ({
         ...prev,
         [currentRequest.id]: true,
       }));
-      setMessage(
-        currentRequest.status === "404 Not Found"
-          ? "The server could not find that page, so the browser shows a 404 error."
-          : `The browser received the ${currentRequest.label.toLowerCase()} and added it to the page. Remember, browsers often need to send separate HTTP requests for all of the parts of a webpage.`
-      );
-    }, 1700);
+    }, 1300);
   };
 
   const handleNextRound = () => {
-    const nextIndex = (selectedRequestIndex + 1) % requestOptions.length;
+    if (remainingRequests.length === 0) return;
+
+    const nextRequest = remainingRequests[0];
+    const nextIndex = requestOptions.findIndex((item) => item.id === nextRequest.id);
     setSelectedRequestIndex(nextIndex);
+    setPhase("choose");
   };
 
   const resetActivity = () => {
     setSelectedRequestIndex(0);
     setPhase("choose");
-    setMessage(
-      "Choose what the browser wants, then send an HTTP request to the server."
-    );
-    setRoundsCompleted(0);
     setLoadedResources({
       home: false,
       image: false,
       video: false,
       missing: false,
     });
+    setActivityUnlocked(false);
+    setShowCompletionOverlay(false);
+  };
+
+  const resetQuiz = () => {
+    setSubmittedQuiz(false);
+    setSelectedAnswers({});
   };
 
   const RequestIcon =
@@ -703,12 +782,16 @@ export default function HTTP() {
       ? HelpCircle
       : Globe;
 
+  const goToNextModule = () => {
+    alert("Great job! You finished this module. You can now move to the next one.");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
         <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
-            Module 4
+            Module 5
           </span>
           <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
             HyperText Transfer Protocol (HTTP)
@@ -719,537 +802,520 @@ export default function HTTP() {
           </p>
         </header>
 
-        <Section title="What is HTTP?" icon={HelpCircle}>
-          <div className="mb-5 rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
-            <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white">
-                <Sparkles className="h-5 w-5 text-emerald-700" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-emerald-900">Fun fact</h3>
-                <p className="mt-1 text-sm leading-6 text-emerald-800">
-                  Have you ever seen a website say <span className="font-semibold">HTTP</span> or{" "}
-                  <span className="font-semibold">HTTPS</span>? HTTPS is the more
-                  secure version of HTTP. The extra <span className="font-semibold">S</span> stands for
-                  secure.
-                </p>
-              </div>
-            </div>
-          </div>
+        <ModuleProgress currentPage={modulePage} />
 
-          <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-            <div>
-              <p className="leading-7 text-slate-700">
-                Have you ever seen a website start with HTTP or HTTPS in the
-                address bar? HTTP is a rule used for communication between a
-                browser and a web server. The browser sends a request for a
-                webpage or file, and the server sends back a response.
-              </p>
-
-              <div className="mt-5">
-                <h3 className="text-lg font-semibold text-slate-900">
-                  Real-life analogy
-                </h3>
-                <p className="mt-2 leading-7 text-slate-700">
-                  Imagine ordering at a café. You ask for something, the staff
-                  receive your order, and they give you back what you asked for.
-                  HTTP works in a similar way. The browser asks for a webpage or
-                  file, and the server sends back the result.
-                </p>
-              </div>
-
-              <div className="mt-5 rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                <h3 className="text-lg font-semibold text-blue-900">
-                  Important idea
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-blue-800">
-                  A browser does not always send just one request. To fully load a
-                  webpage, it may have to send a request for all of the parts,
-                  such as the page itself, images, and videos.
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">
-                Key ideas to remember
-              </h3>
-              <div className="mt-3 grid gap-2">
-                {keyIdeas.map((idea) => (
-                  <div
-                    key={idea}
-                    className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
-                  >
-                    <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
-                    <p className="text-sm leading-6 text-slate-700">{idea}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        <Section title="Interactive Browser Request Lab" icon={ShieldCheck}>
-          <p className="mb-5 leading-7 text-slate-700">
-            Choose a resource, send an HTTP request, see the server response, and
-            keep building the browser page as new content loads. This shows that
-            the browser may need to send separate requests for all of the parts of
-            a webpage.
-          </p>
-
-          <div className="mb-5 flex flex-wrap gap-2">
-            {stepLabels.map((label, index) => (
-              <StepChip
-                key={label}
-                label={label}
-                active={activeStep === index}
-                complete={activeStep > index}
-              />
-            ))}
-          </div>
-
-          <StatusBox title={statusTitle} body={message} tone={statusTone} />
-
-          <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="space-y-5">
-              <BrowserWindow
-                path={currentRequest.path}
-                method={currentRequest.method}
-                onSend={handleSendRequest}
-                disabled={phase !== "choose"}
-              />
-
-              <div>
-                <h3 className="mb-3 text-lg font-semibold text-slate-900">
-                  Choose what the browser wants
-                </h3>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {requestOptions.map((item, index) => {
-                    const Icon =
-                      item.type === "image"
-                        ? FileImage
-                        : item.type === "video"
-                        ? FileVideo
-                        : item.type === "error"
-                        ? HelpCircle
-                        : Globe;
-
-                    return (
-                      <RequestButton
-                        key={item.id}
-                        label={item.label}
-                        icon={Icon}
-                        active={selectedRequestIndex === index}
-                        onClick={() => setSelectedRequestIndex(index)}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-slate-900">
-                    HTTP request activity
-                  </h3>
-                  <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                    Rounds completed: {roundsCompleted}
-                  </div>
-                </div>
-
-                <AnimatePresence mode="wait">
-                  {phase === "choose" && (
-                    <motion.div
-                      key="choose"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="space-y-4"
-                    >
-                      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-center">
-                        <RequestIcon className="mx-auto h-8 w-8 text-slate-400" />
-                        <p className="mt-3 text-sm leading-6 text-slate-600">
-                          Pick a resource, then click{" "}
-                          <span className="font-semibold">Send Request</span> to see
-                          how HTTP works between the browser and server.
+        <AnimatePresence mode="wait">
+          {modulePage === 0 && (
+            <motion.div
+              key="overview-page"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.25 }}
+            >
+              <div ref={overviewRef}>
+                <Section title="What is HTTP?" icon={HelpCircle}>
+                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-100">
+                        <Target className="h-5 w-5 text-blue-700" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          What you are learning
+                        </h3>
+                        <p className="mt-2 leading-7 text-slate-700">
+                          HTTP is the rule used when a browser asks a web server for
+                          content and the server sends a response back. This module
+                          shows that a full webpage is often made of many parts, so
+                          the browser may need to send requests for all of the parts.
                         </p>
                       </div>
+                    </div>
+                  </div>
 
-                      <BrowserCanvas
-                        loadedResources={loadedResources}
-                        currentRequest={currentRequest}
-                      />
-                    </motion.div>
-                  )}
-
-                  {phase === "sending" && (
-                    <motion.div
-                      key="sending"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="space-y-4"
-                    >
-                      <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5">
-                        <div className="grid items-center gap-4 md:grid-cols-[120px_minmax(0,1fr)_120px]">
-                          <div className="rounded-2xl border border-blue-200 bg-white p-4 text-center">
-                            <Globe className="mx-auto h-6 w-6 text-blue-700" />
-                            <p className="mt-2 text-sm font-semibold text-blue-900">
-                              Browser
-                            </p>
-                          </div>
-
-                          <div className="relative h-16">
-                            <div className="absolute left-0 right-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-blue-200" />
-                            <motion.div
-                              initial={{ left: "5%", opacity: 0 }}
-                              animate={{ left: "82%", opacity: 1 }}
-                              transition={{ duration: 0.9, ease: "easeInOut" }}
-                              className="absolute top-1/2 -translate-y-1/2"
-                            >
-                              <div className="rounded-2xl border border-blue-200 bg-white px-4 py-2 text-center shadow-sm">
-                                <p className="text-xs font-bold text-blue-800">
-                                  {currentRequest.method}
-                                </p>
-                                <p className="font-mono text-xs text-slate-700">
-                                  {currentRequest.path}
-                                </p>
-                              </div>
-                            </motion.div>
-                          </div>
-
-                          <div className="rounded-2xl border border-emerald-200 bg-white p-4 text-center">
-                            <Server className="mx-auto h-6 w-6 text-emerald-700" />
-                            <p className="mt-2 text-sm font-semibold text-emerald-900">
-                              Server
-                            </p>
-                          </div>
+                  <div className="mt-6 grid gap-3 md:grid-cols-5">
+                    {overviewSteps.map((step) => (
+                      <div
+                        key={step.step}
+                        className="rounded-2xl border border-slate-200 bg-white p-4"
+                      >
+                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
+                          {step.step}
                         </div>
+                        <h3 className="text-sm font-semibold text-slate-900">
+                          {step.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-slate-700">
+                          {step.text}
+                        </p>
                       </div>
+                    ))}
+                  </div>
 
-                      <BrowserCanvas
-                        loadedResources={loadedResources}
-                        currentRequest={currentRequest}
-                      />
-                    </motion.div>
-                  )}
+                  <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <div className="flex items-center gap-2">
+                        <Lightbulb className="h-5 w-5 text-amber-500" />
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          Real-life analogy
+                        </h3>
+                      </div>
+                      <p className="mt-3 leading-7 text-slate-700">
+                        Imagine ordering at a café. You ask for something, the staff
+                        receive your order, and they give you back what you asked for.
+                        HTTP works in a similar way. The browser asks for content,
+                        and the server responds.
+                      </p>
+                    </div>
 
-                  {phase === "response" && (
-                    <motion.div
-                      key="response"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="space-y-4"
-                    >
-                      <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                        <div className="grid items-center gap-4 md:grid-cols-[120px_minmax(0,1fr)_120px]">
-                          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-center">
-                            <Globe className="mx-auto h-6 w-6 text-blue-700" />
-                            <p className="mt-2 text-sm font-semibold text-blue-900">
-                              Browser
-                            </p>
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <div className="flex items-center gap-2">
+                        <Info className="h-5 w-5 text-sky-600" />
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          Key ideas to remember
+                        </h3>
+                      </div>
+                      <div className="mt-3 grid gap-2">
+                        {keyIdeas.map((idea) => (
+                          <div
+                            key={idea}
+                            className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
+                          >
+                            <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
+                            <p className="text-sm leading-6 text-slate-700">{idea}</p>
                           </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
-                          <div className="relative h-16">
-                            <div
-                              className={`absolute left-0 right-0 top-1/2 h-2 -translate-y-1/2 rounded-full ${
-                                currentRequest.status === "404 Not Found"
-                                  ? "bg-amber-200"
-                                  : "bg-emerald-200"
-                              }`}
-                            />
-                            <motion.div
-                              initial={{ left: "82%", opacity: 0 }}
-                              animate={{ left: "5%", opacity: 1 }}
-                              transition={{ duration: 0.9, ease: "easeInOut" }}
-                              className="absolute top-1/2 -translate-y-1/2"
-                            >
-                              <div
-                                className={`rounded-2xl border bg-white px-4 py-2 text-center shadow-sm ${
-                                  currentRequest.status === "404 Not Found"
-                                    ? "border-amber-200"
-                                    : "border-emerald-200"
-                                }`}
-                              >
-                                <p
-                                  className={`text-xs font-bold ${
-                                    currentRequest.status === "404 Not Found"
-                                      ? "text-amber-800"
-                                      : "text-emerald-800"
-                                  }`}
-                                >
-                                  {currentRequest.status}
-                                </p>
-                                <p className="text-xs text-slate-700">Response</p>
-                              </div>
-                            </motion.div>
-                          </div>
+                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
+                    <div className="mb-3 flex items-center gap-2">
+                      <XCircle className="h-5 w-5 text-rose-700" />
+                      <h3 className="text-lg font-semibold text-rose-900">
+                        Common mistakes to avoid
+                      </h3>
+                    </div>
 
-                          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
-                            <Server className="mx-auto h-6 w-6 text-emerald-700" />
-                            <p className="mt-2 text-sm font-semibold text-emerald-900">
-                              Server
-                            </p>
-                          </div>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      {misconceptionCards.map((item) => (
+                        <div key={item.wrong} className="rounded-2xl bg-white/80 p-4">
+                          <p className="text-sm font-semibold text-rose-800">
+                            Incorrect idea
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-slate-700">
+                            {item.wrong}
+                          </p>
+                          <p className="mt-3 text-sm font-semibold text-emerald-700">
+                            Better explanation
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-slate-700">
+                            {item.right}
+                          </p>
                         </div>
-                      </div>
-
-                      <BrowserCanvas
-                        loadedResources={loadedResources}
-                        currentRequest={currentRequest}
-                      />
-
-                      <PreviewSummary currentRequest={currentRequest} />
-                    </motion.div>
-                  )}
-
-                  {phase === "displayed" && (
-                    <motion.div
-                      key="displayed"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="space-y-4"
-                    >
-                      <BrowserCanvas
-                        loadedResources={loadedResources}
-                        currentRequest={currentRequest}
-                      />
-
-                      <PreviewSummary currentRequest={currentRequest} />
-
-                      <div className="flex flex-wrap justify-center gap-3">
-                        <button
-                          type="button"
-                          onClick={handleNextRound}
-                          className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
-                        >
-                          Try Another Request
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={resetActivity}
-                          className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 transition hover:bg-slate-50"
-                        >
-                          Reset Activity
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <StageCard
-                title="1. Browser chooses content"
-                subtitle="The browser decides what webpage or file it wants."
-                icon={Globe}
-                tone="blue"
-                active={phase === "choose"}
-              />
-              <StageCard
-                title="2. HTTP request"
-                subtitle="The browser sends a request like GET /home to the server."
-                icon={ArrowRight}
-                tone="blue"
-                active={phase === "sending"}
-              />
-              <StageCard
-                title="3. Server response"
-                subtitle="The server sends back a response such as 200 OK or 404 Not Found."
-                icon={Server}
-                tone={
-                  currentRequest.status === "404 Not Found" ? "amber" : "emerald"
-                }
-                active={phase === "response" || phase === "displayed"}
-              />
-              <StageCard
-                title="4. Browser displays result"
-                subtitle="The browser shows the webpage, file, or an error message."
-                icon={CheckCircle2}
-                tone={
-                  currentRequest.status === "404 Not Found" ? "amber" : "emerald"
-                }
-                active={phase === "displayed"}
-              />
-
-              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900">
-                  Did you know?
-                </h3>
-                <div className="mt-3 grid gap-2">
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
-                    Have you ever seen <span className="font-semibold">HTTP</span> or{" "}
-                    <span className="font-semibold">HTTPS</span> in a website address?
+                      ))}
+                    </div>
                   </div>
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
-                    A <span className="font-semibold">200 OK</span> response means
-                    the server found what was requested.
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
-                    A <span className="font-semibold">404 Not Found</span> response
-                    means the requested page could not be found.
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
-                    Browsers often need to send separate requests for all of the
-                    parts of a webpage, including images and videos.
-                  </div>
-                </div>
-              </div>
 
-              <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white">
-                    <Lock className="h-5 w-5 text-emerald-700" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-emerald-900">
-                      Fun fact: HTTPS
-                    </h3>
-                    <p className="mt-1 text-sm leading-6 text-emerald-800">
-                      HTTPS is the more secure version of HTTP. It helps protect
-                      the information being sent between the browser and server.
+                  <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                    <h3 className="font-semibold text-blue-900">Fun fact</h3>
+                    <p className="mt-2 text-sm leading-6 text-blue-800">
+                      Have you ever seen a website start with HTTP or HTTPS? HTTPS is
+                      the more secure version of HTTP.
                     </p>
                   </div>
-                </div>
+
+                  <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                    <h3 className="font-semibold text-blue-900">What happens next?</h3>
+                    <p className="mt-2 text-sm leading-6 text-blue-800">
+                      In the next activity, you will test four request types:
+                      homepage, image, video, and missing page. To unlock the quiz,
+                      you must test all four.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <h3 className="font-semibold text-slate-900">Ready to continue?</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                      Scroll to the bottom of this page to unlock the interactive activity.
+                    </p>
+                  </div>
+                </Section>
               </div>
-            </div>
-          </div>
 
-          <div className="mt-6 flex justify-center">
-            <button
-              type="button"
-              onClick={resetActivity}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 transition hover:bg-slate-50"
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setModulePage(1)}
+                  disabled={!overviewUnlocked}
+                  className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                    overviewUnlocked
+                      ? "bg-slate-900 hover:bg-slate-800"
+                      : "cursor-not-allowed bg-slate-300"
+                  }`}
+                >
+                  {!overviewUnlocked && <Lock className="h-4 w-4" />}
+                  Next Page
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {modulePage === 1 && (
+            <motion.div
+              key="activity-page"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.25 }}
             >
-              <RefreshCcw className="h-4 w-4" />
-              Restart HTTP Activity
-            </button>
-          </div>
-        </Section>
+              <Section title="Interactive Browser Request Lab" icon={ShieldCheck}>
+                <p className="mb-4 leading-7 text-slate-700">
+                  Test all four request types to unlock the quiz.
+                </p>
 
-        <Section title="Quick Quiz" icon={HelpCircle}>
-          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm leading-6 text-slate-700">
-              These questions are harder to guess because the wrong answers sound
-              plausible. Users need to understand requests, responses, page parts,
-              status codes, and HTTPS.
-            </p>
-          </div>
+                <div className="space-y-4">
+                  <BrowserWindow
+                    path={currentRequest.path}
+                    method={currentRequest.method}
+                    onSend={handleSendRequest}
+                    disabled={phase !== "choose" || loadedResources[currentRequest.id]}
+                  />
 
-          <div className="space-y-5">
-            {quizQuestions.map((q, i) => (
-              <div
-                key={q.question}
-                className="rounded-2xl border border-slate-200 p-5"
-              >
-                <h3 className="font-semibold text-slate-900">
-                  {i + 1}. {q.question}
-                </h3>
+                  <PhaseSteps phase={phase} />
 
-                <div className="mt-4 grid gap-3">
-                  {q.options.map((option) => (
-                    <QuizOption
-                      key={option}
-                      option={option}
-                      isSelected={selectedAnswers[i] === option}
-                      isCorrect={q.answer === option}
-                      submitted={submittedQuiz}
-                      onClick={() =>
-                        setSelectedAnswers((prev) => ({
-                          ...prev,
-                          [i]: option,
-                        }))
-                      }
-                    />
+                  <div>
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <h3 className="text-lg font-semibold text-slate-900">
+                        Choose what the browser wants
+                      </h3>
+                      <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                        {completedCount} / 4 completed
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {requestOptions.map((item, index) => {
+                        const Icon =
+                          item.type === "image"
+                            ? FileImage
+                            : item.type === "video"
+                            ? FileVideo
+                            : item.type === "error"
+                            ? HelpCircle
+                            : Globe;
+
+                        const done = loadedResources[item.id];
+
+                        return (
+                          <RequestButton
+                            key={item.id}
+                            label={item.label}
+                            icon={Icon}
+                            active={selectedRequestIndex === index}
+                            done={done}
+                            disabled={done}
+                            onClick={() => setSelectedRequestIndex(index)}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <RequestChecklist loadedResources={loadedResources} />
+
+                  <div className="relative grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={`${phase}-${currentRequest.id}`}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                      >
+                        <BrowserCanvas
+                          loadedResources={loadedResources}
+                          currentRequest={currentRequest}
+                        />
+                      </motion.div>
+                    </AnimatePresence>
+
+                    <div className="space-y-4">
+                      <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <div className="mb-3 flex items-center gap-2">
+                          <RequestIcon className="h-5 w-5 text-slate-700" />
+                          <h4 className="font-semibold text-slate-900">
+                            Current request details
+                          </h4>
+                        </div>
+                        <div className="space-y-2 text-sm text-slate-700">
+                          <p>
+                            <span className="font-semibold">Resource:</span>{" "}
+                            {currentRequest.label}
+                          </p>
+                          <p>
+                            <span className="font-semibold">Method:</span>{" "}
+                            {currentRequest.method}
+                          </p>
+                          <p>
+                            <span className="font-semibold">Path:</span>{" "}
+                            <span className="font-mono">{currentRequest.path}</span>
+                          </p>
+                          <p>
+                            <span className="font-semibold">Expected status:</span>{" "}
+                            {currentRequest.status}
+                          </p>
+                        </div>
+                      </div>
+
+                      <ResponseStatusCard
+                        currentRequest={currentRequest}
+                        phase={phase}
+                      />
+
+                      <div className="rounded-2xl bg-amber-50 p-4">
+                        <h4 className="font-semibold text-amber-800">
+                          Important note
+                        </h4>
+                        <p className="mt-2 text-sm leading-6 text-amber-700">
+                          A full webpage is often made of many parts. That is why the
+                          browser may need to send requests for the homepage, image,
+                          and video separately.
+                        </p>
+                      </div>
+                    </div>
+
+                    <AnimatePresence>
+                      {showCompletionOverlay && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-slate-900/45 p-4 backdrop-blur-[2px]"
+                        >
+                          <motion.div
+                            initial={{ scale: 0.96, y: 8, opacity: 0 }}
+                            animate={{ scale: 1, y: 0, opacity: 1 }}
+                            exit={{ scale: 0.98, opacity: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div />
+                              <button
+                                type="button"
+                                onClick={() => setShowCompletionOverlay(false)}
+                                className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                                aria-label="Close completion message"
+                              >
+                                <X className="h-5 w-5" />
+                              </button>
+                            </div>
+
+                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100">
+                              <CheckCircle2 className="h-8 w-8 text-emerald-700" />
+                            </div>
+
+                            <h3 className="mt-4 text-2xl font-bold text-slate-900">
+                              Activity Complete
+                            </h3>
+
+                            <p className="mt-3 text-sm leading-6 text-slate-600">
+                              You successfully tested all four request types.
+                            </p>
+
+                            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                              <button
+                                type="button"
+                                onClick={resetActivity}
+                                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-2.5 text-slate-700 transition hover:bg-slate-50"
+                              >
+                                <RefreshCcw className="h-4 w-4" />
+                                Try Again
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setShowCompletionOverlay(false)}
+                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+                              >
+                                Back to Activity
+                              </button>
+                            </div>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {phase === "displayed" && !activityUnlocked && remainingRequests.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleNextRound}
+                        className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                      >
+                        Try Another Request
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={resetActivity}
+                      className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 transition hover:bg-slate-50"
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <RefreshCcw className="h-4 w-4" />
+                        Reset Activity
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setModulePage(0)}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous Page
+                  </button>
+
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                    {activityUnlocked
+                      ? "Activity complete — you can move to the quiz."
+                      : "Complete all four request types to unlock the quiz."}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setModulePage(2)}
+                    disabled={!activityUnlocked}
+                    className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                      activityUnlocked
+                        ? "bg-slate-900 hover:bg-slate-800"
+                        : "cursor-not-allowed bg-slate-300"
+                    }`}
+                  >
+                    {!activityUnlocked && <Lock className="h-4 w-4" />}
+                    Next Page
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </Section>
+            </motion.div>
+          )}
+
+          {modulePage === 2 && (
+            <motion.div
+              key="quiz-page"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.25 }}
+            >
+              <Section title="Quick Quiz" icon={HelpCircle}>
+
+
+                <div className="space-y-5">
+                  {quizQuestions.map((q, i) => (
+                    <div
+                      key={q.question}
+                      className="rounded-2xl border border-slate-200 p-5"
+                    >
+                      <h3 className="font-semibold text-slate-900">
+                        {i + 1}. {q.question}
+                      </h3>
+
+                      <div className="mt-4 grid gap-3">
+                        {q.options.map((option) => (
+                          <QuizOption
+                            key={option}
+                            option={option}
+                            isSelected={selectedAnswers[i] === option}
+                            isCorrect={q.answer === option}
+                            submitted={submittedQuiz}
+                            onClick={() =>
+                              setSelectedAnswers((prev) => ({
+                                ...prev,
+                                [i]: option,
+                              }))
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
-            ))}
-          </div>
 
-          <div className="mt-6 flex gap-3">
-            <button
-              type="button"
-              onClick={() => setSubmittedQuiz(true)}
-              disabled={!allAnswered}
-              className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Submit Quiz
-            </button>
+                <div className="mt-6 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSubmittedQuiz(true)}
+                    disabled={!allAnswered}
+                    className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Submit Quiz
+                  </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setSubmittedQuiz(false);
-                setSelectedAnswers({});
-              }}
-              className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-50"
-            >
-              Reset Quiz
-            </button>
-          </div>
+                  <button
+                    type="button"
+                    onClick={resetQuiz}
+                    className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-50"
+                  >
+                    Reset Quiz
+                  </button>
+                </div>
 
-          {!allAnswered && !submittedQuiz && (
-            <p className="mt-3 text-sm text-slate-500">
-              Answer every question before submitting.
-            </p>
+                {!allAnswered && !submittedQuiz && (
+                  <p className="mt-3 text-sm text-slate-500">
+                    Answer every question before submitting.
+                  </p>
+                )}
+
+                {submittedQuiz && (
+                  <div className="mt-6 rounded-2xl bg-slate-50 p-5">
+                    <h3 className="font-semibold text-slate-900">
+                      Your Score: {score} / {quizQuestions.length}
+                    </h3>
+
+                    <p className="mt-2 text-slate-600">
+                      {score === quizQuestions.length
+                        ? "Excellent work — you understand how HTTP helps browsers and servers communicate."
+                        : score >= 5
+                        ? "Good job — you understand most of HTTP, but review request, response, page parts, status codes, and HTTPS once more."
+                        : score >= 3
+                        ? "Decent effort — revisit the activity and pay attention to why browsers may need separate requests for different files."
+                        : "Review the module and try the quiz again."}
+                    </p>
+
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={() => setModulePage(1)}
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Back to Activity
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={goToNextModule}
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
+                      >
+                        Go to Next Module
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </Section>
+            </motion.div>
           )}
-
-          {submittedQuiz && (
-            <div className="mt-6 rounded-2xl bg-slate-50 p-5">
-              <h3 className="font-semibold text-slate-900">
-                Your Score: {score} / {quizQuestions.length}
-              </h3>
-
-              <p className="mt-2 text-slate-600">
-                {score === quizQuestions.length
-                  ? "Excellent work — you understand how HTTP helps browsers and servers communicate."
-                  : score >= 5
-                  ? "Good job — you understand most of HTTP, but review request, response, page parts, status codes, and HTTPS once more."
-                  : score >= 3
-                  ? "Decent effort — revisit the activity and pay attention to why browsers may need separate requests for different files."
-                  : "Review the module and try the quiz again."}
-              </p>
-            </div>
-          )}
-        </Section>
-
-        <Section title="Summary" icon={CheckCircle2}>
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-3xl bg-slate-50 p-5">
-              <h3 className="font-semibold text-slate-900">HTTP</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                HTTP is the rule that helps browsers and servers communicate.
-              </p>
-            </div>
-
-            <div className="rounded-3xl bg-slate-50 p-5">
-              <h3 className="font-semibold text-slate-900">Request</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                The browser sends a request for a webpage or file.
-              </p>
-            </div>
-
-            <div className="rounded-3xl bg-slate-50 p-5">
-              <h3 className="font-semibold text-slate-900">All the parts</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                A browser may need to send separate requests for all of the parts
-                of a webpage, such as images and videos.
-              </p>
-            </div>
-
-            <div className="rounded-3xl bg-slate-50 p-5">
-              <h3 className="font-semibold text-slate-900">HTTPS</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                HTTPS is the more secure version of HTTP and helps protect data.
-              </p>
-            </div>
-          </div>
-        </Section>
+        </AnimatePresence>
       </div>
     </div>
   );

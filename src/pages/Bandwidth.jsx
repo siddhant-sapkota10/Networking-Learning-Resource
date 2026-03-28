@@ -1,25 +1,59 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   BadgeCheck,
   BookOpen,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Gauge,
   HelpCircle,
+  Info,
+  Lightbulb,
+  Lock,
   MousePointerClick,
   Package,
   Play,
   RefreshCcw,
+  Target,
   Timer,
   Wifi,
+  X,
+  XCircle,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-
-const introSteps = [
-  "A bit is a tiny piece of digital information.",
-  "Bit rate is how much data is used each second.",
-  "Bandwidth is how much data can move through a connection.",
-  "More bandwidth means more room for data to travel.",
-  "If bit rate is too high for the bandwidth, buffering can happen.",
+import { markActivityComplete, markQuizPassed } from "../utils/progress"
+const overviewSteps = [
+  {
+    step: 1,
+    title: "Bits are tiny pieces of data",
+    text:
+      "A bit is a very small unit of digital information. Huge numbers of bits are used to make videos, images, music, and websites.",
+  },
+  {
+    step: 2,
+    title: "Bit rate is data used each second",
+    text:
+      "Bit rate tells us how much data a video or sound is trying to use every second.",
+  },
+  {
+    step: 3,
+    title: "Bandwidth is connection carrying room",
+    text:
+      "Bandwidth is how much data the connection can carry at one time.",
+  },
+  {
+    step: 4,
+    title: "These ideas are related",
+    text:
+      "A higher bit rate can look or sound better, but it needs enough bandwidth to move smoothly.",
+  },
+  {
+    step: 5,
+    title: "Too much data can cause buffering",
+    text:
+      "If the bit rate is higher than the bandwidth can comfortably support, the content may buffer or drop quality.",
+  },
 ];
 
 const conceptCards = [
@@ -54,6 +88,24 @@ const keyIdeas = [
   "Bit rate is how much data is used each second.",
   "Bandwidth is how much data can move through the connection.",
   "A high bit rate needs enough bandwidth to work smoothly.",
+];
+
+const misconceptionCards = [
+  {
+    wrong: "Bit rate and bandwidth are the same thing.",
+    right:
+      "Bit rate is how much data is used each second. Bandwidth is how much data the connection can carry.",
+  },
+  {
+    wrong: "Higher bit rate is always better.",
+    right:
+      "Higher bit rate can improve quality, but it still needs enough bandwidth to play smoothly.",
+  },
+  {
+    wrong: "Buffering just happens randomly.",
+    right:
+      "Buffering often happens when the content is trying to use more data each second than the connection can support.",
+  },
 ];
 
 const baseQuizQuestions = [
@@ -128,8 +180,7 @@ const baseQuizQuestions = [
       "User B, because the video is trying to use more data each second than the connection can comfortably support",
   },
   {
-    question:
-      "What is the best definition of a bit in this learning module?",
+    question: "What is the best definition of a bit in this learning module?",
     options: [
       "A tiny unit of digital information used as part of larger files and data",
       "A measure of how wide a network connection is",
@@ -518,6 +569,51 @@ function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
   );
 }
 
+function ModuleProgress({ currentPage }) {
+  const pages = [
+    { label: "Overview" },
+    { label: "Activity" },
+    { label: "Quiz" },
+  ];
+
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-slate-900">Module Progress</h2>
+        <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        {pages.map((page, index) => {
+          const active = currentPage === index;
+          const complete = currentPage > index;
+
+          return (
+            <div
+              key={page.label}
+              className={`rounded-2xl border p-4 ${
+                active
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : complete
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-slate-200 bg-slate-50 text-slate-600"
+              }`}
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                  {index + 1}
+                </div>
+                {complete && <CheckCircle2 className="h-5 w-5" />}
+              </div>
+              <p className="font-semibold">{page.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function Bandwidth() {
   const [bandwidthLevel, setBandwidthLevel] = useState("medium");
   const [bitrateLevel, setBitrateLevel] = useState("medium");
@@ -525,9 +621,45 @@ export default function Bandwidth() {
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState([]);
 
+  const [modulePage, setModulePage] = useState(0);
+  const [overviewUnlocked, setOverviewUnlocked] = useState(false);
+  const [activityUnlocked, setActivityUnlocked] = useState(false);
+  const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
+
+  const [bandwidthTouched, setBandwidthTouched] = useState(false);
+  const [bitrateTouched, setBitrateTouched] = useState(false);
+
+  const overviewRef = useRef(null);
+
   useEffect(() => {
     setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!overviewRef.current || overviewUnlocked || modulePage !== 0) return;
+
+      const rect = overviewRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      if (rect.bottom <= viewportHeight - 20) {
+        setOverviewUnlocked(true);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [overviewUnlocked, modulePage]);
+
+useEffect(() => {
+  if (bandwidthTouched && bitrateTouched) {
+    setActivityUnlocked(true)
+    setShowCompletionOverlay(true)
+    markActivityComplete("/bitrate-bandwidth")
+  }
+}, [bandwidthTouched, bitrateTouched])
 
   const score = useMemo(() => {
     return quizQuestions.reduce(
@@ -535,7 +667,11 @@ export default function Bandwidth() {
       0
     );
   }, [selectedAnswers, quizQuestions]);
-
+useEffect(() => {
+  if (submittedQuiz && score >= 6) {
+    markQuizPassed("/bitrate-bandwidth")
+  }
+}, [submittedQuiz, score])
   const bandwidthValue = levelValue[bandwidthLevel];
   const bitrateValue = levelValue[bitrateLevel];
   const isBuffering = bitrateValue > bandwidthValue;
@@ -543,6 +679,25 @@ export default function Bandwidth() {
   const allAnswered =
     quizQuestions.length > 0 &&
     quizQuestions.every((_, index) => typeof selectedAnswers[index] === "string");
+
+  const resetQuiz = () => {
+    setSelectedAnswers({});
+    setSubmittedQuiz(false);
+    setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
+  };
+
+  const resetActivity = () => {
+    setBandwidthLevel("medium");
+    setBitrateLevel("medium");
+    setBandwidthTouched(false);
+    setBitrateTouched(false);
+    setActivityUnlocked(false);
+    setShowCompletionOverlay(false);
+  };
+
+  const goToNextModule = () => {
+    alert("Great job! You finished this module. You can now move to the next one.");
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -554,263 +709,534 @@ export default function Bandwidth() {
           <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
             Bit Rate and Bandwidth
           </h1>
+          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
+            Learn the difference between bits, bit rate, and bandwidth, then test
+            how they work together in an interactive activity.
+          </p>
         </header>
 
-        <Section title="General Overview" icon={BookOpen}>
-          <div className="grid gap-3 md:grid-cols-5">
-            {introSteps.map((step, index) => (
-              <div
-                key={step}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-              >
-                <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
-                  {index + 1}
-                </div>
-                <p className="text-sm font-semibold leading-5 text-slate-800">
-                  {step}
-                </p>
-              </div>
-            ))}
-          </div>
+        <ModuleProgress currentPage={modulePage} />
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">
-                Real-life analogy
-              </h3>
-              <p className="mt-2 leading-7 text-slate-700">
-                Imagine water moving through pipes. A wider pipe can carry more
-                water at one time. Bandwidth is similar — it is the amount of
-                data that can move through a connection. Bit rate is more like
-                how much water is being used each second.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">
-                Key ideas to remember
-              </h3>
-              <div className="mt-3 grid gap-2">
-                {keyIdeas.map((idea) => (
-                  <div
-                    key={idea}
-                    className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
-                  >
-                    <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
-                    <p className="text-sm leading-6 text-slate-700">{idea}</p>
+        <AnimatePresence mode="wait">
+          {modulePage === 0 && (
+            <motion.div
+              key="overview-page"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.25 }}
+            >
+              <div ref={overviewRef}>
+                <Section title="General Overview" icon={BookOpen}>
+                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-100">
+                        <Target className="h-5 w-5 text-blue-700" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          What you are learning
+                        </h3>
+                        <p className="mt-2 leading-7 text-slate-700">
+                          This module explains the difference between bits, bit rate,
+                          and bandwidth. It also shows why videos can buffer when the
+                          content is trying to use more data each second than the
+                          connection can carry smoothly.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Section>
 
-        <Section title="Core Concepts" icon={Gauge}>
-          <div className="grid gap-4 lg:grid-cols-3">
-            {conceptCards.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.key}
-                  className={`rounded-2xl border p-5 ${item.accent}`}
-                >
-                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/70">
-                    <Icon className="h-5 w-5" />
+                  <div className="mt-6 grid gap-3 md:grid-cols-5">
+                    {overviewSteps.map((step) => (
+                      <div
+                        key={step.step}
+                        className="rounded-2xl border border-slate-200 bg-white p-4"
+                      >
+                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
+                          {step.step}
+                        </div>
+                        <h3 className="text-sm font-semibold text-slate-900">
+                          {step.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-slate-700">
+                          {step.text}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                  <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
-                  <p className="text-sm leading-6">{item.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </Section>
 
-        <Section title="Interactive Learning Activity" icon={MousePointerClick}>
-          <p className="mb-5 leading-7 text-slate-700">
-            Choose a bandwidth level and a bit rate level, then watch what
-            happens.
-          </p>
+                  <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <div className="flex items-center gap-2">
+                        <Lightbulb className="h-5 w-5 text-amber-500" />
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          Real-life analogy
+                        </h3>
+                      </div>
+                      <p className="mt-3 leading-7 text-slate-700">
+                        Imagine water moving through pipes. A wider pipe can carry
+                        more water at one time. Bandwidth is similar — it is the
+                        amount of data that can move through a connection. Bit rate
+                        is more like how much water is being used each second.
+                      </p>
+                    </div>
 
-          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="space-y-6">
-              <SelectorGroup
-                title="Choose bandwidth"
-                value={bandwidthLevel}
-                onChange={setBandwidthLevel}
-              />
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <div className="flex items-center gap-2">
+                        <Info className="h-5 w-5 text-sky-600" />
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          Key ideas to remember
+                        </h3>
+                      </div>
+                      <div className="mt-3 grid gap-2">
+                        {keyIdeas.map((idea) => (
+                          <div
+                            key={idea}
+                            className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
+                          >
+                            <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
+                            <p className="text-sm leading-6 text-slate-700">{idea}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
-              <SelectorGroup
-                title="Choose bit rate"
-                value={bitrateLevel}
-                onChange={setBitrateLevel}
-              />
+                  <div className="mt-8">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                      <div className="mb-5 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100">
+                          <Gauge className="h-5 w-5 text-slate-700" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900">
+                          Core Concepts
+                        </h3>
+                      </div>
 
-              <div
-                className={`rounded-2xl border p-4 ${
-                  isBuffering
-                    ? "border-amber-200 bg-amber-50"
-                    : "border-emerald-200 bg-emerald-50"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  {isBuffering ? (
-                    <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
-                  ) : (
-                    <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
-                  )}
+                      <div className="grid gap-4 lg:grid-cols-3">
+                        {conceptCards.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <div
+                              key={item.key}
+                              className={`rounded-2xl border p-5 ${item.accent}`}
+                            >
+                              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/70">
+                                <Icon className="h-5 w-5" />
+                              </div>
+                              <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
+                              <p className="text-sm leading-6">{item.description}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
 
-                  <div>
-                    <h4
-                      className={`font-semibold ${
-                        isBuffering ? "text-amber-800" : "text-emerald-800"
-                      }`}
-                    >
-                      {isBuffering
-                        ? "Not enough bandwidth for this bit rate"
-                        : "This bandwidth can support this bit rate"}
-                    </h4>
-                    <p
-                      className={`mt-1 leading-7 ${
-                        isBuffering ? "text-amber-700" : "text-emerald-700"
-                      }`}
-                    >
-                      {isBuffering
-                        ? "The content is trying to use more data each second than the connection can comfortably carry, so buffering or reduced quality may happen."
-                        : "The connection has enough room for this amount of data, so the content can play more smoothly."}
+                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
+                    <div className="mb-3 flex items-center gap-2">
+                      <XCircle className="h-5 w-5 text-rose-700" />
+                      <h3 className="text-lg font-semibold text-rose-900">
+                        Common mistakes to avoid
+                      </h3>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-3">
+                      {misconceptionCards.map((item) => (
+                        <div key={item.wrong} className="rounded-2xl bg-white/80 p-4">
+                          <p className="text-sm font-semibold text-rose-800">
+                            Incorrect idea
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-slate-700">
+                            {item.wrong}
+                          </p>
+                          <p className="mt-3 text-sm font-semibold text-emerald-700">
+                            Better explanation
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-slate-700">
+                            {item.right}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                    <h3 className="font-semibold text-blue-900">What happens next?</h3>
+                    <p className="mt-2 text-sm leading-6 text-blue-800">
+                      On the next page, you will choose different bandwidth and bit
+                      rate levels and see whether the content plays smoothly or buffers.
                     </p>
                   </div>
-                </div>
+
+                  <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <h3 className="font-semibold text-slate-900">Ready to continue?</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                      Scroll to the bottom of this page to unlock the interactive activity.
+                    </p>
+                  </div>
+                </Section>
               </div>
 
-              <div className="rounded-2xl bg-amber-50 p-4">
-                <h4 className="font-semibold text-amber-800">Important note</h4>
-                <p className="mt-2 leading-7 text-amber-700">
-                  Bit rate and bandwidth are related, but they are not the same
-                  thing. Bit rate is how much data is used each second.
-                  Bandwidth is how much data can move through the connection.
-                </p>
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setModulePage(1)}
+                  disabled={!overviewUnlocked}
+                  className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                    overviewUnlocked
+                      ? "bg-slate-900 hover:bg-slate-800"
+                      : "cursor-not-allowed bg-slate-300"
+                  }`}
+                >
+                  {!overviewUnlocked && <Lock className="h-4 w-4" />}
+                  Next Page
+                  <ChevronRight className="h-4 w-4" />
+                </button>
               </div>
-            </div>
-
-            <div className="space-y-6">
-              <PipeComparison
-                bandwidthLevel={bandwidthLevel}
-                bitrateLevel={bitrateLevel}
-              />
-
-              <div className="grid gap-6">
-                <div>
-                  <h3 className="mb-3 text-lg font-semibold text-slate-900">
-                    What is happening here?
-                  </h3>
-                  <RelationshipSummary
-                    bandwidthLevel={bandwidthLevel}
-                    bitrateLevel={bitrateLevel}
-                  />
-                </div>
-
-                <div className="self-start">
-                  <VideoPreview
-                    bandwidthLevel={bandwidthLevel}
-                    bitrateLevel={bitrateLevel}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        <Section title="Quick Quiz" icon={HelpCircle}>
-          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm leading-6 text-slate-700">
-              These questions are designed to reward real understanding. Many of
-              the options are deliberately similar, so users need to understand
-              the difference between bits, bit rate, bandwidth, and buffering.
-            </p>
-          </div>
-
-          <div className="space-y-5">
-            {quizQuestions.map((q, qIndex) => (
-              <div
-                key={q.question}
-                className="rounded-2xl border border-slate-200 p-5"
-              >
-                <h3 className="font-semibold text-slate-900">
-                  {qIndex + 1}. {q.question}
-                </h3>
-
-                <div className="mt-4 grid gap-3">
-                  {q.options.map((option) => (
-                    <QuizOption
-                      key={option}
-                      option={option}
-                      isSelected={selectedAnswers[qIndex] === option}
-                      isCorrect={q.answer === option}
-                      submitted={submittedQuiz}
-                      onClick={() =>
-                        setSelectedAnswers((prev) => ({
-                          ...prev,
-                          [qIndex]: option,
-                        }))
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => setSubmittedQuiz(true)}
-              disabled={!allAnswered}
-              className="rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Submit Quiz
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedAnswers({});
-                setSubmittedQuiz(false);
-                setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
-              }}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2.5 text-slate-700 transition hover:bg-slate-50"
-            >
-              <RefreshCcw className="h-4 w-4" />
-              Reset Quiz
-            </button>
-          </div>
-
-          {!allAnswered && !submittedQuiz && (
-            <p className="mt-3 text-sm text-slate-500">
-              Answer every question before submitting.
-            </p>
-          )}
-
-          {submittedQuiz && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 rounded-2xl bg-slate-50 p-5"
-            >
-              <h3 className="text-lg font-semibold text-slate-900">
-                Your Score: {score} / {quizQuestions.length}
-              </h3>
-              <p className="mt-2 leading-7 text-slate-600">
-                {score === quizQuestions.length
-                  ? "Excellent work — you understand bits, bit rate, bandwidth, and how they work together."
-                  : score >= 6
-                  ? "Good job — you understand most of the topic, but review the exact difference between bit rate and bandwidth and why buffering happens."
-                  : score >= 4
-                  ? "Decent effort — revisit the interactive activity and pay attention to how bandwidth and bit rate interact."
-                  : "This quiz is meant to reward real understanding. Go back through the module and focus on the relationship between bit rate, bandwidth, and playback."}
-              </p>
             </motion.div>
           )}
-        </Section>
+
+          {modulePage === 1 && (
+            <motion.div
+              key="activity-page"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.25 }}
+            >
+              <Section title="Interactive Learning Activity" icon={MousePointerClick}>
+                <div className="relative">
+                  <p className="mb-5 leading-7 text-slate-700">
+                    Choose a bandwidth level and a bit rate level, then watch what
+                    happens.
+                  </p>
+
+                  <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+                    <div className="space-y-6">
+                      <SelectorGroup
+                        title="Choose bandwidth"
+                        value={bandwidthLevel}
+                        onChange={(level) => {
+                          setBandwidthLevel(level);
+                          setBandwidthTouched(true);
+                        }}
+                      />
+
+                      <SelectorGroup
+                        title="Choose bit rate"
+                        value={bitrateLevel}
+                        onChange={(level) => {
+                          setBitrateLevel(level);
+                          setBitrateTouched(true);
+                        }}
+                      />
+
+                      <div
+                        className={`rounded-2xl border p-4 ${
+                          isBuffering
+                            ? "border-amber-200 bg-amber-50"
+                            : "border-emerald-200 bg-emerald-50"
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          {isBuffering ? (
+                            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+                          ) : (
+                            <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
+                          )}
+
+                          <div>
+                            <h4
+                              className={`font-semibold ${
+                                isBuffering ? "text-amber-800" : "text-emerald-800"
+                              }`}
+                            >
+                              {isBuffering
+                                ? "Not enough bandwidth for this bit rate"
+                                : "This bandwidth can support this bit rate"}
+                            </h4>
+                            <p
+                              className={`mt-1 leading-7 ${
+                                isBuffering ? "text-amber-700" : "text-emerald-700"
+                              }`}
+                            >
+                              {isBuffering
+                                ? "The content is trying to use more data each second than the connection can comfortably carry, so buffering or reduced quality may happen."
+                                : "The connection has enough room for this amount of data, so the content can play more smoothly."}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl bg-amber-50 p-4">
+                        <h4 className="font-semibold text-amber-800">Important note</h4>
+                        <p className="mt-2 leading-7 text-amber-700">
+                          Bit rate and bandwidth are related, but they are not the same
+                          thing. Bit rate is how much data is used each second.
+                          Bandwidth is how much data can move through the connection.
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <p className="text-sm leading-6 text-slate-700">
+                          {activityUnlocked
+                            ? "Great — you have explored both controls, so you can move to the quiz."
+                            : "To unlock the quiz, change both the bandwidth and the bit rate at least once."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <PipeComparison
+                        bandwidthLevel={bandwidthLevel}
+                        bitrateLevel={bitrateLevel}
+                      />
+
+                      <div className="grid gap-6">
+                        <div>
+                          <h3 className="mb-3 text-lg font-semibold text-slate-900">
+                            What is happening here?
+                          </h3>
+                          <RelationshipSummary
+                            bandwidthLevel={bandwidthLevel}
+                            bitrateLevel={bitrateLevel}
+                          />
+                        </div>
+
+                        <div className="self-start">
+                          <VideoPreview
+                            bandwidthLevel={bandwidthLevel}
+                            bitrateLevel={bitrateLevel}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={resetActivity}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2.5 text-slate-700 transition hover:bg-slate-50"
+                    >
+                      <RefreshCcw className="h-4 w-4" />
+                      Reset Activity
+                    </button>
+                  </div>
+
+                  <AnimatePresence>
+                    {showCompletionOverlay && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-4 backdrop-blur-[3px]"
+                      >
+                        <motion.div
+                          initial={{ scale: 0.96, y: 10, opacity: 0 }}
+                          animate={{ scale: 1, y: 0, opacity: 1 }}
+                          exit={{ scale: 0.98, opacity: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div />
+                            <button
+                              type="button"
+                              onClick={() => setShowCompletionOverlay(false)}
+                              className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                              aria-label="Close completion message"
+                            >
+                              <X className="h-5 w-5" />
+                            </button>
+                          </div>
+
+                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100">
+                            <CheckCircle2 className="h-8 w-8 text-emerald-700" />
+                          </div>
+
+                          <h3 className="mt-4 text-2xl font-bold text-slate-900">
+                            Activity Complete
+                          </h3>
+
+                          <p className="mt-3 text-sm leading-6 text-slate-600">
+                            You explored both bandwidth and bit rate, and saw how they work
+                            together to create smooth playback or buffering.
+                          </p>
+
+                          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                            <button
+                              type="button"
+                              onClick={resetActivity}
+                              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-2.5 text-slate-700 transition hover:bg-slate-50"
+                            >
+                              <RefreshCcw className="h-4 w-4" />
+                              Try Again
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setShowCompletionOverlay(false)}
+                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+                            >
+                              Back to Activity
+                            </button>
+                          </div>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setModulePage(0)}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous Page
+                  </button>
+
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                    {activityUnlocked
+                      ? "Activity complete — you can move to the quiz."
+                      : "Explore both selectors to unlock the quiz."}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setModulePage(2)}
+                    disabled={!activityUnlocked}
+                    className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                      activityUnlocked
+                        ? "bg-slate-900 hover:bg-slate-800"
+                        : "cursor-not-allowed bg-slate-300"
+                    }`}
+                  >
+                    {!activityUnlocked && <Lock className="h-4 w-4" />}
+                    Next Page
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </Section>
+            </motion.div>
+          )}
+
+          {modulePage === 2 && (
+            <motion.div
+              key="quiz-page"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.25 }}
+            >
+              <Section title="Quick Quiz" icon={HelpCircle}>
+               
+
+                <div className="space-y-5">
+                  {quizQuestions.map((q, qIndex) => (
+                    <div
+                      key={q.question}
+                      className="rounded-2xl border border-slate-200 p-5"
+                    >
+                      <h3 className="font-semibold text-slate-900">
+                        {qIndex + 1}. {q.question}
+                      </h3>
+
+                      <div className="mt-4 grid gap-3">
+                        {q.options.map((option) => (
+                          <QuizOption
+                            key={option}
+                            option={option}
+                            isSelected={selectedAnswers[qIndex] === option}
+                            isCorrect={q.answer === option}
+                            submitted={submittedQuiz}
+                            onClick={() =>
+                              setSelectedAnswers((prev) => ({
+                                ...prev,
+                                [qIndex]: option,
+                              }))
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSubmittedQuiz(true)}
+                    disabled={!allAnswered}
+                    className="rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Submit Quiz
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={resetQuiz}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2.5 text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <RefreshCcw className="h-4 w-4" />
+                    Reset Quiz
+                  </button>
+                </div>
+
+                {!allAnswered && !submittedQuiz && (
+                  <p className="mt-3 text-sm text-slate-500">
+                    Answer every question before submitting.
+                  </p>
+                )}
+
+                {submittedQuiz && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-6 rounded-2xl bg-slate-50 p-5"
+                  >
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      Your Score: {score} / {quizQuestions.length}
+                    </h3>
+                    <p className="mt-2 leading-7 text-slate-600">
+                      {score === quizQuestions.length
+                        ? "Excellent work — you understand bits, bit rate, bandwidth, and how they work together."
+                        : score >= 6
+                        ? "Good job — you understand most of the topic, but review the exact difference between bit rate and bandwidth and why buffering happens."
+                        : score >= 4
+                        ? "Decent effort — revisit the interactive activity and pay attention to how bandwidth and bit rate interact."
+                        : "This quiz is meant to reward real understanding. Go back through the module and focus on the relationship between bit rate, bandwidth, and playback."}
+                    </p>
+
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={() => setModulePage(1)}
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Back to Activity
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={goToNextModule}
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
+                      >
+                        Go to Next Module
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </Section>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

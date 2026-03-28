@@ -4,16 +4,24 @@ import {
   ArrowRight,
   BadgeCheck,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   GripHorizontal,
   HelpCircle,
+  Info,
   Laptop,
+  Lightbulb,
+  Lock,
   Package,
   RefreshCcw,
   Server,
   ShieldCheck,
+  Target,
+  X,
+  XCircle,
 } from "lucide-react";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
-
+import { markActivityComplete, markQuizPassed } from "../utils/progress"
 const baseQuizQuestions = [
   {
     question:
@@ -111,11 +119,62 @@ const baseQuizQuestions = [
   },
 ];
 
+const overviewCards = [
+  {
+    step: 1,
+    title: "Check both devices are ready",
+    text:
+      "TCP begins with a 3-way handshake so both sides know they can communicate properly.",
+  },
+  {
+    step: 2,
+    title: "Send the packets",
+    text:
+      "Once the connection is established, data can be sent as packets across the network.",
+  },
+  {
+    step: 3,
+    title: "Track order and missing data",
+    text:
+      "TCP uses packet numbers so the receiver knows the correct order and can detect if something is missing.",
+  },
+  {
+    step: 4,
+    title: "Resend only what is missing",
+    text:
+      "If one packet is lost, TCP can request that missing packet again instead of restarting everything.",
+  },
+  {
+    step: 5,
+    title: "Rebuild the original message",
+    text:
+      "The receiver uses the packet numbers to rebuild the full message in the right order.",
+  },
+];
+
 const keyIdeas = [
   "TCP helps devices communicate reliably.",
   "The 3-way handshake checks both devices are ready.",
   "If one packet is missing, TCP can request only that packet again.",
   "Packet numbers help rebuild the data in the correct order.",
+];
+
+const misconceptionCards = [
+  {
+    wrong: "TCP sends everything again if one packet is lost.",
+    right:
+      "TCP can resend only the missing packet if the other packets already arrived.",
+  },
+  {
+    wrong: "TCP starts sending normal data immediately.",
+    right:
+      "TCP first uses the 3-way handshake to confirm both devices are ready.",
+  },
+  {
+    wrong: "Packet order does not matter.",
+    right:
+      "TCP uses sequence information so the receiver can rebuild the original message correctly.",
+  },
 ];
 
 const stepLabels = [
@@ -199,6 +258,8 @@ function StatusBox({ title, body, tone = "neutral" }) {
       ? "bg-emerald-50 text-emerald-800 border-emerald-200"
       : tone === "info"
       ? "bg-blue-50 text-blue-800 border-blue-200"
+      : tone === "danger"
+      ? "bg-rose-50 text-rose-800 border-rose-200"
       : "bg-slate-50 text-slate-700 border-slate-200";
 
   return (
@@ -491,6 +552,47 @@ function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
   );
 }
 
+function ModuleProgress({ currentPage }) {
+  const pages = [{ label: "Overview" }, { label: "Activity" }, { label: "Quiz" }];
+
+  return (
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-slate-900">Module Progress</h2>
+        <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3">
+        {pages.map((page, index) => {
+          const active = currentPage === index;
+          const complete = currentPage > index;
+
+          return (
+            <div
+              key={page.label}
+              className={`rounded-2xl border p-4 ${
+                active
+                  ? "border-slate-900 bg-slate-900 text-white"
+                  : complete
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border-slate-200 bg-slate-50 text-slate-600"
+              }`}
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                  {index + 1}
+                </div>
+                {complete && <CheckCircle2 className="h-5 w-5" />}
+              </div>
+              <p className="font-semibold">{page.label}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function TCP() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
@@ -505,10 +607,43 @@ export default function TCP() {
   const [packetOrder, setPacketOrder] = useState([]);
   const [scrambledPackets, setScrambledPackets] = useState([]);
 
+  const [modulePage, setModulePage] = useState(0);
+  const [overviewUnlocked, setOverviewUnlocked] = useState(false);
+  const [activityUnlocked, setActivityUnlocked] = useState(false);
+  const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
+
+  const overviewRef = useRef(null);
+
   useEffect(() => {
     setScrambledPackets(shuffleArray([1, 2, 3, 4]));
     setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!overviewRef.current || overviewUnlocked || modulePage !== 0) return;
+
+      const rect = overviewRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      if (rect.bottom <= viewportHeight - 20) {
+        setOverviewUnlocked(true);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [overviewUnlocked, modulePage]);
+
+useEffect(() => {
+  if (phase === "done") {
+    setActivityUnlocked(true)
+    setShowCompletionOverlay(true)
+    markActivityComplete("/tcp")
+  }
+}, [phase])
 
   const score = useMemo(() => {
     return quizQuestions.reduce(
@@ -516,7 +651,11 @@ export default function TCP() {
       0
     );
   }, [selectedAnswers, quizQuestions]);
-
+useEffect(() => {
+  if (submittedQuiz && score >= 6) {
+    markQuizPassed("/tcp")
+  }
+}, [submittedQuiz, score])
   const allAnswered =
     quizQuestions.length > 0 &&
     quizQuestions.every((_, index) => typeof selectedAnswers[index] === "string");
@@ -545,24 +684,37 @@ export default function TCP() {
     }
   })();
 
-  const connectionEstablished = ["connected", "send", "slip", "resend", "rebuild", "done"].includes(phase);
+  const connectionEstablished = [
+    "connected",
+    "send",
+    "slip",
+    "resend",
+    "rebuild",
+    "done",
+  ].includes(phase);
 
   const handleHandshakeSuccess = (packet) => {
     if (packet === "SYN" && phase === "syn") {
       setPhase("synack");
-      setFeedback("The server received SYN. Now drag SYN-ACK back to the client.");
+      setFeedback(
+        "The server received SYN. Now drag SYN-ACK back to the client. This means the server received the first message and is replying."
+      );
       return;
     }
 
     if (packet === "SYN-ACK" && phase === "synack") {
       setPhase("ack");
-      setFeedback("Great. Now drag ACK to the server to complete the handshake.");
+      setFeedback(
+        "Great. Now drag ACK to the server to complete the handshake. This final message confirms both sides are ready."
+      );
       return;
     }
 
     if (packet === "ACK" && phase === "ack") {
       setPhase("connected");
-      setFeedback("The TCP connection is now established. Both devices are ready.");
+      setFeedback(
+        "The TCP connection is now established. Both devices are ready, so reliable packet transfer can begin."
+      );
     }
   };
 
@@ -604,6 +756,8 @@ export default function TCP() {
     setSlippedFound(false);
     setPacketOrder([]);
     setScrambledPackets(shuffleArray([1, 2, 3, 4]));
+    setActivityUnlocked(false);
+    setShowCompletionOverlay(false);
   };
 
   const resetQuiz = () => {
@@ -640,6 +794,10 @@ export default function TCP() {
       ? "Rebuild the data"
       : "TCP delivery complete";
 
+  const goToNextModule = () => {
+    alert("Great job! You finished this module. You can now move to the next one.");
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
@@ -650,447 +808,721 @@ export default function TCP() {
           <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
             Transmission Control Protocol (TCP)
           </h1>
+          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
+            Learn how TCP creates a reliable connection, checks both devices are ready,
+            handles missing packets, and rebuilds data in the correct order.
+          </p>
         </header>
 
-        <Section title="What is TCP?" icon={HelpCircle}>
-          <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-            <div>
-              <p className="leading-7 text-slate-700">
-                TCP is a rule used on the internet to make communication reliable.
-                Before data is sent, TCP checks both devices are ready. It also
-                keeps packets in order and can request missing packets again if one
-                is lost.
-              </p>
+        <ModuleProgress currentPage={modulePage} />
 
-              <div className="mt-5">
-                <h3 className="text-lg font-semibold text-slate-900">
-                  Real-life analogy
-                </h3>
-                <p className="mt-2 leading-7 text-slate-700">
-                  Think of sending numbered pages in a letter. First, both people
-                  make sure they are ready to communicate. If one page goes
-                  missing, only that page is sent again. The page numbers help the
-                  receiver put everything back in the right order.
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">
-                Key ideas to remember
-              </h3>
-              <div className="mt-3 grid gap-2">
-                {keyIdeas.map((idea) => (
-                  <div
-                    key={idea}
-                    className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
-                  >
-                    <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
-                    <p className="text-sm leading-6 text-slate-700">{idea}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        <Section title="Interactive TCP Simulation" icon={ShieldCheck}>
-          <p className="mb-5 leading-7 text-slate-700">
-            Complete the handshake, send the packets, find the missing one, request
-            it again, and rebuild the message in order.
-          </p>
-
-          <div className="mb-5 flex flex-wrap gap-2">
-            {stepLabels.map((label, index) => (
-              <StepChip
-                key={label}
-                label={label}
-                active={activeStep === index}
-                complete={activeStep > index}
-              />
-            ))}
-          </div>
-
-          <StatusBox title={stripTitle} body={feedback} tone={stripTone} />
-
-          <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-6">
-            <div className="mb-4 flex justify-center">
-              <div
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  connectionEstablished
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-100 text-slate-500"
-                }`}
-              >
-                {connectionEstablished
-                  ? "Connection established"
-                  : "Connection not established"}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[160px_minmax(0,1fr)_160px] lg:items-start">
-              <Device type="client" title="Client" subtitle="Your Device" />
-
-              <div className="flex min-h-[330px] flex-col justify-start">
-                <AnimatePresence mode="wait">
-                  {phase === "syn" && (
-                    <motion.div
-                      key="syn"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
-                      <DraggablePacketLane
-                        label="SYN"
-                        direction="right"
-                        onSuccess={() => handleHandshakeSuccess("SYN")}
-                        helperText="Drag SYN to the server."
-                      />
-                    </motion.div>
-                  )}
-
-                  {phase === "synack" && (
-                    <motion.div
-                      key="synack"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
-                      <DraggablePacketLane
-                        label="SYN-ACK"
-                        direction="left"
-                        onSuccess={() => handleHandshakeSuccess("SYN-ACK")}
-                        helperText="Drag SYN-ACK back to the client."
-                      />
-                    </motion.div>
-                  )}
-
-                  {phase === "ack" && (
-                    <motion.div
-                      key="ack"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
-                      <DraggablePacketLane
-                        label="ACK"
-                        direction="right"
-                        onSuccess={() => handleHandshakeSuccess("ACK")}
-                        helperText="Drag ACK to the server to finish the handshake."
-                      />
-                    </motion.div>
-                  )}
-
-                  {phase === "connected" && (
-                    <motion.div
-                      key="connected"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="space-y-4"
-                    >
-                      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
-                          <span>Client ready</span>
-                          <span>Server ready</span>
-                        </div>
-
-                        <div className="relative h-36 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
-                          <div className="absolute left-8 right-8 top-1/2 h-2 -translate-y-1/2 rounded-full bg-emerald-300" />
-                          <div className="absolute left-6 top-1/2 h-14 w-14 -translate-y-1/2 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50" />
-                          <div className="absolute right-6 top-1/2 h-14 w-14 -translate-y-1/2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50" />
-                          <div className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
-                            Reliable connection ready
-                          </div>
-                        </div>
+        <AnimatePresence mode="wait">
+          {modulePage === 0 && (
+            <motion.div
+              key="overview-page"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.25 }}
+            >
+              <div ref={overviewRef}>
+                <Section title="What is TCP?" icon={HelpCircle}>
+                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-100">
+                        <Target className="h-5 w-5 text-blue-700" />
                       </div>
-
-                      <div className="flex justify-center">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPhase("send");
-                            setFeedback(
-                              "The client now sends the data packets to the server one by one."
-                            );
-                          }}
-                          className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
-                        >
-                          Start Sending Packets
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {phase === "send" && (
-                    <motion.div
-                      key="send"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="space-y-4"
-                    >
-                      <ConnectionTrack
-                        direction="right"
-                        packets={[1, 2, 3, 4]}
-                        lineLabel="Client → Server"
-                        connected
-                      />
-
-                      <div className="flex justify-center">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPhase("slip");
-                            setFeedback(
-                              "The server sends the data back to the client. Packet 3 slips off the line. Tap the fallen packet."
-                            );
-                          }}
-                          className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
-                        >
-                          Show Return Trip
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {phase === "slip" && (
-                    <motion.div
-                      key="slip"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="space-y-4"
-                    >
-                      <ConnectionTrack
-                        direction="left"
-                        packets={[1, 2, 3, 4]}
-                        slipPacket={3}
-                        onSlipClick={handleSlipClick}
-                        lineLabel="Server → Client"
-                        connected
-                        foundMissing={slippedFound}
-                      />
-
-                      <div className="flex justify-center">
-                        <button
-                          type="button"
-                          disabled={!slippedFound}
-                          onClick={() => {
-                            if (!slippedFound) return;
-                            setPhase("resend");
-                            setFeedback(
-                              "Only packet 3 is resent. The other packets already arrived correctly."
-                            );
-                          }}
-                          className={`rounded-2xl px-5 py-2 text-white transition ${
-                            slippedFound
-                              ? "bg-slate-900 hover:bg-slate-800"
-                              : "cursor-not-allowed bg-slate-400"
-                          }`}
-                        >
-                          Request Missing Packet Again
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {phase === "resend" && (
-                    <motion.div
-                      key="resend"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="space-y-4"
-                    >
-                      <ConnectionTrack
-                        direction="left"
-                        packets={[3]}
-                        deckPackets={[1, 2, 4]}
-                        lineLabel="Server → Client (only packet 3 resent)"
-                        connected
-                      />
-
-                      <div className="flex justify-center">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPhase("rebuild");
-                            setFeedback(
-                              "Click the packets in order: 1, 2, 3, 4. This shows how TCP rebuilds the full message."
-                            );
-                          }}
-                          className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
-                        >
-                          Rebuild Data in Order
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {(phase === "rebuild" || phase === "done") && (
-                    <motion.div
-                      key="rebuild"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
-                      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <p className="text-center text-sm font-semibold text-slate-700">
-                          Rebuild the data in TCP sequence order: 1, 2, 3, 4
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          What you are learning
+                        </h3>
+                        <p className="mt-2 leading-7 text-slate-700">
+                          TCP is a protocol used to make data transfer reliable. It checks
+                          that both devices are ready before normal transfer begins, uses
+                          packet numbers to keep track of order, and can resend missing
+                          packets if one is lost.
                         </p>
+                      </div>
+                    </div>
+                  </div>
 
-                        <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-                          {scrambledPackets.map((num) => (
-                            <PacketButton
-                              key={num}
-                              number={num}
-                              onClick={() => handleRebuildClick(num)}
-                              success={packetOrder.includes(num)}
-                              disabled={packetOrder.includes(num) || phase === "done"}
-                            />
-                          ))}
+                  <div className="mt-6 grid gap-3 md:grid-cols-5">
+                    {overviewCards.map((card) => (
+                      <div
+                        key={card.step}
+                        className="rounded-2xl border border-slate-200 bg-white p-4"
+                      >
+                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
+                          {card.step}
                         </div>
+                        <h3 className="text-sm font-semibold text-slate-900">
+                          {card.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-slate-700">
+                          {card.text}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
 
-                        <div className="mt-6 rounded-2xl bg-slate-50 p-4">
-                          <p className="mb-3 text-center text-sm font-semibold text-slate-700">
-                            Packets rebuilt here
+                  <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <div className="flex items-center gap-2">
+                        <Lightbulb className="h-5 w-5 text-amber-500" />
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          Real-life analogy
+                        </h3>
+                      </div>
+                      <p className="mt-3 leading-7 text-slate-700">
+                        Think of sending numbered pages in a letter. First, both people
+                        make sure they are ready to communicate. If one page goes missing,
+                        only that page is sent again. The page numbers help the receiver
+                        put everything back in the right order.
+                      </p>
+                    </div>
+
+                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                      <div className="flex items-center gap-2">
+                        <Info className="h-5 w-5 text-sky-600" />
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          Key ideas to remember
+                        </h3>
+                      </div>
+                      <div className="mt-3 grid gap-2">
+                        {keyIdeas.map((idea) => (
+                          <div
+                            key={idea}
+                            className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
+                          >
+                            <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
+                            <p className="text-sm leading-6 text-slate-700">{idea}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 rounded-3xl border border-blue-200 bg-blue-50 p-5">
+                    <h3 className="font-semibold text-blue-900">What do SYN, SYN-ACK, and ACK mean?</h3>
+                    <div className="mt-3 grid gap-3 md:grid-cols-3">
+                      <div className="rounded-2xl bg-white/80 p-4">
+                        <p className="font-semibold text-slate-900">SYN</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-700">
+                          The client starts the connection and says it wants to communicate.
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-white/80 p-4">
+                        <p className="font-semibold text-slate-900">SYN-ACK</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-700">
+                          The server replies to say it received the message and is ready too.
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-white/80 p-4">
+                        <p className="font-semibold text-slate-900">ACK</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-700">
+                          The client sends a final confirmation so the connection becomes established.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
+                    <div className="mb-3 flex items-center gap-2">
+                      <XCircle className="h-5 w-5 text-rose-700" />
+                      <h3 className="text-lg font-semibold text-rose-900">
+                        Common mistakes to avoid
+                      </h3>
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-3">
+                      {misconceptionCards.map((item) => (
+                        <div key={item.wrong} className="rounded-2xl bg-white/80 p-4">
+                          <p className="text-sm font-semibold text-rose-800">
+                            Incorrect idea
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-slate-700">
+                            {item.wrong}
+                          </p>
+                          <p className="mt-3 text-sm font-semibold text-emerald-700">
+                            Better explanation
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-slate-700">
+                            {item.right}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                    <h3 className="font-semibold text-blue-900">What happens next?</h3>
+                    <p className="mt-2 text-sm leading-6 text-blue-800">
+                      On the next page, you will complete the handshake, send the packets,
+                      find a missing one, resend it, and rebuild the full message in order.
+                    </p>
+                  </div>
+
+                  <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm leading-6 text-slate-700">
+                      Scroll to the bottom of this page to unlock the TCP simulation.
+                    </p>
+                  </div>
+                </Section>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setModulePage(1)}
+                  disabled={!overviewUnlocked}
+                  className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                    overviewUnlocked
+                      ? "bg-slate-900 hover:bg-slate-800"
+                      : "cursor-not-allowed bg-slate-300"
+                  }`}
+                >
+                  {!overviewUnlocked && <Lock className="h-4 w-4" />}
+                  Next Page
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {modulePage === 1 && (
+            <motion.div
+              key="activity-page"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.25 }}
+            >
+              <Section title="Interactive TCP Simulation" icon={ShieldCheck}>
+                <div className="relative">
+                  <p className="mb-5 leading-7 text-slate-700">
+                    Complete the handshake, send the packets, find the missing one, request
+                    it again, and rebuild the message in order.
+                  </p>
+
+                  <div className="mb-5 flex flex-wrap gap-2">
+                    {stepLabels.map((label, index) => (
+                      <StepChip
+                        key={label}
+                        label={label}
+                        active={activeStep === index}
+                        complete={activeStep > index}
+                      />
+                    ))}
+                  </div>
+
+                  <StatusBox title={stripTitle} body={feedback} tone={stripTone} />
+
+                  <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                    <div className="mb-4 flex justify-center">
+                      <div
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          connectionEstablished
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {connectionEstablished
+                          ? "Connection established"
+                          : "Connection not established"}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[160px_minmax(0,1fr)_160px] lg:items-start">
+                      <Device type="client" title="Client" subtitle="Your Device" />
+
+                      <div className="flex min-h-[330px] flex-col justify-start">
+                        <AnimatePresence mode="wait">
+                          {phase === "syn" && (
+                            <motion.div
+                              key="syn"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                            >
+                              <DraggablePacketLane
+                                label="SYN"
+                                direction="right"
+                                onSuccess={() => handleHandshakeSuccess("SYN")}
+                                helperText="Drag SYN to the server."
+                              />
+                            </motion.div>
+                          )}
+
+                          {phase === "synack" && (
+                            <motion.div
+                              key="synack"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                            >
+                              <DraggablePacketLane
+                                label="SYN-ACK"
+                                direction="left"
+                                onSuccess={() => handleHandshakeSuccess("SYN-ACK")}
+                                helperText="Drag SYN-ACK back to the client."
+                                connected
+                              />
+                            </motion.div>
+                          )}
+
+                          {phase === "ack" && (
+                            <motion.div
+                              key="ack"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                            >
+                              <DraggablePacketLane
+                                label="ACK"
+                                direction="right"
+                                onSuccess={() => handleHandshakeSuccess("ACK")}
+                                helperText="Drag ACK to the server to finish the handshake."
+                                connected
+                              />
+                            </motion.div>
+                          )}
+
+                          {phase === "connected" && (
+                            <motion.div
+                              key="connected"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="space-y-4"
+                            >
+                              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                                <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                  <span>Client ready</span>
+                                  <span>Server ready</span>
+                                </div>
+
+                                <div className="relative h-36 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+                                  <div className="absolute left-8 right-8 top-1/2 h-2 -translate-y-1/2 rounded-full bg-emerald-300" />
+                                  <div className="absolute left-6 top-1/2 h-14 w-14 -translate-y-1/2 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50" />
+                                  <div className="absolute right-6 top-1/2 h-14 w-14 -translate-y-1/2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50" />
+                                  <div className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
+                                    Reliable connection ready
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex justify-center">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setPhase("send");
+                                    setFeedback(
+                                      "The client now sends the data packets to the server one by one."
+                                    );
+                                  }}
+                                  className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                                >
+                                  Start Sending Packets
+                                </button>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {phase === "send" && (
+                            <motion.div
+                              key="send"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="space-y-4"
+                            >
+                              <ConnectionTrack
+                                direction="right"
+                                packets={[1, 2, 3, 4]}
+                                lineLabel="Client → Server"
+                                connected
+                              />
+
+                              <div className="flex justify-center">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setPhase("slip");
+                                    setFeedback(
+                                      "The server sends the data back to the client. Packet 3 slips off the line. Tap the fallen packet."
+                                    );
+                                  }}
+                                  className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                                >
+                                  Show Return Trip
+                                </button>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {phase === "slip" && (
+                            <motion.div
+                              key="slip"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="space-y-4"
+                            >
+                              <ConnectionTrack
+                                direction="left"
+                                packets={[1, 2, 3, 4]}
+                                slipPacket={3}
+                                onSlipClick={handleSlipClick}
+                                lineLabel="Server → Client"
+                                connected
+                                foundMissing={slippedFound}
+                              />
+
+                              <div className="flex justify-center">
+                                <button
+                                  type="button"
+                                  disabled={!slippedFound}
+                                  onClick={() => {
+                                    if (!slippedFound) return;
+                                    setPhase("resend");
+                                    setFeedback(
+                                      "Only packet 3 is resent. The other packets already arrived correctly."
+                                    );
+                                  }}
+                                  className={`rounded-2xl px-5 py-2 text-white transition ${
+                                    slippedFound
+                                      ? "bg-slate-900 hover:bg-slate-800"
+                                      : "cursor-not-allowed bg-slate-400"
+                                  }`}
+                                >
+                                  Request Missing Packet Again
+                                </button>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {phase === "resend" && (
+                            <motion.div
+                              key="resend"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="space-y-4"
+                            >
+                              <ConnectionTrack
+                                direction="left"
+                                packets={[3]}
+                                deckPackets={[1, 2, 4]}
+                                lineLabel="Server → Client (only packet 3 resent)"
+                                connected
+                              />
+
+                              <div className="flex justify-center">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setPhase("rebuild");
+                                    setFeedback(
+                                      "Click the packets in order: 1, 2, 3, 4. This shows how TCP rebuilds the full message."
+                                    );
+                                  }}
+                                  className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                                >
+                                  Rebuild Data in Order
+                                </button>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {(phase === "rebuild" || phase === "done") && (
+                            <motion.div
+                              key="rebuild"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                            >
+                              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                                <p className="text-center text-sm font-semibold text-slate-700">
+                                  Rebuild the data in TCP sequence order: 1, 2, 3, 4
+                                </p>
+
+                                <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                                  {scrambledPackets.map((num) => (
+                                    <PacketButton
+                                      key={num}
+                                      number={num}
+                                      onClick={() => handleRebuildClick(num)}
+                                      success={packetOrder.includes(num)}
+                                      disabled={packetOrder.includes(num) || phase === "done"}
+                                    />
+                                  ))}
+                                </div>
+
+                                <div className="mt-6 rounded-2xl bg-slate-50 p-4">
+                                  <p className="mb-3 text-center text-sm font-semibold text-slate-700">
+                                    Packets rebuilt here
+                                  </p>
+
+                                  <div className="flex min-h-[56px] flex-wrap items-center justify-center gap-2">
+                                    {packetOrder.length === 0 ? (
+                                      <span className="text-sm text-slate-400">
+                                        Ordered packets will appear here
+                                      </span>
+                                    ) : (
+                                      packetOrder.map((num) => (
+                                        <motion.div
+                                          key={num}
+                                          initial={{ opacity: 0, y: 8 }}
+                                          animate={{ opacity: 1, y: 0 }}
+                                          className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-700"
+                                        >
+                                          {num}
+                                        </motion.div>
+                                      ))
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      <Device type="server" title="Server" subtitle="Web Server" />
+                    </div>
+                  </div>
+
+                  {phase === "done" && (
+                    <div className="mt-5">
+                      <StatusBox
+                        title="Client received the full message"
+                        body="TCP used packet numbers and retransmission to make sure the data arrived reliably."
+                        tone="success"
+                      />
+                    </div>
+                  )}
+
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={resetSimulation}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 transition hover:bg-slate-50"
+                    >
+                      <RefreshCcw className="h-4 w-4" />
+                      Restart Simulation
+                    </button>
+                  </div>
+
+                  <AnimatePresence>
+                    {showCompletionOverlay && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-4 backdrop-blur-[3px]"
+                      >
+                        <motion.div
+                          initial={{ scale: 0.96, y: 10, opacity: 0 }}
+                          animate={{ scale: 1, y: 0, opacity: 1 }}
+                          exit={{ scale: 0.98, opacity: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div />
+                            <button
+                              type="button"
+                              onClick={() => setShowCompletionOverlay(false)}
+                              className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                              aria-label="Close completion message"
+                            >
+                              <X className="h-5 w-5" />
+                            </button>
+                          </div>
+
+                          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100">
+                            <CheckCircle2 className="h-8 w-8 text-emerald-700" />
+                          </div>
+
+                          <h3 className="mt-4 text-2xl font-bold text-slate-900">
+                            Activity Complete
+                          </h3>
+
+                          <p className="mt-3 text-sm leading-6 text-slate-600">
+                            You successfully completed the full TCP process, including the
+                            handshake, missing packet detection, retransmission, and rebuild.
                           </p>
 
-                          <div className="flex min-h-[56px] flex-wrap items-center justify-center gap-2">
-                            {packetOrder.length === 0 ? (
-                              <span className="text-sm text-slate-400">
-                                Ordered packets will appear here
-                              </span>
-                            ) : (
-                              packetOrder.map((num) => (
-                                <motion.div
-                                  key={num}
-                                  initial={{ opacity: 0, y: 8 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-sm font-bold text-emerald-700"
-                                >
-                                  {num}
-                                </motion.div>
-                              ))
-                            )}
+                          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                            <button
+                              type="button"
+                              onClick={resetSimulation}
+                              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-2.5 text-slate-700 transition hover:bg-slate-50"
+                            >
+                              <RefreshCcw className="h-4 w-4" />
+                              Try Again
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setShowCompletionOverlay(false)}
+                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+                            >
+                              Back to Activity
+                            </button>
                           </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
-              <Device type="server" title="Server" subtitle="Web Server" />
-            </div>
-          </div>
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setModulePage(0)}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous Page
+                  </button>
 
-          {phase === "done" && (
-            <div className="mt-5">
-              <StatusBox
-                title="Client received the full message"
-                body="TCP used packet numbers and retransmission to make sure the data arrived reliably."
-                tone="success"
-              />
-            </div>
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                    {activityUnlocked
+                      ? "Activity complete — you can move to the quiz."
+                      : "Complete the full TCP simulation to unlock the quiz."}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setModulePage(2)}
+                    disabled={!activityUnlocked}
+                    className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                      activityUnlocked
+                        ? "bg-slate-900 hover:bg-slate-800"
+                        : "cursor-not-allowed bg-slate-300"
+                    }`}
+                  >
+                    {!activityUnlocked && <Lock className="h-4 w-4" />}
+                    Next Page
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </Section>
+            </motion.div>
           )}
 
-          <div className="mt-6 flex justify-center">
-            <button
-              type="button"
-              onClick={resetSimulation}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 transition hover:bg-slate-50"
+          {modulePage === 2 && (
+            <motion.div
+              key="quiz-page"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.25 }}
             >
-              <RefreshCcw className="h-4 w-4" />
-              Restart Simulation
-            </button>
-          </div>
-        </Section>
+              <Section title="Quick Quiz" icon={HelpCircle}>
 
-        <Section title="Quick Quiz" icon={HelpCircle}>
-          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm leading-6 text-slate-700">
-              These questions are designed to check whether the user actually
-              understood the TCP process. The options are intentionally close, so
-              they need to know the handshake, retransmission, and rebuild stages.
-            </p>
-          </div>
 
-          <div className="space-y-5">
-            {quizQuestions.map((q, i) => (
-              <div
-                key={q.question}
-                className="rounded-2xl border border-slate-200 p-5"
-              >
-                <h3 className="font-semibold text-slate-900">
-                  {i + 1}. {q.question}
-                </h3>
+                <div className="space-y-5">
+                  {quizQuestions.map((q, i) => (
+                    <div
+                      key={q.question}
+                      className="rounded-2xl border border-slate-200 p-5"
+                    >
+                      <h3 className="font-semibold text-slate-900">
+                        {i + 1}. {q.question}
+                      </h3>
 
-                <div className="mt-4 grid gap-3">
-                  {q.options.map((option) => (
-                    <QuizOption
-                      key={option}
-                      option={option}
-                      isSelected={selectedAnswers[i] === option}
-                      isCorrect={q.answer === option}
-                      submitted={submittedQuiz}
-                      onClick={() =>
-                        setSelectedAnswers((prev) => ({
-                          ...prev,
-                          [i]: option,
-                        }))
-                      }
-                    />
+                      <div className="mt-4 grid gap-3">
+                        {q.options.map((option) => (
+                          <QuizOption
+                            key={option}
+                            option={option}
+                            isSelected={selectedAnswers[i] === option}
+                            isCorrect={q.answer === option}
+                            submitted={submittedQuiz}
+                            onClick={() =>
+                              setSelectedAnswers((prev) => ({
+                                ...prev,
+                                [i]: option,
+                              }))
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
-            ))}
-          </div>
 
-          <div className="mt-6 flex gap-3">
-            <button
-              type="button"
-              onClick={() => setSubmittedQuiz(true)}
-              disabled={!allAnswered}
-              className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Submit Quiz
-            </button>
+                <div className="mt-6 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSubmittedQuiz(true)}
+                    disabled={!allAnswered}
+                    className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Submit Quiz
+                  </button>
 
-            <button
-              type="button"
-              onClick={resetQuiz}
-              className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-50"
-            >
-              Reset Quiz
-            </button>
-          </div>
+                  <button
+                    type="button"
+                    onClick={resetQuiz}
+                    className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-50"
+                  >
+                    Reset Quiz
+                  </button>
+                </div>
 
-          {!allAnswered && !submittedQuiz && (
-            <p className="mt-3 text-sm text-slate-500">
-              Answer every question before submitting.
-            </p>
+                {!allAnswered && !submittedQuiz && (
+                  <p className="mt-3 text-sm text-slate-500">
+                    Answer every question before submitting.
+                  </p>
+                )}
+
+                {submittedQuiz && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-6 rounded-2xl bg-slate-50 p-5"
+                  >
+                    <h3 className="font-semibold text-slate-900">
+                      Your Score: {score} / {quizQuestions.length}
+                    </h3>
+
+                    <p className="mt-2 text-slate-600">
+                      {score === quizQuestions.length
+                        ? "Excellent work — you clearly understand how TCP establishes reliability, handles missing packets, and rebuilds data."
+                        : score >= 6
+                        ? "Good job — you understand most of TCP, but review the handshake sequence and exactly what happens when a packet goes missing."
+                        : score >= 4
+                        ? "Decent effort — revisit the interactive simulation, especially the difference between connection setup, retransmission, and rebuilding."
+                        : "This quiz is meant to reward real understanding. Go back through the full module and pay close attention to the order of steps."}
+                    </p>
+
+                    <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={() => setModulePage(1)}
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Back to Activity
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={goToNextModule}
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
+                      >
+                        Go to Next Module
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </Section>
+            </motion.div>
           )}
-
-          {submittedQuiz && (
-            <div className="mt-6 rounded-2xl bg-slate-50 p-5">
-              <h3 className="font-semibold text-slate-900">
-                Your Score: {score} / {quizQuestions.length}
-              </h3>
-
-              <p className="mt-2 text-slate-600">
-                {score === quizQuestions.length
-                  ? "Excellent work — you clearly understand how TCP establishes reliability, handles missing packets, and rebuilds data."
-                  : score >= 6
-                  ? "Good job — you understand most of TCP, but review the handshake sequence and exactly what happens when a packet goes missing."
-                  : score >= 4
-                  ? "Decent effort — revisit the interactive simulation, especially the difference between connection setup, retransmission, and rebuilding."
-                  : "This quiz is meant to reward real understanding. Go back through the full module and pay close attention to the order of steps."}
-              </p>
-            </div>
-          )}
-        </Section>
+        </AnimatePresence>
       </div>
     </div>
   );
