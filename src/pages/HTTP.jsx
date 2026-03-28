@@ -18,11 +18,24 @@ import {
   Server,
   ShieldCheck,
   Target,
+  Trophy,
   X,
   XCircle,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { markActivityComplete, markQuizPassed } from "../utils/progress"
+import { markActivityComplete, markQuizPassed } from "../utils/progress";
+import m5Diagram from "../assets/m5diagram.png";
+
+const ST_EDS = {
+  navy: "#073674",
+  blue: "#0A4AA3",
+  blue2: "#0F6DF0",
+  gold: "#FEC52F",
+  silver: "#D1D2D4",
+  white: "#FFFFFF",
+  pale: "#F8FAFC",
+};
+
 const overviewSteps = [
   {
     step: 1,
@@ -81,7 +94,7 @@ const misconceptionCards = [
   },
 ];
 
-const quizQuestions = [
+const baseQuizQuestions = [
   {
     question:
       "A browser is trying to fully load a webpage. Based on this module, which action best explains what HTTP helps the browser do?",
@@ -235,14 +248,35 @@ const homepageCards = [
   },
 ];
 
+function shuffleArray(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function buildShuffledQuiz(questions) {
+  return questions.map((q) => ({
+    ...q,
+    shuffledOptions: shuffleArray(q.options),
+  }));
+}
+
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100">
-          <Icon className="h-5 w-5 text-slate-700" />
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: `${ST_EDS.gold}20` }}
+        >
+          <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+          {title}
+        </h2>
       </div>
       {children}
     </section>
@@ -256,7 +290,7 @@ function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
     if (isCorrect) styles = "border-emerald-300 bg-emerald-50 text-emerald-800";
     else if (isSelected) styles = "border-rose-300 bg-rose-50 text-rose-800";
   } else if (isSelected) {
-    styles = "border-slate-900 bg-slate-900 text-white";
+    styles = "border-[#073674] bg-[#073674] text-white";
   }
 
   return (
@@ -298,7 +332,7 @@ function BrowserWindow({ path, method, onSend, disabled }) {
           className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 font-medium text-white transition ${
             disabled
               ? "cursor-not-allowed bg-slate-400"
-              : "bg-slate-900 hover:bg-slate-800"
+              : "bg-[#073674] hover:bg-[#0a4aa3]"
           }`}
         >
           <ArrowRight className="h-4 w-4" />
@@ -319,7 +353,7 @@ function RequestButton({ label, active, done, disabled, onClick, icon: Icon }) {
         done
           ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
           : active
-          ? "border-slate-900 bg-slate-900 text-white"
+          ? "border-[#073674] bg-[#073674] text-white"
           : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
       }`}
     >
@@ -377,7 +411,9 @@ function BrowserCanvas({ loadedResources, currentRequest }) {
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h4 className="font-semibold text-slate-900">Browser Window</h4>
+        <h4 className="font-semibold" style={{ color: ST_EDS.navy }}>
+          Browser Window
+        </h4>
         <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
           Current: {currentRequest.label}
         </div>
@@ -414,7 +450,9 @@ function BrowserCanvas({ loadedResources, currentRequest }) {
             >
               <div className="mb-3 flex items-center justify-between">
                 <div>
-                  <p className="text-lg font-bold text-slate-900">School Website</p>
+                  <p className="text-lg font-bold" style={{ color: ST_EDS.navy }}>
+                    School Website
+                  </p>
                   <p className="text-sm text-slate-500">Homepage loaded</p>
                 </div>
                 <Globe className="h-7 w-7 text-blue-600" />
@@ -516,7 +554,9 @@ function ResponseStatusCard({ currentRequest, phase }) {
   if (phase === "choose") {
     return (
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <h4 className="font-semibold text-slate-900">What will happen?</h4>
+        <h4 className="font-semibold" style={{ color: ST_EDS.navy }}>
+          What will happen?
+        </h4>
         <p className="mt-2 text-sm leading-6 text-slate-700">
           First the browser chooses a resource, then it sends an HTTP request,
           then the server sends back a response, and finally the browser displays
@@ -528,9 +568,9 @@ function ResponseStatusCard({ currentRequest, phase }) {
 
   if (phase === "sending") {
     return (
-      <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
-        <h4 className="font-semibold text-blue-900">Request sent</h4>
-        <p className="mt-2 text-sm leading-6 text-blue-800">
+      <div className="rounded-2xl border border-[#bfd7ff] bg-[#eef5ff] p-4">
+        <h4 className="font-semibold text-[#073674]">Request sent</h4>
+        <p className="mt-2 text-sm leading-6 text-[#0a4aa3]">
           The browser is sending an HTTP <span className="font-semibold">{currentRequest.method}</span>{" "}
           request for <span className="font-mono">{currentRequest.path}</span>.
         </p>
@@ -593,7 +633,7 @@ function PhaseSteps({ phase }) {
           key={label}
           className={`rounded-2xl border px-4 py-3 text-sm font-medium ${
             phaseIndex === index
-              ? "border-slate-900 bg-slate-900 text-white"
+              ? "border-[#073674] bg-[#073674] text-white"
               : phaseIndex > index
               ? "border-emerald-200 bg-emerald-50 text-emerald-800"
               : "border-slate-200 bg-slate-50 text-slate-600"
@@ -614,9 +654,11 @@ function ModuleProgress({ currentPage }) {
   ];
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-900">Module Progress</h2>
+        <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
+          Module Progress
+        </h2>
         <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
       </div>
 
@@ -630,7 +672,7 @@ function ModuleProgress({ currentPage }) {
               key={page.label}
               className={`rounded-2xl border p-4 ${
                 active
-                  ? "border-slate-900 bg-slate-900 text-white"
+                  ? "border-[#073674] bg-[#073674] text-white"
                   : complete
                   ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                   : "border-slate-200 bg-slate-50 text-slate-600"
@@ -654,6 +696,9 @@ function ModuleProgress({ currentPage }) {
 export default function HTTP() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState(() =>
+    buildShuffledQuiz(baseQuizQuestions)
+  );
 
   const [selectedRequestIndex, setSelectedRequestIndex] = useState(0);
   const [phase, setPhase] = useState("choose");
@@ -696,31 +741,33 @@ export default function HTTP() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [overviewUnlocked, modulePage]);
 
-useEffect(() => {
-  const allLoaded =
-    loadedResources.home &&
-    loadedResources.image &&
-    loadedResources.video &&
-    loadedResources.missing
+  useEffect(() => {
+    const allLoaded =
+      loadedResources.home &&
+      loadedResources.image &&
+      loadedResources.video &&
+      loadedResources.missing;
 
-  if (allLoaded) {
-    setActivityUnlocked(true)
-    setShowCompletionOverlay(true)
-    markActivityComplete("/http")
-  }
-}, [loadedResources])
+    if (allLoaded) {
+      setActivityUnlocked(true);
+      setShowCompletionOverlay(true);
+      markActivityComplete("/http");
+    }
+  }, [loadedResources]);
 
   const score = useMemo(() => {
     return quizQuestions.reduce(
       (total, q, i) => total + (selectedAnswers[i] === q.answer ? 1 : 0),
       0
     );
-  }, [selectedAnswers]);
-useEffect(() => {
-  if (submittedQuiz && score >= 5) {
-    markQuizPassed("/http")
-  }
-}, [submittedQuiz, score])
+  }, [selectedAnswers, quizQuestions]);
+
+  useEffect(() => {
+    if (submittedQuiz && score >= 5) {
+      markQuizPassed("/http");
+    }
+  }, [submittedQuiz, score]);
+
   const allAnswered = quizQuestions.every(
     (_, index) => typeof selectedAnswers[index] === "string"
   );
@@ -771,6 +818,7 @@ useEffect(() => {
   const resetQuiz = () => {
     setSubmittedQuiz(false);
     setSelectedAnswers({});
+    setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
   };
 
   const RequestIcon =
@@ -787,19 +835,54 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div
+      className="min-h-screen"
+      style={{
+        background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
+      }}
+    >
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
-        <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
-            Module 5
+        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+          <span
+            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
+          >
+            St Edmund&apos;s College Canberra
           </span>
-          <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
+
+          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
             HyperText Transfer Protocol (HTTP)
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
+          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
             Learn how a browser asks a web server for webpages and files, and how
             the server sends a response back.
           </p>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Globe className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Browser requests</p>
+              <p className="mt-1 text-sm text-slate-200">
+                See how the browser asks for pages, images, and videos.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Server className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Server responses</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Learn how 200 OK and 404 Not Found responses work.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Trophy className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Quiz feedback</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Review your answer choices after submission.
+              </p>
+            </div>
+          </div>
         </header>
 
         <ModuleProgress currentPage={modulePage} />
@@ -815,13 +898,16 @@ useEffect(() => {
             >
               <div ref={overviewRef}>
                 <Section title="What is HTTP?" icon={HelpCircle}>
-                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-100">
-                        <Target className="h-5 w-5 text-blue-700" />
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+                        style={{ backgroundColor: "#dce9ff" }}
+                      >
+                        <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           What you are learning
                         </h3>
                         <p className="mt-2 leading-7 text-slate-700">
@@ -840,10 +926,13 @@ useEffect(() => {
                         key={step.step}
                         className="rounded-2xl border border-slate-200 bg-white p-4"
                       >
-                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
+                        <div
+                          className="mb-2 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
+                          style={{ backgroundColor: ST_EDS.navy }}
+                        >
                           {step.step}
                         </div>
-                        <h3 className="text-sm font-semibold text-slate-900">
+                        <h3 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
                           {step.title}
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -856,8 +945,8 @@ useEffect(() => {
                   <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <div className="flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5 text-amber-500" />
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           Real-life analogy
                         </h3>
                       </div>
@@ -871,8 +960,8 @@ useEffect(() => {
 
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <div className="flex items-center gap-2">
-                        <Info className="h-5 w-5 text-sky-600" />
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           Key ideas to remember
                         </h3>
                       </div>
@@ -882,12 +971,19 @@ useEffect(() => {
                             key={idea}
                             className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
                           >
-                            <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
+                            <BadgeCheck
+                              className="mt-0.5 h-4 w-4 shrink-0"
+                              style={{ color: ST_EDS.navy }}
+                            />
                             <p className="text-sm leading-6 text-slate-700">{idea}</p>
                           </div>
                         ))}
                       </div>
                     </div>
+                  </div>
+
+                  <div className="flex rounded-3xl border border-slate-200 bg-white p-5 mt-8 items-center justify-center">
+                    <img src={m5Diagram} alt="HTTP diagram" className="max-w-full rounded-2xl" />
                   </div>
 
                   <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
@@ -918,17 +1014,19 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                    <h3 className="font-semibold text-blue-900">Fun fact</h3>
-                    <p className="mt-2 text-sm leading-6 text-blue-800">
+                  <div className="mt-8 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                    <h3 className="font-semibold" style={{ color: "#7a5800" }}>
+                      Fun fact
+                    </h3>
+                    <p className="mt-2 text-sm leading-6" style={{ color: "#7a5800" }}>
                       Have you ever seen a website start with HTTP or HTTPS? HTTPS is
                       the more secure version of HTTP.
                     </p>
                   </div>
 
-                  <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                    <h3 className="font-semibold text-blue-900">What happens next?</h3>
-                    <p className="mt-2 text-sm leading-6 text-blue-800">
+                  <div className="mt-4 rounded-2xl border border-[#bfd7ff] bg-[#eef5ff] p-4">
+                    <h3 className="font-semibold text-[#073674]">What happens next?</h3>
+                    <p className="mt-2 text-sm leading-6 text-[#0a4aa3]">
                       In the next activity, you will test four request types:
                       homepage, image, video, and missing page. To unlock the quiz,
                       you must test all four.
@@ -936,7 +1034,9 @@ useEffect(() => {
                   </div>
 
                   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <h3 className="font-semibold text-slate-900">Ready to continue?</h3>
+                    <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
+                      Ready to continue?
+                    </h3>
                     <p className="mt-2 text-sm leading-6 text-slate-700">
                       Scroll to the bottom of this page to unlock the interactive activity.
                     </p>
@@ -951,7 +1051,7 @@ useEffect(() => {
                   disabled={!overviewUnlocked}
                   className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                     overviewUnlocked
-                      ? "bg-slate-900 hover:bg-slate-800"
+                      ? "bg-[#073674] hover:bg-[#0a4aa3]"
                       : "cursor-not-allowed bg-slate-300"
                   }`}
                 >
@@ -988,7 +1088,7 @@ useEffect(() => {
 
                   <div>
                     <div className="mb-3 flex items-center justify-between gap-3">
-                      <h3 className="text-lg font-semibold text-slate-900">
+                      <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                         Choose what the browser wants
                       </h3>
                       <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -1045,7 +1145,7 @@ useEffect(() => {
                       <div className="rounded-2xl border border-slate-200 bg-white p-4">
                         <div className="mb-3 flex items-center gap-2">
                           <RequestIcon className="h-5 w-5 text-slate-700" />
-                          <h4 className="font-semibold text-slate-900">
+                          <h4 className="font-semibold" style={{ color: ST_EDS.navy }}>
                             Current request details
                           </h4>
                         </div>
@@ -1074,11 +1174,11 @@ useEffect(() => {
                         phase={phase}
                       />
 
-                      <div className="rounded-2xl bg-amber-50 p-4">
-                        <h4 className="font-semibold text-amber-800">
+                      <div className="rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                        <h4 className="font-semibold" style={{ color: "#7a5800" }}>
                           Important note
                         </h4>
-                        <p className="mt-2 text-sm leading-6 text-amber-700">
+                        <p className="mt-2 text-sm leading-6" style={{ color: "#7a5800" }}>
                           A full webpage is often made of many parts. That is why the
                           browser may need to send requests for the homepage, image,
                           and video separately.
@@ -1117,7 +1217,7 @@ useEffect(() => {
                               <CheckCircle2 className="h-8 w-8 text-emerald-700" />
                             </div>
 
-                            <h3 className="mt-4 text-2xl font-bold text-slate-900">
+                            <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
                               Activity Complete
                             </h3>
 
@@ -1138,7 +1238,7 @@ useEffect(() => {
                               <button
                                 type="button"
                                 onClick={() => setShowCompletionOverlay(false)}
-                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#073674] px-5 py-2.5 text-white transition hover:bg-[#0a4aa3]"
                               >
                                 Back to Activity
                               </button>
@@ -1154,7 +1254,7 @@ useEffect(() => {
                       <button
                         type="button"
                         onClick={handleNextRound}
-                        className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                        className="rounded-2xl bg-[#073674] px-5 py-2 text-white transition hover:bg-[#0a4aa3]"
                       >
                         Try Another Request
                       </button>
@@ -1195,7 +1295,7 @@ useEffect(() => {
                     disabled={!activityUnlocked}
                     className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
-                        ? "bg-slate-900 hover:bg-slate-800"
+                        ? "bg-[#073674] hover:bg-[#0a4aa3]"
                         : "cursor-not-allowed bg-slate-300"
                     }`}
                   >
@@ -1217,37 +1317,83 @@ useEffect(() => {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-
+                <div className="mb-5 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                  <p className="text-sm font-medium" style={{ color: "#7a5800" }}>
+                    The answer positions are randomised each time the quiz is reset.
+                  </p>
+                </div>
 
                 <div className="space-y-5">
-                  {quizQuestions.map((q, i) => (
-                    <div
-                      key={q.question}
-                      className="rounded-2xl border border-slate-200 p-5"
-                    >
-                      <h3 className="font-semibold text-slate-900">
-                        {i + 1}. {q.question}
-                      </h3>
+                  {quizQuestions.map((q, i) => {
+                    const userAnswer = selectedAnswers[i];
+                    const wasCorrect = userAnswer === q.answer;
 
-                      <div className="mt-4 grid gap-3">
-                        {q.options.map((option) => (
-                          <QuizOption
-                            key={option}
-                            option={option}
-                            isSelected={selectedAnswers[i] === option}
-                            isCorrect={q.answer === option}
-                            submitted={submittedQuiz}
-                            onClick={() =>
-                              setSelectedAnswers((prev) => ({
-                                ...prev,
-                                [i]: option,
-                              }))
-                            }
-                          />
-                        ))}
+                    return (
+                      <div
+                        key={q.question}
+                        className="rounded-2xl border border-slate-200 p-5"
+                      >
+                        <h3 className="font-semibold text-slate-900">
+                          {i + 1}. {q.question}
+                        </h3>
+
+                        <div className="mt-4 grid gap-3">
+                          {q.shuffledOptions.map((option) => (
+                            <QuizOption
+                              key={option}
+                              option={option}
+                              isSelected={selectedAnswers[i] === option}
+                              isCorrect={q.answer === option}
+                              submitted={submittedQuiz}
+                              onClick={() =>
+                                setSelectedAnswers((prev) => ({
+                                  ...prev,
+                                  [i]: option,
+                                }))
+                              }
+                            />
+                          ))}
+                        </div>
+
+                        {submittedQuiz && (
+                          <div
+                            className={`mt-4 rounded-2xl border p-4 ${
+                              wasCorrect
+                                ? "border-emerald-200 bg-emerald-50"
+                                : "border-rose-200 bg-rose-50"
+                            }`}
+                          >
+                            <p
+                              className={`text-sm font-semibold ${
+                                wasCorrect ? "text-emerald-800" : "text-rose-800"
+                              }`}
+                            >
+                              {wasCorrect ? "Correct" : "Incorrect"}
+                            </p>
+
+                            {!wasCorrect && (
+                              <div className="mt-2 space-y-1 text-sm text-slate-700">
+                                <p>
+                                  <span className="font-semibold">You answered:</span>{" "}
+                                  {userAnswer || "No answer selected"}
+                                </p>
+                                <p>
+                                  <span className="font-semibold">Correct answer:</span>{" "}
+                                  {q.answer}
+                                </p>
+                              </div>
+                            )}
+
+                            {wasCorrect && (
+                              <p className="mt-2 text-sm text-slate-700">
+                                You selected the correct answer.
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="mt-6 flex gap-3">
@@ -1255,7 +1401,7 @@ useEffect(() => {
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
                     disabled={!allAnswered}
-                    className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-2xl bg-[#073674] px-5 py-2 text-white hover:bg-[#0a4aa3] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Submit Quiz
                   </button>
@@ -1277,7 +1423,7 @@ useEffect(() => {
 
                 {submittedQuiz && (
                   <div className="mt-6 rounded-2xl bg-slate-50 p-5">
-                    <h3 className="font-semibold text-slate-900">
+                    <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
 

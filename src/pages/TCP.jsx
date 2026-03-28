@@ -17,11 +17,24 @@ import {
   Server,
   ShieldCheck,
   Target,
+  Trophy,
   X,
   XCircle,
 } from "lucide-react";
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
-import { markActivityComplete, markQuizPassed } from "../utils/progress"
+import { markActivityComplete, markQuizPassed } from "../utils/progress";
+import m2Diagram from "../assets/m2diagram.png";
+
+const ST_EDS = {
+  navy: "#073674",
+  blue: "#0A4AA3",
+  blue2: "#0F6DF0",
+  gold: "#FEC52F",
+  silver: "#D1D2D4",
+  white: "#FFFFFF",
+  pale: "#F8FAFC",
+};
+
 const baseQuizQuestions = [
   {
     question:
@@ -200,18 +213,23 @@ function shuffleArray(array) {
 function buildShuffledQuiz(questions) {
   return questions.map((q) => ({
     ...q,
-    options: shuffleArray(q.options),
+    shuffledOptions: shuffleArray(q.options),
   }));
 }
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100">
-          <Icon className="h-5 w-5 text-slate-700" />
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: `${ST_EDS.gold}20` }}
+        >
+          <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+          {title}
+        </h2>
       </div>
       {children}
     </section>
@@ -223,7 +241,7 @@ function StepChip({ label, active, complete }) {
     <div
       className={`rounded-full px-3 py-1 text-xs font-semibold ${
         active
-          ? "bg-slate-900 text-white"
+          ? "bg-[#073674] text-white"
           : complete
           ? "bg-emerald-100 text-emerald-700"
           : "bg-slate-100 text-slate-500"
@@ -241,12 +259,14 @@ function Device({ type, title, subtitle }) {
     <div className="flex flex-col items-center gap-2">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
         {isClient ? (
-          <Laptop className="h-9 w-9 text-blue-600" />
+          <Laptop className="h-9 w-9" style={{ color: ST_EDS.blue }} />
         ) : (
           <Server className="h-9 w-9 text-emerald-600" />
         )}
       </div>
-      <p className="text-xl font-bold text-slate-900">{title}</p>
+      <p className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+        {title}
+      </p>
       <p className="text-sm text-slate-500">{subtitle}</p>
     </div>
   );
@@ -257,7 +277,7 @@ function StatusBox({ title, body, tone = "neutral" }) {
     tone === "success"
       ? "bg-emerald-50 text-emerald-800 border-emerald-200"
       : tone === "info"
-      ? "bg-blue-50 text-blue-800 border-blue-200"
+      ? "bg-[#eef5ff] text-[#0a4aa3] border-[#bfd7ff]"
       : tone === "danger"
       ? "bg-rose-50 text-rose-800 border-rose-200"
       : "bg-slate-50 text-slate-700 border-slate-200";
@@ -537,7 +557,7 @@ function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
     if (isCorrect) styles = "border-emerald-300 bg-emerald-50 text-emerald-800";
     else if (isSelected) styles = "border-rose-300 bg-rose-50 text-rose-800";
   } else if (isSelected) {
-    styles = "border-slate-900 bg-slate-900 text-white";
+    styles = "border-[#073674] bg-[#073674] text-white";
   }
 
   return (
@@ -556,9 +576,11 @@ function ModuleProgress({ currentPage }) {
   const pages = [{ label: "Overview" }, { label: "Activity" }, { label: "Quiz" }];
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-900">Module Progress</h2>
+        <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
+          Module Progress
+        </h2>
         <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
       </div>
 
@@ -572,7 +594,7 @@ function ModuleProgress({ currentPage }) {
               key={page.label}
               className={`rounded-2xl border p-4 ${
                 active
-                  ? "border-slate-900 bg-slate-900 text-white"
+                  ? "border-[#073674] bg-[#073674] text-white"
                   : complete
                   ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                   : "border-slate-200 bg-slate-50 text-slate-600"
@@ -637,13 +659,13 @@ export default function TCP() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [overviewUnlocked, modulePage]);
 
-useEffect(() => {
-  if (phase === "done") {
-    setActivityUnlocked(true)
-    setShowCompletionOverlay(true)
-    markActivityComplete("/tcp")
-  }
-}, [phase])
+  useEffect(() => {
+    if (phase === "done") {
+      setActivityUnlocked(true);
+      setShowCompletionOverlay(true);
+      markActivityComplete("/tcp");
+    }
+  }, [phase]);
 
   const score = useMemo(() => {
     return quizQuestions.reduce(
@@ -651,11 +673,13 @@ useEffect(() => {
       0
     );
   }, [selectedAnswers, quizQuestions]);
-useEffect(() => {
-  if (submittedQuiz && score >= 6) {
-    markQuizPassed("/tcp")
-  }
-}, [submittedQuiz, score])
+
+  useEffect(() => {
+    if (submittedQuiz && score >= 6) {
+      markQuizPassed("/tcp");
+    }
+  }, [submittedQuiz, score]);
+
   const allAnswered =
     quizQuestions.length > 0 &&
     quizQuestions.every((_, index) => typeof selectedAnswers[index] === "string");
@@ -799,19 +823,55 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div
+      className="min-h-screen"
+      style={{
+        background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
+      }}
+    >
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
-        <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
-            Module 2
+        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+          <span
+            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
+          >
+            St Edmund&apos;s College Canberra
           </span>
-          <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
+
+          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
             Transmission Control Protocol (TCP)
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
+
+          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
             Learn how TCP creates a reliable connection, checks both devices are ready,
             handles missing packets, and rebuilds data in the correct order.
           </p>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <ShieldCheck className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Reliable transfer</p>
+              <p className="mt-1 text-sm text-slate-200">
+                See how TCP confirms both devices are ready before normal transfer begins.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Package className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Packet handling</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Learn how missing packets are detected and resent.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Trophy className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Quiz feedback</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Review what you selected and compare it to the correct answer.
+              </p>
+            </div>
+          </div>
         </header>
 
         <ModuleProgress currentPage={modulePage} />
@@ -827,13 +887,16 @@ useEffect(() => {
             >
               <div ref={overviewRef}>
                 <Section title="What is TCP?" icon={HelpCircle}>
-                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-100">
-                        <Target className="h-5 w-5 text-blue-700" />
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+                        style={{ backgroundColor: "#dce9ff" }}
+                      >
+                        <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           What you are learning
                         </h3>
                         <p className="mt-2 leading-7 text-slate-700">
@@ -852,10 +915,13 @@ useEffect(() => {
                         key={card.step}
                         className="rounded-2xl border border-slate-200 bg-white p-4"
                       >
-                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
+                        <div
+                          className="mb-2 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
+                          style={{ backgroundColor: ST_EDS.navy }}
+                        >
                           {card.step}
                         </div>
-                        <h3 className="text-sm font-semibold text-slate-900">
+                        <h3 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
                           {card.title}
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -868,8 +934,8 @@ useEffect(() => {
                   <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <div className="flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5 text-amber-500" />
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           Real-life analogy
                         </h3>
                       </div>
@@ -883,8 +949,8 @@ useEffect(() => {
 
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <div className="flex items-center gap-2">
-                        <Info className="h-5 w-5 text-sky-600" />
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           Key ideas to remember
                         </h3>
                       </div>
@@ -894,7 +960,10 @@ useEffect(() => {
                             key={idea}
                             className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
                           >
-                            <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
+                            <BadgeCheck
+                              className="mt-0.5 h-4 w-4 shrink-0"
+                              style={{ color: ST_EDS.navy }}
+                            />
                             <p className="text-sm leading-6 text-slate-700">{idea}</p>
                           </div>
                         ))}
@@ -902,23 +971,29 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  <div className="mt-8 rounded-3xl border border-blue-200 bg-blue-50 p-5">
-                    <h3 className="font-semibold text-blue-900">What do SYN, SYN-ACK, and ACK mean?</h3>
+                  <div className="rounded-3xl border border-slate-200 bg-white p-5 mt-8">
+                    <img src={m2Diagram} alt="TCP diagram" className="w-full rounded-2xl" />
+                  </div>
+
+                  <div className="mt-8 rounded-3xl border border-[#bfd7ff] bg-[#eef5ff] p-5">
+                    <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
+                      What do SYN, SYN-ACK, and ACK mean?
+                    </h3>
                     <div className="mt-3 grid gap-3 md:grid-cols-3">
                       <div className="rounded-2xl bg-white/80 p-4">
-                        <p className="font-semibold text-slate-900">SYN</p>
+                        <p className="font-semibold" style={{ color: ST_EDS.navy }}>SYN</p>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
                           The client starts the connection and says it wants to communicate.
                         </p>
                       </div>
                       <div className="rounded-2xl bg-white/80 p-4">
-                        <p className="font-semibold text-slate-900">SYN-ACK</p>
+                        <p className="font-semibold" style={{ color: ST_EDS.navy }}>SYN-ACK</p>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
                           The server replies to say it received the message and is ready too.
                         </p>
                       </div>
                       <div className="rounded-2xl bg-white/80 p-4">
-                        <p className="font-semibold text-slate-900">ACK</p>
+                        <p className="font-semibold" style={{ color: ST_EDS.navy }}>ACK</p>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
                           The client sends a final confirmation so the connection becomes established.
                         </p>
@@ -953,9 +1028,11 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                    <h3 className="font-semibold text-blue-900">What happens next?</h3>
-                    <p className="mt-2 text-sm leading-6 text-blue-800">
+                  <div className="mt-8 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                    <h3 className="font-semibold" style={{ color: "#7a5800" }}>
+                      What happens next?
+                    </h3>
+                    <p className="mt-2 text-sm leading-6" style={{ color: "#7a5800" }}>
                       On the next page, you will complete the handshake, send the packets,
                       find a missing one, resend it, and rebuild the full message in order.
                     </p>
@@ -976,7 +1053,7 @@ useEffect(() => {
                   disabled={!overviewUnlocked}
                   className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                     overviewUnlocked
-                      ? "bg-slate-900 hover:bg-slate-800"
+                      ? "bg-[#073674] hover:bg-[#0a4aa3]"
                       : "cursor-not-allowed bg-slate-300"
                   }`}
                 >
@@ -1119,7 +1196,7 @@ useEffect(() => {
                                       "The client now sends the data packets to the server one by one."
                                     );
                                   }}
-                                  className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                                  className="rounded-2xl bg-[#073674] px-5 py-2 text-white transition hover:bg-[#0a4aa3]"
                                 >
                                   Start Sending Packets
                                 </button>
@@ -1151,7 +1228,7 @@ useEffect(() => {
                                       "The server sends the data back to the client. Packet 3 slips off the line. Tap the fallen packet."
                                     );
                                   }}
-                                  className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                                  className="rounded-2xl bg-[#073674] px-5 py-2 text-white transition hover:bg-[#0a4aa3]"
                                 >
                                   Show Return Trip
                                 </button>
@@ -1190,7 +1267,7 @@ useEffect(() => {
                                   }}
                                   className={`rounded-2xl px-5 py-2 text-white transition ${
                                     slippedFound
-                                      ? "bg-slate-900 hover:bg-slate-800"
+                                      ? "bg-[#073674] hover:bg-[#0a4aa3]"
                                       : "cursor-not-allowed bg-slate-400"
                                   }`}
                                 >
@@ -1225,7 +1302,7 @@ useEffect(() => {
                                       "Click the packets in order: 1, 2, 3, 4. This shows how TCP rebuilds the full message."
                                     );
                                   }}
-                                  className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                                  className="rounded-2xl bg-[#073674] px-5 py-2 text-white transition hover:bg-[#0a4aa3]"
                                 >
                                   Rebuild Data in Order
                                 </button>
@@ -1343,7 +1420,7 @@ useEffect(() => {
                             <CheckCircle2 className="h-8 w-8 text-emerald-700" />
                           </div>
 
-                          <h3 className="mt-4 text-2xl font-bold text-slate-900">
+                          <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
                             Activity Complete
                           </h3>
 
@@ -1365,7 +1442,7 @@ useEffect(() => {
                             <button
                               type="button"
                               onClick={() => setShowCompletionOverlay(false)}
-                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#073674] px-5 py-2.5 text-white transition hover:bg-[#0a4aa3]"
                             >
                               Back to Activity
                             </button>
@@ -1398,7 +1475,7 @@ useEffect(() => {
                     disabled={!activityUnlocked}
                     className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
-                        ? "bg-slate-900 hover:bg-slate-800"
+                        ? "bg-[#073674] hover:bg-[#0a4aa3]"
                         : "cursor-not-allowed bg-slate-300"
                     }`}
                   >
@@ -1420,37 +1497,83 @@ useEffect(() => {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-
+                <div className="mb-5 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                  <p className="text-sm font-medium" style={{ color: "#7a5800" }}>
+                    The answer positions are randomised each time the quiz is reset.
+                  </p>
+                </div>
 
                 <div className="space-y-5">
-                  {quizQuestions.map((q, i) => (
-                    <div
-                      key={q.question}
-                      className="rounded-2xl border border-slate-200 p-5"
-                    >
-                      <h3 className="font-semibold text-slate-900">
-                        {i + 1}. {q.question}
-                      </h3>
+                  {quizQuestions.map((q, i) => {
+                    const userAnswer = selectedAnswers[i];
+                    const wasCorrect = userAnswer === q.answer;
 
-                      <div className="mt-4 grid gap-3">
-                        {q.options.map((option) => (
-                          <QuizOption
-                            key={option}
-                            option={option}
-                            isSelected={selectedAnswers[i] === option}
-                            isCorrect={q.answer === option}
-                            submitted={submittedQuiz}
-                            onClick={() =>
-                              setSelectedAnswers((prev) => ({
-                                ...prev,
-                                [i]: option,
-                              }))
-                            }
-                          />
-                        ))}
+                    return (
+                      <div
+                        key={q.question}
+                        className="rounded-2xl border border-slate-200 p-5"
+                      >
+                        <h3 className="font-semibold text-slate-900">
+                          {i + 1}. {q.question}
+                        </h3>
+
+                        <div className="mt-4 grid gap-3">
+                          {q.shuffledOptions.map((option) => (
+                            <QuizOption
+                              key={option}
+                              option={option}
+                              isSelected={selectedAnswers[i] === option}
+                              isCorrect={q.answer === option}
+                              submitted={submittedQuiz}
+                              onClick={() =>
+                                setSelectedAnswers((prev) => ({
+                                  ...prev,
+                                  [i]: option,
+                                }))
+                              }
+                            />
+                          ))}
+                        </div>
+
+                        {submittedQuiz && (
+                          <div
+                            className={`mt-4 rounded-2xl border p-4 ${
+                              wasCorrect
+                                ? "border-emerald-200 bg-emerald-50"
+                                : "border-rose-200 bg-rose-50"
+                            }`}
+                          >
+                            <p
+                              className={`text-sm font-semibold ${
+                                wasCorrect ? "text-emerald-800" : "text-rose-800"
+                              }`}
+                            >
+                              {wasCorrect ? "Correct" : "Incorrect"}
+                            </p>
+
+                            {!wasCorrect && (
+                              <div className="mt-2 space-y-1 text-sm text-slate-700">
+                                <p>
+                                  <span className="font-semibold">You answered:</span>{" "}
+                                  {userAnswer || "No answer selected"}
+                                </p>
+                                <p>
+                                  <span className="font-semibold">Correct answer:</span>{" "}
+                                  {q.answer}
+                                </p>
+                              </div>
+                            )}
+
+                            {wasCorrect && (
+                              <p className="mt-2 text-sm text-slate-700">
+                                You selected the correct answer.
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="mt-6 flex gap-3">
@@ -1458,7 +1581,7 @@ useEffect(() => {
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
                     disabled={!allAnswered}
-                    className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-2xl bg-[#073674] px-5 py-2 text-white hover:bg-[#0a4aa3] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Submit Quiz
                   </button>
@@ -1484,7 +1607,7 @@ useEffect(() => {
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-6 rounded-2xl bg-slate-50 p-5"
                   >
-                    <h3 className="font-semibold text-slate-900">
+                    <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
 

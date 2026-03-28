@@ -20,12 +20,24 @@ import {
   Search,
   Server,
   Target,
+  Trophy,
   X,
   XCircle,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { markActivityComplete, markQuizPassed } from "../utils/progress"
+import { markActivityComplete, markQuizPassed } from "../utils/progress";
 import m1Diagram from "../assets/m1diagram.png";
+
+const ST_EDS = {
+  navy: "#073674",
+  blue: "#0A4AA3",
+  blue2: "#0F6DF0",
+  gold: "#FEC52F",
+  silver: "#D1D2D4",
+  white: "#FFFFFF",
+  pale: "#F8FAFC",
+};
+
 const stops = [
   {
     key: "device",
@@ -36,7 +48,7 @@ const stops = [
     fact:
       "A request is your device asking for a specific piece of online content.",
     badge: "Request created",
-    accent: "blue",
+    accent: "navy",
   },
   {
     key: "router",
@@ -47,7 +59,7 @@ const stops = [
     fact:
       "The router helps forward traffic in the right direction. It does not store websites.",
     badge: "Request sent to router",
-    accent: "amber",
+    accent: "gold",
   },
   {
     key: "internet",
@@ -58,7 +70,7 @@ const stops = [
     fact:
       "The internet is a network of networks, not one single machine.",
     badge: "Travelling across internet",
-    accent: "violet",
+    accent: "blue",
   },
   {
     key: "server",
@@ -69,7 +81,7 @@ const stops = [
     fact:
       "A server stores and sends things like webpages, videos, images, and game data.",
     badge: "Request reached server",
-    accent: "emerald",
+    accent: "green",
   },
   {
     key: "return",
@@ -148,7 +160,7 @@ const packetFacts = [
   "Your device puts the pieces back together.",
 ];
 
-const quizQuestions = [
+const rawQuizQuestions = [
   {
     question:
       "A student taps a YouTube video and it begins loading. Which event happens first in the journey shown in this learning resource?",
@@ -240,14 +252,35 @@ const quizQuestions = [
   },
 ];
 
+function shuffleArray(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function buildShuffledQuiz() {
+  return rawQuizQuestions.map((question) => ({
+    ...question,
+    shuffledOptions: shuffleArray(question.options),
+  }));
+}
+
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100">
-          <Icon className="h-5 w-5 text-slate-700" />
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: `${ST_EDS.gold}20` }}
+        >
+          <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+          {title}
+        </h2>
       </div>
       {children}
     </section>
@@ -256,40 +289,50 @@ function Section({ title, icon: Icon, children }) {
 
 function accentClasses(accent) {
   switch (accent) {
+    case "navy":
+      return {
+        soft: "border-[#bcd0ef] bg-[#eef4ff] text-[#073674]",
+        pill: "bg-[#d9e8ff] text-[#073674]",
+        line: "bg-[#073674]",
+        button: "bg-[#073674] hover:bg-[#0a4aa3]",
+        iconBg: "bg-[#eef4ff]",
+        iconColor: "text-[#073674]",
+      };
+    case "gold":
+      return {
+        soft: "border-[#f5dda2] bg-[#fff7df] text-[#7a5800]",
+        pill: "bg-[#ffe7a6] text-[#7a5800]",
+        line: "bg-[#FEC52F]",
+        button: "bg-[#c99600] hover:bg-[#b38800]",
+        iconBg: "bg-[#fff5d6]",
+        iconColor: "text-[#7a5800]",
+      };
     case "blue":
       return {
-        soft: "bg-blue-50 text-blue-800 border-blue-200",
-        pill: "bg-blue-100 text-blue-700",
-        line: "bg-blue-500",
-        button: "bg-blue-600 hover:bg-blue-700",
+        soft: "border-[#bfd7ff] bg-[#eef5ff] text-[#0a4aa3]",
+        pill: "bg-[#dce9ff] text-[#0a4aa3]",
+        line: "bg-[#0f6df0]",
+        button: "bg-[#0f6df0] hover:bg-[#0c5dd0]",
+        iconBg: "bg-[#eef5ff]",
+        iconColor: "text-[#0a4aa3]",
       };
-    case "amber":
+    case "green":
       return {
-        soft: "bg-amber-50 text-amber-800 border-amber-200",
-        pill: "bg-amber-100 text-amber-700",
-        line: "bg-amber-500",
-        button: "bg-amber-600 hover:bg-amber-700",
-      };
-    case "violet":
-      return {
-        soft: "bg-violet-50 text-violet-800 border-violet-200",
-        pill: "bg-violet-100 text-violet-700",
-        line: "bg-violet-500",
-        button: "bg-violet-600 hover:bg-violet-700",
-      };
-    case "emerald":
-      return {
-        soft: "bg-emerald-50 text-emerald-800 border-emerald-200",
+        soft: "border-emerald-200 bg-emerald-50 text-emerald-800",
         pill: "bg-emerald-100 text-emerald-700",
         line: "bg-emerald-500",
         button: "bg-emerald-600 hover:bg-emerald-700",
+        iconBg: "bg-emerald-50",
+        iconColor: "text-emerald-700",
       };
     default:
       return {
-        soft: "bg-cyan-50 text-cyan-800 border-cyan-200",
+        soft: "border-cyan-200 bg-cyan-50 text-cyan-800",
         pill: "bg-cyan-100 text-cyan-700",
         line: "bg-cyan-500",
         button: "bg-cyan-600 hover:bg-cyan-700",
+        iconBg: "bg-cyan-50",
+        iconColor: "text-cyan-700",
       };
   }
 }
@@ -306,14 +349,14 @@ function StageChip({ item, active, complete, onClick }) {
         active
           ? `${accent.soft} shadow-sm`
           : complete
-          ? "border-slate-300 bg-slate-100 text-slate-800"
+          ? "border-[#d1d2d4] bg-[#f8fafc] text-slate-800"
           : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
       }`}
     >
       <div className="mb-2 flex items-center justify-between gap-3">
-        <Icon className="h-5 w-5" />
+        <Icon className={`h-5 w-5 ${active ? accent.iconColor : "text-slate-600"}`} />
         {complete ? (
-          <CheckCircle2 className="h-5 w-5" />
+          <CheckCircle2 className="h-5 w-5 text-emerald-600" />
         ) : active ? (
           <Circle className="h-5 w-5" />
         ) : null}
@@ -335,10 +378,13 @@ function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
   let styles = "border-slate-200 bg-white text-slate-700 hover:bg-slate-50";
 
   if (submitted) {
-    if (isCorrect) styles = "border-emerald-300 bg-emerald-50 text-emerald-800";
-    else if (isSelected) styles = "border-rose-300 bg-rose-50 text-rose-800";
+    if (isCorrect) {
+      styles = "border-emerald-300 bg-emerald-50 text-emerald-800";
+    } else if (isSelected) {
+      styles = "border-rose-300 bg-rose-50 text-rose-800";
+    }
   } else if (isSelected) {
-    styles = "border-slate-900 bg-slate-900 text-white";
+    styles = "border-[#073674] bg-[#073674] text-white";
   }
 
   return (
@@ -357,9 +403,11 @@ function ModuleProgress({ currentPage }) {
   const pages = [{ label: "Overview" }, { label: "Activity" }, { label: "Quiz" }];
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-900">Module Progress</h2>
+        <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
+          Module Progress
+        </h2>
         <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
       </div>
 
@@ -373,7 +421,7 @@ function ModuleProgress({ currentPage }) {
               key={page.label}
               className={`rounded-2xl border p-4 ${
                 active
-                  ? "border-slate-900 bg-slate-900 text-white"
+                  ? "border-[#073674] bg-[#073674] text-white"
                   : complete
                   ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                   : "border-slate-200 bg-slate-50 text-slate-600"
@@ -403,6 +451,7 @@ export default function DataTravel() {
   const [overviewUnlocked, setOverviewUnlocked] = useState(false);
   const [activityUnlocked, setActivityUnlocked] = useState(false);
   const [showCompletionOverlay, setShowCompletionOverlay] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState(() => buildShuffledQuiz());
   const overviewRef = useRef(null);
 
   const stop = stops[currentStop];
@@ -435,26 +484,26 @@ export default function DataTravel() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [overviewUnlocked, modulePage]);
 
-useEffect(() => {
-  if (currentStop === stops.length - 1 && packetsArrived) {
-    setActivityUnlocked(true)
-    setShowCompletionOverlay(true)
-    markActivityComplete("/data-travel")
-  }
-}, [currentStop, packetsArrived])
+  useEffect(() => {
+    if (currentStop === stops.length - 1 && packetsArrived) {
+      setActivityUnlocked(true);
+      setShowCompletionOverlay(true);
+      markActivityComplete("/data-travel");
+    }
+  }, [currentStop, packetsArrived]);
 
   const score = useMemo(() => {
-    return quizQuestions.reduce(
-      (total, q, index) => total + (selectedAnswers[index] === q.answer ? 1 : 0),
-      0
-    );
-  }, [selectedAnswers]);
+    return quizQuestions.reduce((total, q, index) => {
+      return total + (selectedAnswers[index] === q.answer ? 1 : 0);
+    }, 0);
+  }, [quizQuestions, selectedAnswers]);
 
-useEffect(() => {
-  if (submittedQuiz && score >= 6) {
-    markQuizPassed("/data-travel")
-  }
-}, [submittedQuiz, score])
+  useEffect(() => {
+    if (submittedQuiz && score >= 6) {
+      markQuizPassed("/data-travel");
+    }
+  }, [submittedQuiz, score]);
+
   const allAnswered = quizQuestions.every(
     (_, index) => typeof selectedAnswers[index] === "string"
   );
@@ -486,24 +535,66 @@ useEffect(() => {
     setShowCompletionOverlay(false);
   };
 
+  const resetQuiz = () => {
+    setSelectedAnswers({});
+    setSubmittedQuiz(false);
+    setQuizQuestions(buildShuffledQuiz());
+  };
+
   const goToNextModule = () => {
     alert("Great job! You finished this module. You can now move to the next one.");
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div
+      className="min-h-screen"
+      style={{
+        background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
+      }}
+    >
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 md:px-6">
-        <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
-            Module 1
+        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+          <span
+            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
+          >
+            St Edmund&apos;s College Canberra
           </span>
-          <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
+
+          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
             How Data Travels Through the Internet
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
+
+          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
             Follow a clear step-by-step explanation, learn through visuals, then test
             your understanding in an interactive activity and quiz.
           </p>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <BookOpen className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Clear explanation</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Learn the full journey from request to returning packets.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <MousePointerClick className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Interactive activity</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Step through the network journey and watch what happens.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Trophy className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Quiz challenge</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Check your understanding with answer feedback after submission.
+              </p>
+            </div>
+          </div>
         </header>
 
         <ModuleProgress currentPage={modulePage} />
@@ -519,13 +610,18 @@ useEffect(() => {
             >
               <div ref={overviewRef}>
                 <Section title="General Overview" icon={BookOpen}>
-                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-100">
-                        <Target className="h-5 w-5 text-blue-700" />
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+                        style={{ backgroundColor: "#dce9ff" }}
+                      >
+                        <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-slate-900">What you are learning</h3>
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                          What you are learning
+                        </h3>
                         <p className="mt-2 leading-7 text-slate-700">
                           This module explains the basic journey of data when you open a
                           website or video: your device sends a request, the request moves
@@ -542,10 +638,15 @@ useEffect(() => {
                         key={card.step}
                         className="rounded-2xl border border-slate-200 bg-white p-4"
                       >
-                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
+                        <div
+                          className="mb-2 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
+                          style={{ backgroundColor: ST_EDS.navy }}
+                        >
                           {card.step}
                         </div>
-                        <h3 className="text-sm font-semibold text-slate-900">{card.title}</h3>
+                        <h3 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
+                          {card.title}
+                        </h3>
                         <p className="mt-2 text-sm leading-6 text-slate-700">{card.text}</p>
                       </div>
                     ))}
@@ -554,8 +655,10 @@ useEffect(() => {
                   <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <div className="flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5 text-amber-500" />
-                        <h3 className="text-lg font-semibold text-slate-900">Real-life analogy</h3>
+                        <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                          Real-life analogy
+                        </h3>
                       </div>
                       <p className="mt-3 leading-7 text-slate-700">
                         Think about ordering food online. You place the order, the
@@ -564,13 +667,14 @@ useEffect(() => {
                         information, the server finds it, and the data returns so your
                         screen can show it.
                       </p>
-                      <m1Diagram/>
                     </div>
 
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <div className="flex items-center gap-2">
-                        <Info className="h-5 w-5 text-sky-600" />
-                        <h3 className="text-lg font-semibold text-slate-900">Key ideas to remember</h3>
+                        <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                          Key ideas to remember
+                        </h3>
                       </div>
                       <div className="mt-3 grid gap-2">
                         {keyIdeas.map((idea) => (
@@ -578,7 +682,10 @@ useEffect(() => {
                             key={idea}
                             className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
                           >
-                            <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
+                            <BadgeCheck
+                              className="mt-0.5 h-4 w-4 shrink-0"
+                              style={{ color: ST_EDS.navy }}
+                            />
                             <p className="text-sm leading-6 text-slate-700">{idea}</p>
                           </div>
                         ))}
@@ -586,33 +693,49 @@ useEffect(() => {
                     </div>
                   </div>
 
+                  <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-5">
+                    <img
+                      src={m1Diagram}
+                      alt="Data travel diagram"
+                      className="w-full rounded-2xl"
+                    />
+                  </div>
+
                   <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
                     <div className="mb-3 flex items-center gap-2">
                       <XCircle className="h-5 w-5 text-rose-700" />
-                      <h3 className="text-lg font-semibold text-rose-900">Common mistakes to avoid</h3>
+                      <h3 className="text-lg font-semibold text-rose-900">
+                        Common mistakes to avoid
+                      </h3>
                     </div>
                     <div className="grid gap-3 md:grid-cols-3">
                       {misconceptionCards.map((item) => (
                         <div key={item.wrong} className="rounded-2xl bg-white/80 p-4">
                           <p className="text-sm font-semibold text-rose-800">Incorrect idea</p>
                           <p className="mt-1 text-sm leading-6 text-slate-700">{item.wrong}</p>
-                          <p className="mt-3 text-sm font-semibold text-emerald-700">Better explanation</p>
+                          <p className="mt-3 text-sm font-semibold text-emerald-700">
+                            Better explanation
+                          </p>
                           <p className="mt-1 text-sm leading-6 text-slate-700">{item.right}</p>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                    <h3 className="font-semibold text-blue-900">What happens next?</h3>
-                    <p className="mt-2 text-sm leading-6 text-blue-800">
+                  <div className="mt-8 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                    <h3 className="font-semibold" style={{ color: "#7a5800" }}>
+                      What happens next?
+                    </h3>
+                    <p className="mt-2 text-sm leading-6" style={{ color: "#7a5800" }}>
                       On the next page, you will trace the request as it moves from your
                       device to the server and back again as packets.
                     </p>
                   </div>
 
                   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <h3 className="font-semibold text-slate-900">Ready to continue?</h3>
+                    <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
+                      Ready to continue?
+                    </h3>
                     <p className="mt-2 text-sm leading-6 text-slate-700">
                       Scroll to the bottom of this page to unlock the next part of the
                       module.
@@ -628,7 +751,7 @@ useEffect(() => {
                   disabled={!overviewUnlocked}
                   className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                     overviewUnlocked
-                      ? "bg-slate-900 hover:bg-slate-800"
+                      ? "bg-[#073674] hover:bg-[#0a4aa3]"
                       : "cursor-not-allowed bg-slate-300"
                   }`}
                 >
@@ -685,7 +808,9 @@ useEffect(() => {
                   <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
                     <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
                       <div className="mb-4 flex items-center justify-between gap-3">
-                        <h3 className="text-lg font-semibold text-slate-900">Packet Journey</h3>
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                          Packet Journey
+                        </h3>
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-semibold ${accent.pill}`}
                         >
@@ -838,7 +963,9 @@ useEffect(() => {
                           >
                             <div className="mb-3 flex items-center gap-2">
                               <Play className="h-5 w-5 text-red-500" />
-                              <h4 className="font-semibold text-slate-900">Content now loaded</h4>
+                              <h4 className="font-semibold" style={{ color: ST_EDS.navy }}>
+                                Content now loaded
+                              </h4>
                             </div>
 
                             <div className="overflow-hidden rounded-2xl border border-slate-200">
@@ -860,7 +987,9 @@ useEffect(() => {
                                   </div>
 
                                   <div>
-                                    <p className="text-sm font-semibold text-white">Online content is now visible</p>
+                                    <p className="text-sm font-semibold text-white">
+                                      Online content is now visible
+                                    </p>
                                     <p className="mt-1 text-xs text-slate-300">
                                       The packets reached your device and the content could now
                                       be shown on screen.
@@ -876,7 +1005,9 @@ useEffect(() => {
 
                     <div className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6">
                       <div>
-                        <h3 className="text-lg font-semibold text-slate-900">What is happening here?</h3>
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                          What is happening here?
+                        </h3>
                         <p className="mt-1 text-sm text-slate-500">
                           Read the explanation, then move to the next stop.
                         </p>
@@ -895,7 +1026,9 @@ useEffect(() => {
                         </AnimatePresence>
 
                         <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-                          <h4 className="font-semibold text-slate-900">Quick fact</h4>
+                          <h4 className="font-semibold" style={{ color: ST_EDS.navy }}>
+                            Quick fact
+                          </h4>
                           <p className="mt-2 text-sm leading-6 text-slate-700">{stop.fact}</p>
                         </div>
 
@@ -995,7 +1128,7 @@ useEffect(() => {
                             <CheckCircle2 className="h-8 w-8 text-emerald-700" />
                           </div>
 
-                          <h3 className="mt-4 text-2xl font-bold text-slate-900">
+                          <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
                             Activity Complete
                           </h3>
 
@@ -1017,7 +1150,7 @@ useEffect(() => {
                             <button
                               type="button"
                               onClick={() => setShowCompletionOverlay(false)}
-                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#073674] px-5 py-2.5 text-white transition hover:bg-[#0a4aa3]"
                             >
                               Back to Activity
                             </button>
@@ -1050,7 +1183,7 @@ useEffect(() => {
                     disabled={!activityUnlocked}
                     className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
-                        ? "bg-slate-900 hover:bg-slate-800"
+                        ? "bg-[#073674] hover:bg-[#0a4aa3]"
                         : "cursor-not-allowed bg-slate-300"
                     }`}
                   >
@@ -1072,36 +1205,83 @@ useEffect(() => {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-              
-                <div className="space-y-5">
-                  {quizQuestions.map((q, qIndex) => (
-                    <div
-                      key={q.question}
-                      className="rounded-2xl border border-slate-200 p-5"
-                    >
-                      <h3 className="font-semibold text-slate-900">
-                        {qIndex + 1}. {q.question}
-                      </h3>
+                <div className="mb-5 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                  <p className="text-sm font-medium" style={{ color: "#7a5800" }}>
+                    The answer positions are randomised each time the quiz is reset.
+                  </p>
+                </div>
 
-                      <div className="mt-4 grid gap-3">
-                        {q.options.map((option) => (
-                          <QuizOption
-                            key={option}
-                            option={option}
-                            isSelected={selectedAnswers[qIndex] === option}
-                            isCorrect={q.answer === option}
-                            submitted={submittedQuiz}
-                            onClick={() =>
-                              setSelectedAnswers((prev) => ({
-                                ...prev,
-                                [qIndex]: option,
-                              }))
-                            }
-                          />
-                        ))}
+                <div className="space-y-5">
+                  {quizQuestions.map((q, qIndex) => {
+                    const userAnswer = selectedAnswers[qIndex];
+                    const wasCorrect = userAnswer === q.answer;
+
+                    return (
+                      <div
+                        key={q.question}
+                        className="rounded-2xl border border-slate-200 p-5"
+                      >
+                        <h3 className="font-semibold text-slate-900">
+                          {qIndex + 1}. {q.question}
+                        </h3>
+
+                        <div className="mt-4 grid gap-3">
+                          {q.shuffledOptions.map((option) => (
+                            <QuizOption
+                              key={option}
+                              option={option}
+                              isSelected={selectedAnswers[qIndex] === option}
+                              isCorrect={q.answer === option}
+                              submitted={submittedQuiz}
+                              onClick={() =>
+                                setSelectedAnswers((prev) => ({
+                                  ...prev,
+                                  [qIndex]: option,
+                                }))
+                              }
+                            />
+                          ))}
+                        </div>
+
+                        {submittedQuiz && (
+                          <div
+                            className={`mt-4 rounded-2xl border p-4 ${
+                              wasCorrect
+                                ? "border-emerald-200 bg-emerald-50"
+                                : "border-rose-200 bg-rose-50"
+                            }`}
+                          >
+                            <p
+                              className={`text-sm font-semibold ${
+                                wasCorrect ? "text-emerald-800" : "text-rose-800"
+                              }`}
+                            >
+                              {wasCorrect ? "Correct" : "Incorrect"}
+                            </p>
+
+                            {!wasCorrect && (
+                              <div className="mt-2 space-y-1 text-sm text-slate-700">
+                                <p>
+                                  <span className="font-semibold">You answered:</span>{" "}
+                                  {userAnswer || "No answer selected"}
+                                </p>
+                                <p>
+                                  <span className="font-semibold">Correct answer:</span>{" "}
+                                  {q.answer}
+                                </p>
+                              </div>
+                            )}
+
+                            {wasCorrect && (
+                              <p className="mt-2 text-sm text-slate-700">
+                                You selected the correct answer.
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
@@ -1109,17 +1289,14 @@ useEffect(() => {
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
                     disabled={!allAnswered}
-                    className="rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-2xl bg-[#073674] px-5 py-2.5 text-white transition hover:bg-[#0a4aa3] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Submit Quiz
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedAnswers({});
-                      setSubmittedQuiz(false);
-                    }}
+                    onClick={resetQuiz}
                     className="rounded-2xl border border-slate-300 px-5 py-2.5 text-slate-700 transition hover:bg-slate-50"
                   >
                     Reset Quiz
@@ -1138,7 +1315,7 @@ useEffect(() => {
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-6 rounded-2xl bg-slate-50 p-5"
                   >
-                    <h3 className="text-lg font-semibold text-slate-900">
+                    <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
                     <p className="mt-2 leading-7 text-slate-600">

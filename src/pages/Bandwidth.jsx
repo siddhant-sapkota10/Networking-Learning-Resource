@@ -17,12 +17,25 @@ import {
   RefreshCcw,
   Target,
   Timer,
+  Trophy,
   Wifi,
   X,
   XCircle,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { markActivityComplete, markQuizPassed } from "../utils/progress"
+import { markActivityComplete, markQuizPassed } from "../utils/progress";
+import m3Diagram from "../assets/m3diagram.png";
+
+const ST_EDS = {
+  navy: "#073674",
+  blue: "#0A4AA3",
+  blue2: "#0F6DF0",
+  gold: "#FEC52F",
+  silver: "#D1D2D4",
+  white: "#FFFFFF",
+  pale: "#F8FAFC",
+};
+
 const overviewSteps = [
   {
     step: 1,
@@ -63,7 +76,7 @@ const conceptCards = [
     icon: Package,
     description:
       "A bit is a tiny piece of digital information. Devices use huge numbers of bits to send videos, images, music, and messages.",
-    accent: "border-blue-200 bg-blue-50 text-blue-800",
+    accent: "border-[#bfd7ff] bg-[#eef5ff] text-[#0a4aa3]",
   },
   {
     key: "bitrate",
@@ -222,18 +235,23 @@ function shuffleArray(array) {
 function buildShuffledQuiz(questions) {
   return questions.map((q) => ({
     ...q,
-    options: shuffleArray(q.options),
+    shuffledOptions: shuffleArray(q.options),
   }));
 }
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100">
-          <Icon className="h-5 w-5 text-slate-700" />
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: `${ST_EDS.gold}20` }}
+        >
+          <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+          {title}
+        </h2>
       </div>
       {children}
     </section>
@@ -260,7 +278,9 @@ function DataDot({ active }) {
 function SelectorGroup({ title, value, onChange }) {
   return (
     <div>
-      <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+      <h3 className="text-base font-semibold" style={{ color: ST_EDS.navy }}>
+        {title}
+      </h3>
       <div className="mt-3 flex flex-wrap gap-3">
         {["low", "medium", "high"].map((level) => {
           const active = value === level;
@@ -271,7 +291,7 @@ function SelectorGroup({ title, value, onChange }) {
               onClick={() => onChange(level)}
               className={`rounded-2xl border px-4 py-2 font-medium transition ${
                 active
-                  ? "border-slate-900 bg-slate-900 text-white"
+                  ? "border-[#073674] bg-[#073674] text-white"
                   : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
               }`}
             >
@@ -303,7 +323,7 @@ function PipeComparison({ bandwidthLevel, bitrateLevel }) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div>
-        <h3 className="mb-2 text-lg font-semibold text-slate-900">
+        <h3 className="mb-2 text-lg font-semibold" style={{ color: ST_EDS.navy }}>
           Bandwidth demo
         </h3>
         <p className="text-sm leading-6 text-slate-600">
@@ -339,7 +359,7 @@ function PipeComparison({ bandwidthLevel, bitrateLevel }) {
       </div>
 
       <div>
-        <h3 className="mb-2 text-lg font-semibold text-slate-900">
+        <h3 className="mb-2 text-lg font-semibold" style={{ color: ST_EDS.navy }}>
           Bit rate demo
         </h3>
         <p className="text-sm leading-6 text-slate-600">
@@ -426,7 +446,9 @@ function VideoPreview({ bandwidthLevel, bitrateLevel }) {
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Play className="h-5 w-5 text-red-500" />
-          <h4 className="font-semibold text-slate-900">{qualityLabel}</h4>
+          <h4 className="font-semibold" style={{ color: ST_EDS.navy }}>
+            {qualityLabel}
+          </h4>
         </div>
 
         <div
@@ -554,7 +576,7 @@ function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
       styles = "border-rose-300 bg-rose-50 text-rose-800";
     }
   } else if (isSelected) {
-    styles = "border-slate-900 bg-slate-900 text-white";
+    styles = "border-[#073674] bg-[#073674] text-white";
   }
 
   return (
@@ -577,9 +599,11 @@ function ModuleProgress({ currentPage }) {
   ];
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-900">Module Progress</h2>
+        <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
+          Module Progress
+        </h2>
         <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
       </div>
 
@@ -593,7 +617,7 @@ function ModuleProgress({ currentPage }) {
               key={page.label}
               className={`rounded-2xl border p-4 ${
                 active
-                  ? "border-slate-900 bg-slate-900 text-white"
+                  ? "border-[#073674] bg-[#073674] text-white"
                   : complete
                   ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                   : "border-slate-200 bg-slate-50 text-slate-600"
@@ -653,13 +677,13 @@ export default function Bandwidth() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [overviewUnlocked, modulePage]);
 
-useEffect(() => {
-  if (bandwidthTouched && bitrateTouched) {
-    setActivityUnlocked(true)
-    setShowCompletionOverlay(true)
-    markActivityComplete("/bitrate-bandwidth")
-  }
-}, [bandwidthTouched, bitrateTouched])
+  useEffect(() => {
+    if (bandwidthTouched && bitrateTouched) {
+      setActivityUnlocked(true);
+      setShowCompletionOverlay(true);
+      markActivityComplete("/bitrate-bandwidth");
+    }
+  }, [bandwidthTouched, bitrateTouched]);
 
   const score = useMemo(() => {
     return quizQuestions.reduce(
@@ -667,11 +691,13 @@ useEffect(() => {
       0
     );
   }, [selectedAnswers, quizQuestions]);
-useEffect(() => {
-  if (submittedQuiz && score >= 6) {
-    markQuizPassed("/bitrate-bandwidth")
-  }
-}, [submittedQuiz, score])
+
+  useEffect(() => {
+    if (submittedQuiz && score >= 6) {
+      markQuizPassed("/bitrate-bandwidth");
+    }
+  }, [submittedQuiz, score]);
+
   const bandwidthValue = levelValue[bandwidthLevel];
   const bitrateValue = levelValue[bitrateLevel];
   const isBuffering = bitrateValue > bandwidthValue;
@@ -700,19 +726,55 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div
+      className="min-h-screen"
+      style={{
+        background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
+      }}
+    >
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 md:px-6">
-        <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
-            Module 3
+        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+          <span
+            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
+          >
+            St Edmund&apos;s College Canberra
           </span>
-          <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
+
+          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
             Bit Rate and Bandwidth
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
+
+          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
             Learn the difference between bits, bit rate, and bandwidth, then test
             how they work together in an interactive activity.
           </p>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Gauge className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Core ideas</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Understand bits, bit rate, and bandwidth clearly.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <MousePointerClick className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Interactive demo</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Change both controls and watch smooth playback or buffering.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Trophy className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Quiz feedback</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Review what you selected and compare it with the correct answer.
+              </p>
+            </div>
+          </div>
         </header>
 
         <ModuleProgress currentPage={modulePage} />
@@ -728,13 +790,16 @@ useEffect(() => {
             >
               <div ref={overviewRef}>
                 <Section title="General Overview" icon={BookOpen}>
-                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-100">
-                        <Target className="h-5 w-5 text-blue-700" />
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+                        style={{ backgroundColor: "#dce9ff" }}
+                      >
+                        <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           What you are learning
                         </h3>
                         <p className="mt-2 leading-7 text-slate-700">
@@ -753,10 +818,13 @@ useEffect(() => {
                         key={step.step}
                         className="rounded-2xl border border-slate-200 bg-white p-4"
                       >
-                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
+                        <div
+                          className="mb-2 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
+                          style={{ backgroundColor: ST_EDS.navy }}
+                        >
                           {step.step}
                         </div>
-                        <h3 className="text-sm font-semibold text-slate-900">
+                        <h3 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
                           {step.title}
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -769,8 +837,8 @@ useEffect(() => {
                   <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <div className="flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5 text-amber-500" />
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           Real-life analogy
                         </h3>
                       </div>
@@ -784,8 +852,8 @@ useEffect(() => {
 
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <div className="flex items-center gap-2">
-                        <Info className="h-5 w-5 text-sky-600" />
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           Key ideas to remember
                         </h3>
                       </div>
@@ -795,12 +863,19 @@ useEffect(() => {
                             key={idea}
                             className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
                           >
-                            <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
+                            <BadgeCheck
+                              className="mt-0.5 h-4 w-4 shrink-0"
+                              style={{ color: ST_EDS.navy }}
+                            />
                             <p className="text-sm leading-6 text-slate-700">{idea}</p>
                           </div>
                         ))}
                       </div>
                     </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-200 bg-white p-5 mt-8">
+                    <img src={m3Diagram} alt="BR & BW diagram" className="w-full rounded-2xl" />
                   </div>
 
                   <div className="mt-8">
@@ -809,7 +884,7 @@ useEffect(() => {
                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100">
                           <Gauge className="h-5 w-5 text-slate-700" />
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900">
+                        <h3 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
                           Core Concepts
                         </h3>
                       </div>
@@ -862,16 +937,20 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                    <h3 className="font-semibold text-blue-900">What happens next?</h3>
-                    <p className="mt-2 text-sm leading-6 text-blue-800">
+                  <div className="mt-8 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                    <h3 className="font-semibold" style={{ color: "#7a5800" }}>
+                      What happens next?
+                    </h3>
+                    <p className="mt-2 text-sm leading-6" style={{ color: "#7a5800" }}>
                       On the next page, you will choose different bandwidth and bit
                       rate levels and see whether the content plays smoothly or buffers.
                     </p>
                   </div>
 
                   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <h3 className="font-semibold text-slate-900">Ready to continue?</h3>
+                    <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
+                      Ready to continue?
+                    </h3>
                     <p className="mt-2 text-sm leading-6 text-slate-700">
                       Scroll to the bottom of this page to unlock the interactive activity.
                     </p>
@@ -886,7 +965,7 @@ useEffect(() => {
                   disabled={!overviewUnlocked}
                   className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                     overviewUnlocked
-                      ? "bg-slate-900 hover:bg-slate-800"
+                      ? "bg-[#073674] hover:bg-[#0a4aa3]"
                       : "cursor-not-allowed bg-slate-300"
                   }`}
                 >
@@ -970,9 +1049,11 @@ useEffect(() => {
                         </div>
                       </div>
 
-                      <div className="rounded-2xl bg-amber-50 p-4">
-                        <h4 className="font-semibold text-amber-800">Important note</h4>
-                        <p className="mt-2 leading-7 text-amber-700">
+                      <div className="rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                        <h4 className="font-semibold" style={{ color: "#7a5800" }}>
+                          Important note
+                        </h4>
+                        <p className="mt-2 leading-7" style={{ color: "#7a5800" }}>
                           Bit rate and bandwidth are related, but they are not the same
                           thing. Bit rate is how much data is used each second.
                           Bandwidth is how much data can move through the connection.
@@ -996,7 +1077,7 @@ useEffect(() => {
 
                       <div className="grid gap-6">
                         <div>
-                          <h3 className="mb-3 text-lg font-semibold text-slate-900">
+                          <h3 className="mb-3 text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                             What is happening here?
                           </h3>
                           <RelationshipSummary
@@ -1057,7 +1138,7 @@ useEffect(() => {
                             <CheckCircle2 className="h-8 w-8 text-emerald-700" />
                           </div>
 
-                          <h3 className="mt-4 text-2xl font-bold text-slate-900">
+                          <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
                             Activity Complete
                           </h3>
 
@@ -1079,7 +1160,7 @@ useEffect(() => {
                             <button
                               type="button"
                               onClick={() => setShowCompletionOverlay(false)}
-                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#073674] px-5 py-2.5 text-white transition hover:bg-[#0a4aa3]"
                             >
                               Back to Activity
                             </button>
@@ -1112,7 +1193,7 @@ useEffect(() => {
                     disabled={!activityUnlocked}
                     className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
-                        ? "bg-slate-900 hover:bg-slate-800"
+                        ? "bg-[#073674] hover:bg-[#0a4aa3]"
                         : "cursor-not-allowed bg-slate-300"
                     }`}
                   >
@@ -1134,37 +1215,83 @@ useEffect(() => {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-               
+                <div className="mb-5 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                  <p className="text-sm font-medium" style={{ color: "#7a5800" }}>
+                    The answer positions are randomised each time the quiz is reset.
+                  </p>
+                </div>
 
                 <div className="space-y-5">
-                  {quizQuestions.map((q, qIndex) => (
-                    <div
-                      key={q.question}
-                      className="rounded-2xl border border-slate-200 p-5"
-                    >
-                      <h3 className="font-semibold text-slate-900">
-                        {qIndex + 1}. {q.question}
-                      </h3>
+                  {quizQuestions.map((q, qIndex) => {
+                    const userAnswer = selectedAnswers[qIndex];
+                    const wasCorrect = userAnswer === q.answer;
 
-                      <div className="mt-4 grid gap-3">
-                        {q.options.map((option) => (
-                          <QuizOption
-                            key={option}
-                            option={option}
-                            isSelected={selectedAnswers[qIndex] === option}
-                            isCorrect={q.answer === option}
-                            submitted={submittedQuiz}
-                            onClick={() =>
-                              setSelectedAnswers((prev) => ({
-                                ...prev,
-                                [qIndex]: option,
-                              }))
-                            }
-                          />
-                        ))}
+                    return (
+                      <div
+                        key={q.question}
+                        className="rounded-2xl border border-slate-200 p-5"
+                      >
+                        <h3 className="font-semibold text-slate-900">
+                          {qIndex + 1}. {q.question}
+                        </h3>
+
+                        <div className="mt-4 grid gap-3">
+                          {q.shuffledOptions.map((option) => (
+                            <QuizOption
+                              key={option}
+                              option={option}
+                              isSelected={selectedAnswers[qIndex] === option}
+                              isCorrect={q.answer === option}
+                              submitted={submittedQuiz}
+                              onClick={() =>
+                                setSelectedAnswers((prev) => ({
+                                  ...prev,
+                                  [qIndex]: option,
+                                }))
+                              }
+                            />
+                          ))}
+                        </div>
+
+                        {submittedQuiz && (
+                          <div
+                            className={`mt-4 rounded-2xl border p-4 ${
+                              wasCorrect
+                                ? "border-emerald-200 bg-emerald-50"
+                                : "border-rose-200 bg-rose-50"
+                            }`}
+                          >
+                            <p
+                              className={`text-sm font-semibold ${
+                                wasCorrect ? "text-emerald-800" : "text-rose-800"
+                              }`}
+                            >
+                              {wasCorrect ? "Correct" : "Incorrect"}
+                            </p>
+
+                            {!wasCorrect && (
+                              <div className="mt-2 space-y-1 text-sm text-slate-700">
+                                <p>
+                                  <span className="font-semibold">You answered:</span>{" "}
+                                  {userAnswer || "No answer selected"}
+                                </p>
+                                <p>
+                                  <span className="font-semibold">Correct answer:</span>{" "}
+                                  {q.answer}
+                                </p>
+                              </div>
+                            )}
+
+                            {wasCorrect && (
+                              <p className="mt-2 text-sm text-slate-700">
+                                You selected the correct answer.
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3">
@@ -1172,7 +1299,7 @@ useEffect(() => {
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
                     disabled={!allAnswered}
-                    className="rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-2xl bg-[#073674] px-5 py-2.5 text-white transition hover:bg-[#0a4aa3] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Submit Quiz
                   </button>
@@ -1199,7 +1326,7 @@ useEffect(() => {
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-6 rounded-2xl bg-slate-50 p-5"
                   >
-                    <h3 className="text-lg font-semibold text-slate-900">
+                    <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
                     <p className="mt-2 leading-7 text-slate-600">

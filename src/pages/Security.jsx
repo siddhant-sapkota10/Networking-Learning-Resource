@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { markActivityComplete, markQuizPassed } from "../utils/progress"
+import m6Diagram from "../assets/m6diagram.png";
 /* ===================== OVERVIEW DATA ===================== */
 
 const overviewSteps = [
@@ -1165,7 +1166,9 @@ useEffect(() => {
                       </div>
                     </div>
                   </div>
-
+<div className="flex rounded-3xl border border-slate-200 bg-white p-5 mt-8 items-center justify-center">
+  <img src={m6Diagram} alt="Security diagram" />
+</div>
                   <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-5">
                     <h3 className="text-lg font-semibold text-slate-900">
                       Main protections in this module

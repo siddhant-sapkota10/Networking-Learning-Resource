@@ -16,12 +16,25 @@ import {
   Server,
   ShieldCheck,
   Target,
+  Trophy,
   X,
   XCircle,
   ArrowRight,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { markActivityComplete, markQuizPassed } from "../utils/progress"
+import { markActivityComplete, markQuizPassed } from "../utils/progress";
+import m4Diagram from "../assets/m4diagram.png";
+
+const ST_EDS = {
+  navy: "#073674",
+  blue: "#0A4AA3",
+  blue2: "#0F6DF0",
+  gold: "#FEC52F",
+  silver: "#D1D2D4",
+  white: "#FFFFFF",
+  pale: "#F8FAFC",
+};
+
 const overviewSteps = [
   {
     step: 1,
@@ -227,18 +240,23 @@ function shuffleArray(array) {
 function buildShuffledQuiz(questions) {
   return questions.map((q) => ({
     ...q,
-    options: shuffleArray(q.options),
+    shuffledOptions: shuffleArray(q.options),
   }));
 }
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100">
-          <Icon className="h-5 w-5 text-slate-700" />
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: `${ST_EDS.gold}20` }}
+        >
+          <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+          {title}
+        </h2>
       </div>
       {children}
     </section>
@@ -250,7 +268,7 @@ function StatusBox({ title, body, tone = "neutral" }) {
     tone === "success"
       ? "border-emerald-200 bg-emerald-50 text-emerald-800"
       : tone === "info"
-      ? "border-blue-200 bg-blue-50 text-blue-800"
+      ? "border-[#bfd7ff] bg-[#eef5ff] text-[#0a4aa3]"
       : tone === "warning"
       ? "border-amber-200 bg-amber-50 text-amber-800"
       : "border-slate-200 bg-slate-50 text-slate-700";
@@ -287,7 +305,7 @@ function BrowserBar({ domain, onSearch, disabled }) {
           className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 font-medium text-white transition ${
             disabled
               ? "cursor-not-allowed bg-slate-400"
-              : "bg-slate-900 hover:bg-slate-800"
+              : "bg-[#073674] hover:bg-[#0a4aa3]"
           }`}
         >
           <Search className="h-4 w-4" />
@@ -308,7 +326,7 @@ function DomainButton({ domain, active, done, onClick, disabled }) {
         done
           ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
           : active
-          ? "border-slate-900 bg-slate-900 text-white"
+          ? "border-[#073674] bg-[#073674] text-white"
           : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
       } ${disabled && !done ? "cursor-not-allowed opacity-70" : ""}`}
     >
@@ -328,7 +346,7 @@ function StepChip({ label, active, complete }) {
     <div
       className={`rounded-full px-3 py-1 text-xs font-semibold ${
         active
-          ? "bg-slate-900 text-white"
+          ? "bg-[#073674] text-white"
           : complete
           ? "bg-emerald-100 text-emerald-700"
           : "bg-slate-100 text-slate-500"
@@ -348,7 +366,7 @@ function LookupStageCard({
 }) {
   const tones =
     tone === "blue"
-      ? "border-blue-200 bg-blue-50 text-blue-800"
+      ? "border-[#bfd7ff] bg-[#eef5ff] text-[#0a4aa3]"
       : tone === "emerald"
       ? "border-emerald-200 bg-emerald-50 text-emerald-800"
       : "border-slate-200 bg-white text-slate-700";
@@ -379,7 +397,7 @@ function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
     if (isCorrect) styles = "border-emerald-300 bg-emerald-50 text-emerald-800";
     else if (isSelected) styles = "border-rose-300 bg-rose-50 text-rose-800";
   } else if (isSelected) {
-    styles = "border-slate-900 bg-slate-900 text-white";
+    styles = "border-[#073674] bg-[#073674] text-white";
   }
 
   return (
@@ -408,7 +426,7 @@ function MeaningOption({
     if (correct) styles = "border-emerald-300 bg-emerald-50 text-emerald-800";
     else if (selected) styles = "border-rose-300 bg-rose-50 text-rose-800";
   } else if (selected) {
-    styles = "border-slate-900 bg-slate-900 text-white";
+    styles = "border-[#073674] bg-[#073674] text-white";
   }
 
   return (
@@ -431,9 +449,11 @@ function ModuleProgress({ currentPage }) {
   ];
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-slate-900">Module Progress</h2>
+        <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
+          Module Progress
+        </h2>
         <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
       </div>
 
@@ -447,7 +467,7 @@ function ModuleProgress({ currentPage }) {
               key={page.label}
               className={`rounded-2xl border p-4 ${
                 active
-                  ? "border-slate-900 bg-slate-900 text-white"
+                  ? "border-[#073674] bg-[#073674] text-white"
                   : complete
                   ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                   : "border-slate-200 bg-slate-50 text-slate-600"
@@ -533,14 +553,13 @@ export default function DNS() {
     );
   }, [selectedSiteIndex]);
 
-useEffect(() => {
-  if (roundsCompleted >= 1) {
-    setActivityUnlocked(true);
-    setShowCompletionOverlay(true);
-
-    markActivityComplete("/dns");
-  }
-}, [roundsCompleted]);
+  useEffect(() => {
+    if (roundsCompleted >= 1) {
+      setActivityUnlocked(true);
+      setShowCompletionOverlay(true);
+      markActivityComplete("/dns");
+    }
+  }, [roundsCompleted]);
 
   const score = useMemo(() => {
     return quizQuestions.reduce(
@@ -548,16 +567,17 @@ useEffect(() => {
       0
     );
   }, [selectedAnswers, quizQuestions]);
-useEffect(() => {
-  if (submittedQuiz && score >= 6) {
-    markQuizPassed("/dns")
-  }
-}, [submittedQuiz, score])
+
+  useEffect(() => {
+    if (submittedQuiz && score >= 6) {
+      markQuizPassed("/dns");
+    }
+  }, [submittedQuiz, score]);
+
   const allAnswered =
     quizQuestions.length > 0 &&
     quizQuestions.every((_, index) => typeof selectedAnswers[index] === "string");
 
-  const stepLabels = ["Choose Name", "Lookup", "Reveal IP", "Connect"];
   const activeStep =
     lookupPhase === "choose"
       ? 0
@@ -584,8 +604,6 @@ useEffect(() => {
       : lookupPhase === "revealed"
       ? "Step 3: DNS reveals the IP address"
       : "Step 4: Connected to the correct server";
-
-  const remainingSites = lookupSets.filter((_, i) => !completedSites[i]);
 
   const handleStartLookup = () => {
     setLookupPhase("lookup");
@@ -690,19 +708,54 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div
+      className="min-h-screen"
+      style={{
+        background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
+      }}
+    >
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
-        <header className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">
-            Module 4
+        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+          <span
+            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
+          >
+            St Edmund&apos;s College Canberra
           </span>
-          <h1 className="mt-3 text-3xl font-extrabold text-slate-900">
+
+          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
             Domain Name System (DNS)
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
+          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
             Learn how DNS translates easy website names into the numeric IP
             addresses computers use to find the correct web server.
           </p>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Globe className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Website names</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Learn why people use names instead of long IP addresses.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Network className="mb-2 h-5 w-5" />
+              <p className="font-semibold">DNS lookup</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Follow how DNS finds the correct numeric address.
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+              <Trophy className="mb-2 h-5 w-5" />
+              <p className="font-semibold">Quiz feedback</p>
+              <p className="mt-1 text-sm text-slate-200">
+                Review what you chose and compare it with the correct answer.
+              </p>
+            </div>
+          </div>
         </header>
 
         <ModuleProgress currentPage={modulePage} />
@@ -718,13 +771,16 @@ useEffect(() => {
             >
               <div ref={overviewRef}>
                 <Section title="What is DNS?" icon={HelpCircle}>
-                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-100">
-                        <Target className="h-5 w-5 text-blue-700" />
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+                        style={{ backgroundColor: "#dce9ff" }}
+                      >
+                        <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           What you are learning
                         </h3>
                         <p className="mt-2 leading-7 text-slate-700">
@@ -744,10 +800,13 @@ useEffect(() => {
                         key={step.step}
                         className="rounded-2xl border border-slate-200 bg-white p-4"
                       >
-                        <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-bold text-white">
+                        <div
+                          className="mb-2 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-white"
+                          style={{ backgroundColor: ST_EDS.navy }}
+                        >
                           {step.step}
                         </div>
-                        <h3 className="text-sm font-semibold text-slate-900">
+                        <h3 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
                           {step.title}
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -760,8 +819,8 @@ useEffect(() => {
                   <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <div className="flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5 text-amber-500" />
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           Real-life analogy
                         </h3>
                       </div>
@@ -776,8 +835,8 @@ useEffect(() => {
 
                     <div className="rounded-3xl border border-slate-200 bg-white p-5">
                       <div className="flex items-center gap-2">
-                        <Info className="h-5 w-5 text-sky-600" />
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           Key ideas to remember
                         </h3>
                       </div>
@@ -787,12 +846,19 @@ useEffect(() => {
                             key={idea}
                             className="flex items-start gap-2 rounded-2xl bg-slate-50 px-4 py-3"
                           >
-                            <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-700" />
+                            <BadgeCheck
+                              className="mt-0.5 h-4 w-4 shrink-0"
+                              style={{ color: ST_EDS.navy }}
+                            />
                             <p className="text-sm leading-6 text-slate-700">{idea}</p>
                           </div>
                         ))}
                       </div>
                     </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-200 bg-white p-5 mt-8 flex items-center justify-center">
+                    <img src={m4Diagram} alt="DNS diagram" className="max-w-full rounded-2xl" />
                   </div>
 
                   <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
@@ -823,9 +889,11 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-4">
-                    <h3 className="font-semibold text-blue-900">What happens next?</h3>
-                    <p className="mt-2 text-sm leading-6 text-blue-800">
+                  <div className="mt-8 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                    <h3 className="font-semibold" style={{ color: "#7a5800" }}>
+                      What happens next?
+                    </h3>
+                    <p className="mt-2 text-sm leading-6" style={{ color: "#7a5800" }}>
                       On the next page, you will choose a website name, ask DNS to
                       look it up, reveal the IP address, and connect to the correct
                       server.
@@ -833,7 +901,9 @@ useEffect(() => {
                   </div>
 
                   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <h3 className="font-semibold text-slate-900">Ready to continue?</h3>
+                    <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
+                      Ready to continue?
+                    </h3>
                     <p className="mt-2 text-sm leading-6 text-slate-700">
                       Scroll to the bottom of this page to unlock the DNS activity.
                     </p>
@@ -848,7 +918,7 @@ useEffect(() => {
                   disabled={!overviewUnlocked}
                   className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                     overviewUnlocked
-                      ? "bg-slate-900 hover:bg-slate-800"
+                      ? "bg-[#073674] hover:bg-[#0a4aa3]"
                       : "cursor-not-allowed bg-slate-300"
                   }`}
                 >
@@ -902,7 +972,7 @@ useEffect(() => {
 
                       <div>
                         <div className="mb-3 flex items-center justify-between gap-3">
-                          <h3 className="text-lg font-semibold text-slate-900">
+                          <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                             Choose a website
                           </h3>
                           <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -926,7 +996,7 @@ useEffect(() => {
 
                       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                         <div className="mb-4 flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-slate-900">
+                          <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                             DNS lookup activity
                           </h3>
                           <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -958,7 +1028,7 @@ useEffect(() => {
                               initial={{ opacity: 0, y: 8 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -8 }}
-                              className="rounded-2xl border border-blue-200 bg-blue-50 p-5"
+                              className="rounded-2xl border border-[#bfd7ff] bg-[#eef5ff] p-5"
                             >
                               <div className="flex items-center gap-3">
                                 <motion.div
@@ -968,16 +1038,16 @@ useEffect(() => {
                                     repeat: Infinity,
                                     ease: "linear",
                                   }}
-                                  className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-blue-700 shadow-sm"
+                                  className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#0a4aa3] shadow-sm"
                                 >
                                   <Search className="h-5 w-5" />
                                 </motion.div>
 
                                 <div>
-                                  <h4 className="font-semibold text-blue-900">
+                                  <h4 className="font-semibold text-[#073674]">
                                     DNS is searching
                                   </h4>
-                                  <p className="mt-1 text-sm leading-6 text-blue-800">
+                                  <p className="mt-1 text-sm leading-6 text-[#0a4aa3]">
                                     Looking up the IP address for{" "}
                                     <span className="font-semibold">
                                       {currentSite.domain}
@@ -998,12 +1068,12 @@ useEffect(() => {
                             >
                               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                                 <div className="grid items-center gap-4 md:grid-cols-[minmax(0,1fr)_60px_minmax(0,1fr)]">
-                                  <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-center">
-                                    <Globe className="mx-auto h-6 w-6 text-blue-700" />
-                                    <p className="mt-2 font-semibold text-blue-900">
+                                  <div className="rounded-2xl border border-[#bfd7ff] bg-[#eef5ff] p-4 text-center">
+                                    <Globe className="mx-auto h-6 w-6 text-[#0a4aa3]" />
+                                    <p className="mt-2 font-semibold text-[#073674]">
                                       {currentSite.domain}
                                     </p>
-                                    <p className="mt-1 text-xs text-blue-700">
+                                    <p className="mt-1 text-xs text-[#0a4aa3]">
                                       Website name
                                     </p>
                                   </div>
@@ -1037,7 +1107,7 @@ useEffect(() => {
                               </div>
 
                               <div className="rounded-3xl border border-slate-200 bg-white p-5">
-                                <h4 className="text-lg font-semibold text-slate-900">
+                                <h4 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                                   What did DNS just do?
                                 </h4>
                                 <p className="mt-1 text-sm leading-6 text-slate-600">
@@ -1069,7 +1139,7 @@ useEffect(() => {
                                       disabled={!selectedMeaning}
                                       className={`rounded-2xl px-5 py-2 text-white transition ${
                                         selectedMeaning
-                                          ? "bg-slate-900 hover:bg-slate-800"
+                                          ? "bg-[#073674] hover:bg-[#0a4aa3]"
                                           : "cursor-not-allowed bg-slate-400"
                                       }`}
                                     >
@@ -1079,7 +1149,7 @@ useEffect(() => {
                                     <button
                                       type="button"
                                       onClick={handleTryMeaningAgain}
-                                      className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                                      className="rounded-2xl bg-[#073674] px-5 py-2 text-white transition hover:bg-[#0a4aa3]"
                                     >
                                       Try Again
                                     </button>
@@ -1099,12 +1169,12 @@ useEffect(() => {
                             >
                               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                                 <div className="grid items-center gap-5 md:grid-cols-[140px_minmax(0,1fr)_140px]">
-                                  <div className="rounded-3xl border border-blue-200 bg-blue-50 p-4 text-center">
-                                    <Globe className="mx-auto h-7 w-7 text-blue-700" />
-                                    <p className="mt-2 text-sm font-semibold text-blue-900">
+                                  <div className="rounded-3xl border border-[#bfd7ff] bg-[#eef5ff] p-4 text-center">
+                                    <Globe className="mx-auto h-7 w-7 text-[#0a4aa3]" />
+                                    <p className="mt-2 text-sm font-semibold text-[#073674]">
                                       {currentSite.domain}
                                     </p>
-                                    <p className="mt-1 text-xs text-blue-700">
+                                    <p className="mt-1 text-xs text-[#0a4aa3]">
                                       Website name
                                     </p>
                                   </div>
@@ -1155,7 +1225,7 @@ useEffect(() => {
                                 <button
                                   type="button"
                                   onClick={handleNextLookup}
-                                  className="rounded-2xl bg-slate-900 px-5 py-2 text-white transition hover:bg-slate-800"
+                                  className="rounded-2xl bg-[#073674] px-5 py-2 text-white transition hover:bg-[#0a4aa3]"
                                 >
                                   Try Another Website
                                 </button>
@@ -1205,7 +1275,7 @@ useEffect(() => {
                       />
 
                       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           Did you know?
                         </h3>
                         <div className="mt-3 grid gap-2">
@@ -1223,7 +1293,7 @@ useEffect(() => {
                       </div>
 
                       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h3 className="text-lg font-semibold text-slate-900">
+                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                           Website progress
                         </h3>
                         <div className="mt-3 grid gap-2">
@@ -1293,7 +1363,7 @@ useEffect(() => {
                             <CheckCircle2 className="h-8 w-8 text-emerald-700" />
                           </div>
 
-                          <h3 className="mt-4 text-2xl font-bold text-slate-900">
+                          <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
                             Activity Complete
                           </h3>
 
@@ -1315,7 +1385,7 @@ useEffect(() => {
                             <button
                               type="button"
                               onClick={() => setShowCompletionOverlay(false)}
-                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-white transition hover:bg-slate-800"
+                              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#073674] px-5 py-2.5 text-white transition hover:bg-[#0a4aa3]"
                             >
                               Back to Activity
                             </button>
@@ -1348,7 +1418,7 @@ useEffect(() => {
                     disabled={!activityUnlocked}
                     className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
-                        ? "bg-slate-900 hover:bg-slate-800"
+                        ? "bg-[#073674] hover:bg-[#0a4aa3]"
                         : "cursor-not-allowed bg-slate-300"
                     }`}
                   >
@@ -1370,38 +1440,83 @@ useEffect(() => {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-
-
+                <div className="mb-5 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
+                  <p className="text-sm font-medium" style={{ color: "#7a5800" }}>
+                    The answer positions are randomised each time the quiz is reset.
+                  </p>
+                </div>
 
                 <div className="space-y-5">
-                  {quizQuestions.map((q, i) => (
-                    <div
-                      key={q.question}
-                      className="rounded-2xl border border-slate-200 p-5"
-                    >
-                      <h3 className="font-semibold text-slate-900">
-                        {i + 1}. {q.question}
-                      </h3>
+                  {quizQuestions.map((q, i) => {
+                    const userAnswer = selectedAnswers[i];
+                    const wasCorrect = userAnswer === q.answer;
 
-                      <div className="mt-4 grid gap-3">
-                        {q.options.map((option) => (
-                          <QuizOption
-                            key={option}
-                            option={option}
-                            isSelected={selectedAnswers[i] === option}
-                            isCorrect={q.answer === option}
-                            submitted={submittedQuiz}
-                            onClick={() =>
-                              setSelectedAnswers((prev) => ({
-                                ...prev,
-                                [i]: option,
-                              }))
-                            }
-                          />
-                        ))}
+                    return (
+                      <div
+                        key={q.question}
+                        className="rounded-2xl border border-slate-200 p-5"
+                      >
+                        <h3 className="font-semibold text-slate-900">
+                          {i + 1}. {q.question}
+                        </h3>
+
+                        <div className="mt-4 grid gap-3">
+                          {q.shuffledOptions.map((option) => (
+                            <QuizOption
+                              key={option}
+                              option={option}
+                              isSelected={selectedAnswers[i] === option}
+                              isCorrect={q.answer === option}
+                              submitted={submittedQuiz}
+                              onClick={() =>
+                                setSelectedAnswers((prev) => ({
+                                  ...prev,
+                                  [i]: option,
+                                }))
+                              }
+                            />
+                          ))}
+                        </div>
+
+                        {submittedQuiz && (
+                          <div
+                            className={`mt-4 rounded-2xl border p-4 ${
+                              wasCorrect
+                                ? "border-emerald-200 bg-emerald-50"
+                                : "border-rose-200 bg-rose-50"
+                            }`}
+                          >
+                            <p
+                              className={`text-sm font-semibold ${
+                                wasCorrect ? "text-emerald-800" : "text-rose-800"
+                              }`}
+                            >
+                              {wasCorrect ? "Correct" : "Incorrect"}
+                            </p>
+
+                            {!wasCorrect && (
+                              <div className="mt-2 space-y-1 text-sm text-slate-700">
+                                <p>
+                                  <span className="font-semibold">You answered:</span>{" "}
+                                  {userAnswer || "No answer selected"}
+                                </p>
+                                <p>
+                                  <span className="font-semibold">Correct answer:</span>{" "}
+                                  {q.answer}
+                                </p>
+                              </div>
+                            )}
+
+                            {wasCorrect && (
+                              <p className="mt-2 text-sm text-slate-700">
+                                You selected the correct answer.
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="mt-6 flex gap-3">
@@ -1409,7 +1524,7 @@ useEffect(() => {
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
                     disabled={!allAnswered}
-                    className="rounded-2xl bg-slate-900 px-5 py-2 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-2xl bg-[#073674] px-5 py-2 text-white hover:bg-[#0a4aa3] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Submit Quiz
                   </button>
@@ -1435,7 +1550,7 @@ useEffect(() => {
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-6 rounded-2xl bg-slate-50 p-5"
                   >
-                    <h3 className="font-semibold text-slate-900">
+                    <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
 
