@@ -1497,11 +1497,7 @@ export default function TCP() {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-                <div className="mb-5 rounded-2xl border border-[#f5dda2] bg-[#fff7df] p-4">
-                  <p className="text-sm font-medium" style={{ color: "#7a5800" }}>
-                    The answer positions are randomised each time the quiz is reset.
-                  </p>
-                </div>
+
 
                 <div className="space-y-5">
                   {quizQuestions.map((q, i) => {
