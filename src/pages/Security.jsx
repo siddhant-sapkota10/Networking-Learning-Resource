@@ -1551,7 +1551,7 @@ export default function Security() {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
->
+
 
                 <div className="space-y-5">
                   {quizQuestions.map((q, i) => {

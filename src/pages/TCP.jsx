@@ -1627,7 +1627,7 @@ export default function TCP() {
                         Back to Activity
                       </button>
 
-                     <a href="#module2"><button
+                     <a href="/#module2"><button
                         type="button"
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
                       >

@@ -703,9 +703,6 @@ export default function DNS() {
     setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
   };
 
-  const goToNextModule = () => {
-    alert("Great job! You finished this module. You can now move to the next one.");
-  };
 
   return (
     <div

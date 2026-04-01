@@ -39,7 +39,7 @@ export default function Navbar() {
         <div className="flex justify-end">
           <div className="hidden items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm md:flex">
             <Network size={16} />
-            <span>Year 7–8 STEAM</span>
+            <span>Created by Sid Sapkota - Year 12 2026</span>
           </div>
         </div>
 

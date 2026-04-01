@@ -68,6 +68,7 @@ export default function Home() {
   const hasAnimatedOnLoadRef = useRef(false)
   const introTimeoutsRef = useRef([])
   const hasScrolledForHashRef = useRef(false)
+  const hasAutoFocusedRef = useRef(false)
 
   useEffect(() => {
     const load = () => {
@@ -160,10 +161,44 @@ export default function Home() {
     const timeoutId = window.setTimeout(() => {
       scrollToTarget()
       hasScrolledForHashRef.current = true
+      hasAutoFocusedRef.current = true
     }, delay)
 
     return () => window.clearTimeout(timeoutId)
   }, [modules.length, shouldRunIntroAnimation])
+
+  useEffect(() => {
+    if (modules.length === 0) return
+    if (!roadmapSectionRef.current) return
+    if (hasScrolledForHashRef.current) return
+    if (hasAutoFocusedRef.current) return
+
+    const targetRow =
+      rowRefs.current[Math.min(currentModuleIndex, rowRefs.current.length - 1)]
+
+    if (!targetRow) return
+
+    const shouldDelayForMotion =
+      shouldRunIntroAnimation || isIntroAnimating || activeCheckpointIndex > 1
+
+    const delay = shouldDelayForMotion ? 900 : 250
+
+    const timeoutId = window.setTimeout(() => {
+      targetRow.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      })
+      hasAutoFocusedRef.current = true
+    }, delay)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [
+    modules.length,
+    currentModuleIndex,
+    shouldRunIntroAnimation,
+    isIntroAnimating,
+    activeCheckpointIndex,
+  ])
 
   useLayoutEffect(() => {
     let frameId = null
@@ -229,17 +264,17 @@ export default function Home() {
             setPelicanPoint(allPoints[1])
           }, 260)
 
-const unlockTimeout = setTimeout(() => {
-  setIntroReady(true)
-}, 900)
+          const unlockTimeout = setTimeout(() => {
+            setIntroReady(true)
+          }, 900)
 
-const finishTimeout = setTimeout(() => {
-  setIsIntroAnimating(false)
-  hasAnimatedOnLoadRef.current = true
-  localStorage.setItem(PELICAN_STORAGE_KEY, "1")
-}, 3200)
+          const finishTimeout = setTimeout(() => {
+            setIsIntroAnimating(false)
+            hasAnimatedOnLoadRef.current = true
+            localStorage.setItem(PELICAN_STORAGE_KEY, "1")
+          }, 3200)
 
-introTimeoutsRef.current.push(moveTimeout, unlockTimeout, finishTimeout)
+          introTimeoutsRef.current.push(moveTimeout, unlockTimeout, finishTimeout)
           return
         }
 
@@ -266,22 +301,24 @@ introTimeoutsRef.current.push(moveTimeout, unlockTimeout, finishTimeout)
               setPelicanPoint(currentPoint)
             }, 260)
 
-const unlockTimeout = setTimeout(() => {
-  setIntroReady(true)
-}, startIndex !== activeCheckpointIndex ? 900 : 250)
+            const unlockTimeout = setTimeout(() => {
+              setIntroReady(true)
+            }, startIndex !== activeCheckpointIndex ? 900 : 250)
 
-const finishTimeout = setTimeout(() => {
-  setIsIntroAnimating(false)
-  hasAnimatedOnLoadRef.current = true
-  localStorage.setItem(
-    PELICAN_STORAGE_KEY,
-    String(activeCheckpointIndex)
-  )
-}, startIndex !== activeCheckpointIndex ? 3200 : 400)
+            const finishTimeout = setTimeout(() => {
+              setIsIntroAnimating(false)
+              hasAnimatedOnLoadRef.current = true
+              localStorage.setItem(
+                PELICAN_STORAGE_KEY,
+                String(activeCheckpointIndex)
+              )
+            }, startIndex !== activeCheckpointIndex ? 3200 : 400)
 
-introTimeoutsRef.current.push(moveTimeout, unlockTimeout, finishTimeout)
-
-            introTimeoutsRef.current.push(moveTimeout, finishTimeout)
+            introTimeoutsRef.current.push(
+              moveTimeout,
+              unlockTimeout,
+              finishTimeout
+            )
           })
         })
       } else {
@@ -406,6 +443,7 @@ introTimeoutsRef.current.push(moveTimeout, unlockTimeout, finishTimeout)
                 localStorage.removeItem(PELICAN_STORAGE_KEY)
                 hasAnimatedOnLoadRef.current = false
                 hasScrolledForHashRef.current = false
+                hasAutoFocusedRef.current = false
                 setIsIntroAnimating(false)
                 setIntroReady(false)
                 setModules(getModuleState(modulesData))
@@ -485,9 +523,7 @@ introTimeoutsRef.current.push(moveTimeout, unlockTimeout, finishTimeout)
                     left: `${point.x}px`,
                     top: `${point.y}px`,
                   }}
-                >
-
-                </div>
+                />
               )
             })}
 
@@ -580,5 +616,6 @@ introTimeoutsRef.current.push(moveTimeout, unlockTimeout, finishTimeout)
         </div>
       </section>
     </main>
+    
   )
 }

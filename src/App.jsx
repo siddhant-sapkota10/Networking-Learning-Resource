@@ -7,7 +7,6 @@ import Bandwidth from "./pages/Bandwidth"
 import DNS from "./pages/DNS"
 import HTTP from "./pages/HTTP"
 import Security from "./pages/Security"
-
 function App() {
   return (
     <BrowserRouter>
@@ -22,6 +21,7 @@ function App() {
           <Route path="/http" element={<HTTP />} />
           <Route path="/internet-security" element={<Security />} />
         </Routes>
+
       </div>
     </BrowserRouter>
   )
