@@ -26,6 +26,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { markActivityComplete, markQuizPassed } from "../utils/progress";
 import m6Diagram from "../assets/m6diagram.png";
+import { useNavigate } from "react-router-dom";
 
 const ST_EDS = {
   navy: "#073674",
@@ -36,8 +37,6 @@ const ST_EDS = {
   white: "#FFFFFF",
   pale: "#F8FAFC",
 };
-
-/* ===================== OVERVIEW DATA ===================== */
 
 const overviewSteps = [
   {
@@ -95,8 +94,6 @@ const misconceptionCards = [
       "It is also about protecting people from scams, protecting accounts, and keeping data safer online.",
   },
 ];
-
-/* ===================== INCIDENT DATA ===================== */
 
 const incidents = [
   {
@@ -240,8 +237,6 @@ const defenseMap = {
   },
 };
 
-/* ===================== QUIZ DATA ===================== */
-
 const baseQuizQuestions = [
   {
     question:
@@ -340,8 +335,6 @@ const baseQuizQuestions = [
   },
 ];
 
-/* ===================== HELPERS ===================== */
-
 function shuffleArray(array) {
   const copy = [...array];
   for (let i = copy.length - 1; i > 0; i -= 1) {
@@ -360,15 +353,15 @@ function buildShuffledQuiz(questions) {
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
-      <div className="mb-5 flex items-center gap-3">
+    <section className="rounded-[24px] border border-white/20 bg-white p-4 shadow-xl sm:rounded-[28px] sm:p-5 lg:rounded-[30px] lg:p-6">
+      <div className="mb-4 flex items-center gap-3 sm:mb-5">
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl sm:h-11 sm:w-11"
           style={{ backgroundColor: `${ST_EDS.gold}20` }}
         >
           <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+        <h2 className="text-lg font-bold sm:text-xl" style={{ color: ST_EDS.navy }}>
           {title}
         </h2>
       </div>
@@ -574,9 +567,9 @@ function SecuritySimulation({
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+          <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
             Security Simulation
           </h3>
           <p className="text-sm text-slate-500">
@@ -590,14 +583,14 @@ function SecuritySimulation({
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-4">
-        <div className="grid items-center gap-3 md:grid-cols-[110px_minmax(0,1fr)_110px]">
+        <div className="grid items-center gap-3 lg:grid-cols-[90px_minmax(0,1fr)_90px] xl:grid-cols-[110px_minmax(0,1fr)_110px]">
           <div className="rounded-3xl border border-blue-200 bg-blue-50 p-4 text-center">
             <Globe className="mx-auto h-7 w-7 text-blue-700" />
             <p className="mt-2 font-semibold text-blue-900">Student</p>
             <p className="mt-1 text-xs text-blue-700">Needs protection</p>
           </div>
 
-          <div className="relative h-56 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+          <div className="relative h-52 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 sm:h-56">
             <div className="absolute left-4 right-4 top-1/2 h-2 -translate-y-1/2 rounded-full bg-slate-200" />
             <div className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
               Threat path
@@ -615,7 +608,7 @@ function SecuritySimulation({
                 className="absolute top-1/2 -translate-y-1/2"
               >
                 <div
-                  className={`rounded-2xl border px-4 py-3 shadow-sm ${threatColor}`}
+                  className={`rounded-2xl border px-3 py-3 shadow-sm sm:px-4 ${threatColor}`}
                 >
                   <div className="flex items-center gap-2">
                     <ThreatIcon className="h-4 w-4" />
@@ -633,9 +626,9 @@ function SecuritySimulation({
                 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
               >
                 <div
-                  className={`flex h-20 w-20 items-center justify-center rounded-2xl border shadow-sm ${defenseTones.soft}`}
+                  className={`flex h-16 w-16 items-center justify-center rounded-2xl border shadow-sm sm:h-20 sm:w-20 ${defenseTones.soft}`}
                 >
-                  <DefenseIcon className="h-9 w-9" />
+                  <DefenseIcon className="h-8 w-8 sm:h-9 sm:w-9" />
                 </div>
               </motion.div>
             )}
@@ -732,15 +725,15 @@ function ModuleProgress({ currentPage }) {
   const pages = [{ label: "Overview" }, { label: "Activity" }, { label: "Quiz" }];
 
   return (
-    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-[24px] border border-white/20 bg-white p-4 shadow-xl sm:rounded-[28px] lg:rounded-[30px]">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
           Module Progress
         </h2>
         <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         {pages.map((page, index) => {
           const active = currentPage === index;
           const complete = currentPage > index;
@@ -748,7 +741,7 @@ function ModuleProgress({ currentPage }) {
           return (
             <div
               key={page.label}
-              className={`rounded-2xl border p-4 ${
+              className={`rounded-2xl border p-3 sm:p-4 ${
                 complete
                   ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                   : !active
@@ -798,14 +791,14 @@ function FeedbackModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-4 backdrop-blur-[4px]"
+        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-3 backdrop-blur-[4px] sm:p-4"
       >
         <motion.div
           initial={{ scale: 0.96, y: 10, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           exit={{ scale: 0.98, opacity: 0 }}
           transition={{ duration: 0.25 }}
-          className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl"
+          className="w-full max-w-md rounded-3xl bg-white p-5 text-center shadow-2xl sm:p-6"
         >
           <div className="flex items-start justify-between">
             <div />
@@ -833,7 +826,7 @@ function FeedbackModal({
             )}
           </div>
 
-          <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
+          <h3 className="mt-4 text-xl font-bold sm:text-2xl" style={{ color: ST_EDS.navy }}>
             {title}
           </h3>
 
@@ -880,9 +873,9 @@ function FeedbackModal({
   );
 }
 
-/* ===================== MAIN ===================== */
-
 export default function Security() {
+  const navigate = useNavigate();
+
   const [incidentIndex, setIncidentIndex] = useState(0);
   const [displayedDefenses, setDisplayedDefenses] = useState(() =>
     shuffleArray(incidents[0].defenses)
@@ -1090,6 +1083,10 @@ export default function Security() {
     setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
   };
 
+  const goToNextModule = () => {
+    navigate("/#finish");
+  };
+
   return (
     <div
       className="min-h-screen"
@@ -1097,25 +1094,25 @@ export default function Security() {
         background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
       }}
     >
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8">
-        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-5 sm:gap-7 sm:py-6 md:px-6 lg:gap-8 lg:py-8">
+        <header className="rounded-[24px] border border-white/20 bg-white/10 p-4 text-white shadow-2xl backdrop-blur-sm sm:rounded-[28px] sm:p-5 lg:rounded-[32px] lg:p-6">
           <span
-            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            className="inline-block rounded-full px-3 py-1 text-xs font-semibold sm:px-4 sm:text-sm"
             style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
           >
             St Edmund&apos;s College Canberra
           </span>
 
-          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
+          <h1 className="mt-4 text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl">
             Internet Security
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-100 sm:text-base sm:leading-7">
             Learn how different online threats are stopped using the right type
             of protection, such as HTTPS, firewalls, strong passwords, and
             phishing awareness.
           </p>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
               <ShieldCheck className="mb-2 h-5 w-5" />
               <p className="font-semibold">Match the defense</p>
@@ -1132,7 +1129,7 @@ export default function Security() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm sm:col-span-2 xl:col-span-1">
               <CheckCircle2 className="mb-2 h-5 w-5" />
               <p className="font-semibold">Interactive challenge</p>
               <p className="mt-1 text-sm text-slate-200">
@@ -1155,7 +1152,7 @@ export default function Security() {
             >
               <div ref={overviewRef}>
                 <Section title="What is Internet Security?" icon={HelpCircle}>
-                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-4 sm:p-5">
                     <div className="flex items-start gap-3">
                       <div
                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
@@ -1164,10 +1161,10 @@ export default function Security() {
                         <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           What you are learning
                         </h3>
-                        <p className="mt-2 leading-7 text-slate-700">
+                        <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                           Internet security is about keeping information, devices,
                           and people safer online. This module shows that different
                           online situations create different risks, so the best
@@ -1177,7 +1174,7 @@ export default function Security() {
                     </div>
                   </div>
 
-                  <div className="mt-6 grid gap-3 md:grid-cols-5">
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     {overviewSteps.map((step) => (
                       <div
                         key={step.step}
@@ -1199,15 +1196,15 @@ export default function Security() {
                     ))}
                   </div>
 
-                  <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                  <div className="mt-8 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
                         <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Real-life analogy
                         </h3>
                       </div>
-                      <p className="mt-3 leading-7 text-slate-700">
+                      <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                         Think of protecting a school. Locks help protect rooms,
                         fences help block intruders, ID checks help stop the wrong
                         people entering, and training helps students avoid scams.
@@ -1215,10 +1212,10 @@ export default function Security() {
                       </p>
                     </div>
 
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
                         <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Key ideas to remember
                         </h3>
                       </div>
@@ -1239,7 +1236,7 @@ export default function Security() {
                     </div>
                   </div>
 
-                  <div className="mt-8 flex items-center justify-center rounded-3xl border border-slate-200 bg-white p-5">
+                  <div className="mt-8 flex items-center justify-center rounded-3xl border border-slate-200 bg-white p-3 sm:p-5">
                     <img
                       src={m6Diagram}
                       alt="Security diagram"
@@ -1247,8 +1244,8 @@ export default function Security() {
                     />
                   </div>
 
-                  <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-5">
-                    <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                  <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
+                    <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                       Main protections in this module
                     </h3>
                     <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -1277,15 +1274,15 @@ export default function Security() {
                     </div>
                   </div>
 
-                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
+                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-4 sm:p-5">
                     <div className="mb-3 flex items-center gap-2">
                       <XCircle className="h-5 w-5 text-rose-700" />
-                      <h3 className="text-lg font-semibold text-rose-900">
+                      <h3 className="text-base font-semibold text-rose-900 sm:text-lg">
                         Common mistakes to avoid
                       </h3>
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="grid gap-3 lg:grid-cols-3">
                       {misconceptionCards.map((item) => (
                         <div key={item.wrong} className="rounded-2xl bg-white/80 p-4">
                           <p className="text-sm font-semibold text-rose-800">
@@ -1354,7 +1351,7 @@ export default function Security() {
             >
               <Section title="Interactive Security Challenge" icon={ShieldCheck}>
                 <div className="relative">
-                  <p className="mb-4 leading-7 text-slate-700">
+                  <p className="mb-4 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                     Read the incident, choose one defense, deploy it, and review the result.
                   </p>
 
@@ -1383,7 +1380,7 @@ export default function Security() {
                     <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr] xl:items-start">
                       <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
                         <div className="mb-3">
-                          <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                          <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                             Choose a defense
                           </h3>
                           <p className="text-sm text-slate-500">
@@ -1506,17 +1503,17 @@ export default function Security() {
                   />
                 </div>
 
-                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-8 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <button
                     type="button"
                     onClick={() => setModulePage(0)}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous Page
                   </button>
 
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center text-sm text-slate-600">
                     {activityUnlocked
                       ? "Activity complete — you can move to the quiz."
                       : "Solve all situations correctly to unlock the quiz."}
@@ -1526,7 +1523,7 @@ export default function Security() {
                     type="button"
                     onClick={() => setModulePage(2)}
                     disabled={!activityUnlocked}
-                    className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
                         ? "hover:opacity-95"
                         : "cursor-not-allowed bg-slate-300"
@@ -1551,8 +1548,6 @@ export default function Security() {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-
-
                 <div className="space-y-5">
                   {quizQuestions.map((q, i) => {
                     const userAnswer = selectedAnswers[i];
@@ -1561,7 +1556,7 @@ export default function Security() {
                     return (
                       <div
                         key={q.question}
-                        className="rounded-2xl border border-slate-200 p-5"
+                        className="rounded-2xl border border-slate-200 p-4 sm:p-5"
                       >
                         <h3 className="font-semibold text-slate-900">
                           {i + 1}. {q.question}
@@ -1626,12 +1621,12 @@ export default function Security() {
                   })}
                 </div>
 
-                <div className="mt-6 flex gap-3">
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                   <button
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
                     disabled={!allAnswered}
-                    className="rounded-2xl px-5 py-2 text-white hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-2xl px-5 py-2 text-white transition disabled:cursor-not-allowed disabled:opacity-50 hover:opacity-95"
                     style={{ backgroundColor: ST_EDS.navy }}
                   >
                     Submit Quiz
@@ -1640,7 +1635,7 @@ export default function Security() {
                   <button
                     type="button"
                     onClick={resetQuiz}
-                    className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-50"
+                    className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 transition hover:bg-slate-50"
                   >
                     Reset Quiz
                   </button>
@@ -1653,18 +1648,22 @@ export default function Security() {
                 )}
 
                 {submittedQuiz && (
-                  <div className="mt-6 rounded-2xl bg-slate-50 p-5">
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-6 rounded-2xl bg-slate-50 p-4 sm:p-5"
+                  >
                     <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
 
-                    <p className="mt-2 text-slate-600">
+                    <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
                       {score === quizQuestions.length
-                        ? "Excellent work — you understand how different online threats need different types of protection."
+                        ? "Excellent work — you understand how different internet threats need different protections."
                         : score >= 6
-                        ? "Good work — you understand most of the protections, but review HTTPS, firewalls, phishing, and strong passwords one more time."
+                        ? "Good job — you understand most of this topic, but review which protection best fits data in transit, harmful traffic, phishing, and weak passwords."
                         : score >= 4
-                        ? "Decent effort — revisit the activity and pay attention to why each situation needs a different defense."
+                        ? "Decent effort — revisit the activity and pay close attention to the exact threat in each situation."
                         : "Review the module and try the quiz again."}
                     </p>
 
@@ -1678,17 +1677,16 @@ export default function Security() {
                         Back to Activity
                       </button>
 
-                      <a href="/#module6">
-                        <button
-                          type="button"
-                          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
-                        >
-                          Go to Next Module
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
-                      </a>
+                      <button
+                        type="button"
+                        onClick={goToNextModule}
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
+                      >
+                        Finish Roadmap
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
               </Section>
             </motion.div>

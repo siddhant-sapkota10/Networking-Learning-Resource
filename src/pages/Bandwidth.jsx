@@ -25,6 +25,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { markActivityComplete, markQuizPassed } from "../utils/progress";
 import m3Diagram from "../assets/m3diagram.png";
+import { useNavigate } from "react-router-dom";
 
 const ST_EDS = {
   navy: "#073674",
@@ -241,15 +242,15 @@ function buildShuffledQuiz(questions) {
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
-      <div className="mb-5 flex items-center gap-3">
+    <section className="rounded-[24px] border border-white/20 bg-white p-4 shadow-xl sm:rounded-[28px] sm:p-5 lg:rounded-[30px] lg:p-6">
+      <div className="mb-4 flex items-center gap-3 sm:mb-5">
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl sm:h-11 sm:w-11"
           style={{ backgroundColor: `${ST_EDS.gold}20` }}
         >
           <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+        <h2 className="text-lg font-bold sm:text-xl" style={{ color: ST_EDS.navy }}>
           {title}
         </h2>
       </div>
@@ -270,7 +271,7 @@ function DataDot({ active }) {
         repeat: active ? Infinity : 0,
         repeatDelay: 0.1,
       }}
-      className={`h-4 w-4 rounded-full ${active ? "bg-sky-500" : "bg-slate-300"}`}
+      className={`h-3.5 w-3.5 rounded-full sm:h-4 sm:w-4 ${active ? "bg-sky-500" : "bg-slate-300"}`}
     />
   );
 }
@@ -310,10 +311,10 @@ function PipeComparison({ bandwidthLevel, bitrateLevel }) {
 
   const pipeWidthClass =
     bandwidthLevel === "low"
-      ? "h-10 max-w-[240px]"
+      ? "h-9 max-w-[210px] sm:h-10 sm:max-w-[240px]"
       : bandwidthLevel === "medium"
-      ? "h-14 max-w-[310px]"
-      : "h-20 max-w-[390px]";
+      ? "h-12 max-w-[270px] sm:h-14 sm:max-w-[310px]"
+      : "h-16 max-w-[320px] sm:h-20 sm:max-w-[390px]";
 
   const flowDots =
     bitrateLevel === "low" ? 2 : bitrateLevel === "medium" ? 4 : 6;
@@ -321,9 +322,9 @@ function PipeComparison({ bandwidthLevel, bitrateLevel }) {
   const crowded = bitrateValue > bandwidthValue;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-6 xl:grid-cols-2">
       <div>
-        <h3 className="mb-2 text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+        <h3 className="mb-2 text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
           Bandwidth demo
         </h3>
         <p className="text-sm leading-6 text-slate-600">
@@ -331,7 +332,7 @@ function PipeComparison({ bandwidthLevel, bitrateLevel }) {
           means more data can move at one time.
         </p>
 
-        <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+        <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
           <div
             className={`mx-auto flex items-center justify-center rounded-full bg-slate-200 px-4 transition-all duration-300 ${pipeWidthClass}`}
           >
@@ -359,7 +360,7 @@ function PipeComparison({ bandwidthLevel, bitrateLevel }) {
       </div>
 
       <div>
-        <h3 className="mb-2 text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+        <h3 className="mb-2 text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
           Bit rate demo
         </h3>
         <p className="text-sm leading-6 text-slate-600">
@@ -367,16 +368,16 @@ function PipeComparison({ bandwidthLevel, bitrateLevel }) {
           can give better quality, but it also needs more data.
         </p>
 
-        <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-5">
-          <div className="mx-auto flex max-w-[320px] items-end justify-center gap-3">
+        <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+          <div className="mx-auto flex max-w-[280px] items-end justify-center gap-2 sm:max-w-[320px] sm:gap-3">
             {Array.from({ length: 6 }).map((_, i) => {
               const active = i < flowDots;
               const height =
                 i === 0 || i === 5
-                  ? "h-10"
+                  ? "h-8 sm:h-10"
                   : i === 1 || i === 4
-                  ? "h-14"
-                  : "h-20";
+                  ? "h-12 sm:h-14"
+                  : "h-16 sm:h-20";
 
               return (
                 <motion.div
@@ -390,7 +391,7 @@ function PipeComparison({ bandwidthLevel, bitrateLevel }) {
                     repeat: active ? Infinity : 0,
                     repeatDelay: 0.15,
                   }}
-                  className={`w-8 rounded-t-xl ${height} ${
+                  className={`w-6 rounded-t-xl sm:w-8 ${height} ${
                     active ? "bg-violet-500" : "bg-slate-200"
                   }`}
                 />
@@ -442,7 +443,7 @@ function VideoPreview({ bandwidthLevel, bitrateLevel }) {
     : "bg-red-600";
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Play className="h-5 w-5 text-red-500" />
@@ -465,11 +466,11 @@ function VideoPreview({ bandwidthLevel, bitrateLevel }) {
       <div className="overflow-hidden rounded-2xl border border-slate-200">
         <div className="relative aspect-video bg-slate-900 p-4">
           <div className="flex h-full flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white">
+            <div className="flex items-center justify-between gap-3">
+              <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] text-white sm:text-xs">
                 Video example
               </span>
-              <span className="text-xs text-slate-300">{qualityLabel}</span>
+              <span className="text-[11px] text-slate-300 sm:text-xs">{qualityLabel}</span>
             </div>
 
             <div className="relative flex flex-1 items-center justify-center">
@@ -484,9 +485,9 @@ function VideoPreview({ bandwidthLevel, bitrateLevel }) {
                   repeat: Infinity,
                   repeatDelay: 0.1,
                 }}
-                className={`flex h-16 w-16 items-center justify-center rounded-full shadow-lg ${circleClass}`}
+                className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg sm:h-16 sm:w-16 ${circleClass}`}
               >
-                <Play className="ml-1 h-7 w-7 fill-white text-white" />
+                <Play className="ml-1 h-6 w-6 fill-white text-white sm:h-7 sm:w-7" />
               </motion.div>
 
               {isBuffering && (
@@ -599,15 +600,15 @@ function ModuleProgress({ currentPage }) {
   ];
 
   return (
-    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-[24px] border border-white/20 bg-white p-4 shadow-xl sm:rounded-[28px] lg:rounded-[30px]">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
           Module Progress
         </h2>
         <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         {pages.map((page, index) => {
           const active = currentPage === index;
           const complete = currentPage > index;
@@ -615,7 +616,7 @@ function ModuleProgress({ currentPage }) {
           return (
             <div
               key={page.label}
-              className={`rounded-2xl border p-4 ${
+              className={`rounded-2xl border p-3 sm:p-4 ${
                 active
                   ? "border-[#073674] bg-[#073674] text-white"
                   : complete
@@ -639,6 +640,8 @@ function ModuleProgress({ currentPage }) {
 }
 
 export default function Bandwidth() {
+  const navigate = useNavigate();
+
   const [bandwidthLevel, setBandwidthLevel] = useState("medium");
   const [bitrateLevel, setBitrateLevel] = useState("medium");
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -722,7 +725,7 @@ export default function Bandwidth() {
   };
 
   const goToNextModule = () => {
-    alert("Great job! You finished this module. You can now move to the next one.");
+    navigate("/#module-4");
   };
 
   return (
@@ -732,25 +735,25 @@ export default function Bandwidth() {
         background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
       }}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 md:px-6">
-        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-5 sm:gap-7 sm:py-6 md:px-6 lg:gap-8 lg:py-8">
+        <header className="rounded-[24px] border border-white/20 bg-white/10 p-4 text-white shadow-2xl backdrop-blur-sm sm:rounded-[28px] sm:p-5 lg:rounded-[32px] lg:p-6">
           <span
-            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            className="inline-block rounded-full px-3 py-1 text-xs font-semibold sm:px-4 sm:text-sm"
             style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
           >
             St Edmund&apos;s College Canberra
           </span>
 
-          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
+          <h1 className="mt-4 text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl">
             Bit Rate and Bandwidth
           </h1>
 
-          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-100 sm:text-base sm:leading-7">
             Learn the difference between bits, bit rate, and bandwidth, then test
             how they work together in an interactive activity.
           </p>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
               <Gauge className="mb-2 h-5 w-5" />
               <p className="font-semibold">Core ideas</p>
@@ -767,7 +770,7 @@ export default function Bandwidth() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm sm:col-span-2 xl:col-span-1">
               <Trophy className="mb-2 h-5 w-5" />
               <p className="font-semibold">Quiz feedback</p>
               <p className="mt-1 text-sm text-slate-200">
@@ -790,7 +793,7 @@ export default function Bandwidth() {
             >
               <div ref={overviewRef}>
                 <Section title="General Overview" icon={BookOpen}>
-                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-4 sm:p-5">
                     <div className="flex items-start gap-3">
                       <div
                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
@@ -799,10 +802,10 @@ export default function Bandwidth() {
                         <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           What you are learning
                         </h3>
-                        <p className="mt-2 leading-7 text-slate-700">
+                        <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                           This module explains the difference between bits, bit rate,
                           and bandwidth. It also shows why videos can buffer when the
                           content is trying to use more data each second than the
@@ -812,7 +815,7 @@ export default function Bandwidth() {
                     </div>
                   </div>
 
-                  <div className="mt-6 grid gap-3 md:grid-cols-5">
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     {overviewSteps.map((step) => (
                       <div
                         key={step.step}
@@ -834,15 +837,15 @@ export default function Bandwidth() {
                     ))}
                   </div>
 
-                  <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                  <div className="mt-8 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
                         <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Real-life analogy
                         </h3>
                       </div>
-                      <p className="mt-3 leading-7 text-slate-700">
+                      <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                         Imagine water moving through pipes. A wider pipe can carry
                         more water at one time. Bandwidth is similar — it is the
                         amount of data that can move through a connection. Bit rate
@@ -850,10 +853,10 @@ export default function Bandwidth() {
                       </p>
                     </div>
 
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
                         <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Key ideas to remember
                         </h3>
                       </div>
@@ -874,17 +877,17 @@ export default function Bandwidth() {
                     </div>
                   </div>
 
-                  <div className="rounded-3xl border border-slate-200 bg-white p-5 mt-8">
+                  <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-3 sm:p-5">
                     <img src={m3Diagram} alt="BR & BW diagram" className="w-full rounded-2xl" />
                   </div>
 
                   <div className="mt-8">
-                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
                       <div className="mb-5 flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100">
                           <Gauge className="h-5 w-5 text-slate-700" />
                         </div>
-                        <h3 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-lg font-bold sm:text-xl" style={{ color: ST_EDS.navy }}>
                           Core Concepts
                         </h3>
                       </div>
@@ -909,15 +912,15 @@ export default function Bandwidth() {
                     </div>
                   </div>
 
-                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
+                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-4 sm:p-5">
                     <div className="mb-3 flex items-center gap-2">
                       <XCircle className="h-5 w-5 text-rose-700" />
-                      <h3 className="text-lg font-semibold text-rose-900">
+                      <h3 className="text-base font-semibold text-rose-900 sm:text-lg">
                         Common mistakes to avoid
                       </h3>
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="grid gap-3 lg:grid-cols-3">
                       {misconceptionCards.map((item) => (
                         <div key={item.wrong} className="rounded-2xl bg-white/80 p-4">
                           <p className="text-sm font-semibold text-rose-800">
@@ -987,12 +990,12 @@ export default function Bandwidth() {
             >
               <Section title="Interactive Learning Activity" icon={MousePointerClick}>
                 <div className="relative">
-                  <p className="mb-5 leading-7 text-slate-700">
+                  <p className="mb-5 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                     Choose a bandwidth level and a bit rate level, then watch what
                     happens.
                   </p>
 
-                  <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+                  <div className="grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
                     <div className="space-y-6">
                       <SelectorGroup
                         title="Choose bandwidth"
@@ -1037,7 +1040,7 @@ export default function Bandwidth() {
                                 : "This bandwidth can support this bit rate"}
                             </h4>
                             <p
-                              className={`mt-1 leading-7 ${
+                              className={`mt-1 text-sm leading-6 sm:text-base sm:leading-7 ${
                                 isBuffering ? "text-amber-700" : "text-emerald-700"
                               }`}
                             >
@@ -1053,7 +1056,7 @@ export default function Bandwidth() {
                         <h4 className="font-semibold" style={{ color: "#7a5800" }}>
                           Important note
                         </h4>
-                        <p className="mt-2 leading-7" style={{ color: "#7a5800" }}>
+                        <p className="mt-2 text-sm leading-6 sm:text-base sm:leading-7" style={{ color: "#7a5800" }}>
                           Bit rate and bandwidth are related, but they are not the same
                           thing. Bit rate is how much data is used each second.
                           Bandwidth is how much data can move through the connection.
@@ -1077,7 +1080,7 @@ export default function Bandwidth() {
 
                       <div className="grid gap-6">
                         <div>
-                          <h3 className="mb-3 text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                          <h3 className="mb-3 text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                             What is happening here?
                           </h3>
                           <RelationshipSummary
@@ -1113,14 +1116,14 @@ export default function Bandwidth() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-4 backdrop-blur-[3px]"
+                        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-3 backdrop-blur-[3px] sm:p-4"
                       >
                         <motion.div
                           initial={{ scale: 0.96, y: 10, opacity: 0 }}
                           animate={{ scale: 1, y: 0, opacity: 1 }}
                           exit={{ scale: 0.98, opacity: 0 }}
                           transition={{ duration: 0.25 }}
-                          className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl"
+                          className="w-full max-w-md rounded-3xl bg-white p-5 text-center shadow-2xl sm:p-6"
                         >
                           <div className="flex items-start justify-between">
                             <div />
@@ -1138,7 +1141,7 @@ export default function Bandwidth() {
                             <CheckCircle2 className="h-8 w-8 text-emerald-700" />
                           </div>
 
-                          <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
+                          <h3 className="mt-4 text-xl font-bold sm:text-2xl" style={{ color: ST_EDS.navy }}>
                             Activity Complete
                           </h3>
 
@@ -1171,17 +1174,17 @@ export default function Bandwidth() {
                   </AnimatePresence>
                 </div>
 
-                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-8 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <button
                     type="button"
                     onClick={() => setModulePage(0)}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous Page
                   </button>
 
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center text-sm text-slate-600">
                     {activityUnlocked
                       ? "Activity complete — you can move to the quiz."
                       : "Explore both selectors to unlock the quiz."}
@@ -1191,7 +1194,7 @@ export default function Bandwidth() {
                     type="button"
                     onClick={() => setModulePage(2)}
                     disabled={!activityUnlocked}
-                    className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
                         ? "bg-[#073674] hover:bg-[#0a4aa3]"
                         : "cursor-not-allowed bg-slate-300"
@@ -1215,7 +1218,6 @@ export default function Bandwidth() {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-
                 <div className="space-y-5">
                   {quizQuestions.map((q, qIndex) => {
                     const userAnswer = selectedAnswers[qIndex];
@@ -1224,7 +1226,7 @@ export default function Bandwidth() {
                     return (
                       <div
                         key={q.question}
-                        className="rounded-2xl border border-slate-200 p-5"
+                        className="rounded-2xl border border-slate-200 p-4 sm:p-5"
                       >
                         <h3 className="font-semibold text-slate-900">
                           {qIndex + 1}. {q.question}
@@ -1289,7 +1291,7 @@ export default function Bandwidth() {
                   })}
                 </div>
 
-                <div className="mt-6 flex flex-wrap gap-3">
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                   <button
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
@@ -1319,12 +1321,12 @@ export default function Bandwidth() {
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-6 rounded-2xl bg-slate-50 p-5"
+                    className="mt-6 rounded-2xl bg-slate-50 p-4 sm:p-5"
                   >
                     <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
-                    <p className="mt-2 leading-7 text-slate-600">
+                    <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
                       {score === quizQuestions.length
                         ? "Excellent work — you understand bits, bit rate, bandwidth, and how they work together."
                         : score >= 6
@@ -1343,14 +1345,15 @@ export default function Bandwidth() {
                         <ChevronLeft className="h-4 w-4" />
                         Back to Activity
                       </button>
-<a href="/#module3">     <button
+
+                      <button
                         type="button"
+                        onClick={goToNextModule}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
                       >
                         Go to Next Module
                         <ChevronRight className="h-4 w-4" />
-                      </button></a>
-                 
+                      </button>
                     </div>
                   </motion.div>
                 )}

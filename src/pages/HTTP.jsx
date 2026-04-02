@@ -25,6 +25,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { markActivityComplete, markQuizPassed } from "../utils/progress";
 import m5Diagram from "../assets/m5diagram.png";
+import { useNavigate } from "react-router-dom";
 
 const ST_EDS = {
   navy: "#073674",
@@ -266,15 +267,15 @@ function buildShuffledQuiz(questions) {
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
-      <div className="mb-5 flex items-center gap-3">
+    <section className="rounded-[24px] border border-white/20 bg-white p-4 shadow-xl sm:rounded-[28px] sm:p-5 lg:rounded-[30px] lg:p-6">
+      <div className="mb-4 flex items-center gap-3 sm:mb-5">
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl sm:h-11 sm:w-11"
           style={{ backgroundColor: `${ST_EDS.gold}20` }}
         >
           <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+        <h2 className="text-lg font-bold sm:text-xl" style={{ color: ST_EDS.navy }}>
           {title}
         </h2>
       </div>
@@ -315,12 +316,12 @@ function BrowserWindow({ path, method, onSend, disabled }) {
       </div>
 
       <div className="flex flex-col gap-3 md:flex-row">
-        <div className="flex min-h-[56px] flex-1 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4">
-          <Search className="h-4 w-4 text-slate-400" />
-          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-700">
+        <div className="flex min-h-[56px] min-w-0 flex-1 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4">
+          <Search className="h-4 w-4 shrink-0 text-slate-400" />
+          <span className="shrink-0 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-slate-700">
             {method}
           </span>
-          <span className="font-mono text-sm font-medium text-slate-800">
+          <span className="min-w-0 truncate font-mono text-sm font-medium text-slate-800">
             {path}
           </span>
         </div>
@@ -358,13 +359,13 @@ function RequestButton({ label, active, done, disabled, onClick, icon: Icon }) {
       }`}
     >
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4" />
-          <span className="font-medium">{label}</span>
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon className="h-4 w-4 shrink-0" />
+          <span className="truncate font-medium">{label}</span>
         </div>
 
         {done && (
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100">
             <CheckCircle2 className="h-4 w-4 text-emerald-700" />
           </div>
         )}
@@ -390,9 +391,9 @@ function RequestChecklist({ loadedResources }) {
             <div className="flex items-center justify-between gap-2">
               <span className="font-semibold">{item.label}</span>
               {done ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-700" />
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
               ) : (
-                <span className="text-xs">Not yet</span>
+                <span className="shrink-0 text-xs">Not yet</span>
               )}
             </div>
           </div>
@@ -410,7 +411,7 @@ function BrowserCanvas({ loadedResources, currentRequest }) {
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-4">
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h4 className="font-semibold" style={{ color: ST_EDS.navy }}>
           Browser Window
         </h4>
@@ -455,7 +456,7 @@ function BrowserCanvas({ loadedResources, currentRequest }) {
                   </p>
                   <p className="text-sm text-slate-500">Homepage loaded</p>
                 </div>
-                <Globe className="h-7 w-7 text-blue-600" />
+                <Globe className="h-7 w-7 shrink-0 text-blue-600" />
               </div>
 
               <div className="grid gap-3 md:grid-cols-3">
@@ -484,7 +485,7 @@ function BrowserCanvas({ loadedResources, currentRequest }) {
                 >
                   <div className="mb-2 flex items-center justify-between">
                     <p className="font-semibold text-slate-900">Loaded Image</p>
-                    <FileImage className="h-5 w-5 text-blue-600" />
+                    <FileImage className="h-5 w-5 shrink-0 text-blue-600" />
                   </div>
 
                   <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -506,7 +507,7 @@ function BrowserCanvas({ loadedResources, currentRequest }) {
                 >
                   <div className="mb-2 flex items-center justify-between">
                     <p className="font-semibold text-slate-900">Loaded Video</p>
-                    <FileVideo className="h-5 w-5 text-emerald-600" />
+                    <FileVideo className="h-5 w-5 shrink-0 text-emerald-600" />
                   </div>
 
                   <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-900">
@@ -572,7 +573,7 @@ function ResponseStatusCard({ currentRequest, phase }) {
         <h4 className="font-semibold text-[#073674]">Request sent</h4>
         <p className="mt-2 text-sm leading-6 text-[#0a4aa3]">
           The browser is sending an HTTP <span className="font-semibold">{currentRequest.method}</span>{" "}
-          request for <span className="font-mono">{currentRequest.path}</span>.
+          request for <span className="font-mono break-all">{currentRequest.path}</span>.
         </p>
       </div>
     );
@@ -627,7 +628,7 @@ function PhaseSteps({ phase }) {
   const labels = ["Choose", "Request", "Response", "Display"];
 
   return (
-    <div className="grid gap-2 sm:grid-cols-4">
+    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
       {labels.map((label, index) => (
         <div
           key={label}
@@ -654,15 +655,15 @@ function ModuleProgress({ currentPage }) {
   ];
 
   return (
-    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-[24px] border border-white/20 bg-white p-4 shadow-xl sm:rounded-[28px] lg:rounded-[30px]">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
           Module Progress
         </h2>
         <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         {pages.map((page, index) => {
           const active = currentPage === index;
           const complete = currentPage > index;
@@ -670,7 +671,7 @@ function ModuleProgress({ currentPage }) {
           return (
             <div
               key={page.label}
-              className={`rounded-2xl border p-4 ${
+              className={`rounded-2xl border p-3 sm:p-4 ${
                 active
                   ? "border-[#073674] bg-[#073674] text-white"
                   : complete
@@ -694,6 +695,8 @@ function ModuleProgress({ currentPage }) {
 }
 
 export default function HTTP() {
+  const navigate = useNavigate();
+
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState(() =>
@@ -831,7 +834,7 @@ export default function HTTP() {
       : Globe;
 
   const goToNextModule = () => {
-    alert("Great job! You finished this module. You can now move to the next one.");
+    navigate("/#module-6");
   };
 
   return (
@@ -841,24 +844,24 @@ export default function HTTP() {
         background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
       }}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
-        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-5 sm:gap-7 sm:py-6 md:px-6 lg:gap-8 lg:py-8">
+        <header className="rounded-[24px] border border-white/20 bg-white/10 p-4 text-white shadow-2xl backdrop-blur-sm sm:rounded-[28px] sm:p-5 lg:rounded-[32px] lg:p-6">
           <span
-            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            className="inline-block rounded-full px-3 py-1 text-xs font-semibold sm:px-4 sm:text-sm"
             style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
           >
             St Edmund&apos;s College Canberra
           </span>
 
-          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
+          <h1 className="mt-4 text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl">
             HyperText Transfer Protocol (HTTP)
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-100 sm:text-base sm:leading-7">
             Learn how a browser asks a web server for webpages and files, and how
             the server sends a response back.
           </p>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
               <Globe className="mb-2 h-5 w-5" />
               <p className="font-semibold">Browser requests</p>
@@ -875,7 +878,7 @@ export default function HTTP() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm sm:col-span-2 xl:col-span-1">
               <Trophy className="mb-2 h-5 w-5" />
               <p className="font-semibold">Quiz feedback</p>
               <p className="mt-1 text-sm text-slate-200">
@@ -898,7 +901,7 @@ export default function HTTP() {
             >
               <div ref={overviewRef}>
                 <Section title="What is HTTP?" icon={HelpCircle}>
-                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-4 sm:p-5">
                     <div className="flex items-start gap-3">
                       <div
                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
@@ -907,10 +910,10 @@ export default function HTTP() {
                         <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           What you are learning
                         </h3>
-                        <p className="mt-2 leading-7 text-slate-700">
+                        <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                           HTTP is the rule used when a browser asks a web server for
                           content and the server sends a response back. This module
                           shows that a full webpage is often made of many parts, so
@@ -920,7 +923,7 @@ export default function HTTP() {
                     </div>
                   </div>
 
-                  <div className="mt-6 grid gap-3 md:grid-cols-5">
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     {overviewSteps.map((step) => (
                       <div
                         key={step.step}
@@ -942,15 +945,15 @@ export default function HTTP() {
                     ))}
                   </div>
 
-                  <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                  <div className="mt-8 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
                         <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Real-life analogy
                         </h3>
                       </div>
-                      <p className="mt-3 leading-7 text-slate-700">
+                      <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                         Imagine ordering at a café. You ask for something, the staff
                         receive your order, and they give you back what you asked for.
                         HTTP works in a similar way. The browser asks for content,
@@ -958,10 +961,10 @@ export default function HTTP() {
                       </p>
                     </div>
 
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
                         <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Key ideas to remember
                         </h3>
                       </div>
@@ -982,19 +985,19 @@ export default function HTTP() {
                     </div>
                   </div>
 
-                  <div className="flex rounded-3xl border border-slate-200 bg-white p-5 mt-8 items-center justify-center">
+                  <div className="mt-8 flex rounded-3xl border border-slate-200 bg-white p-3 sm:p-5 items-center justify-center">
                     <img src={m5Diagram} alt="HTTP diagram" className="max-w-full rounded-2xl" />
                   </div>
 
-                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
+                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-4 sm:p-5">
                     <div className="mb-3 flex items-center gap-2">
                       <XCircle className="h-5 w-5 text-rose-700" />
-                      <h3 className="text-lg font-semibold text-rose-900">
+                      <h3 className="text-base font-semibold text-rose-900 sm:text-lg">
                         Common mistakes to avoid
                       </h3>
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="grid gap-3 lg:grid-cols-3">
                       {misconceptionCards.map((item) => (
                         <div key={item.wrong} className="rounded-2xl bg-white/80 p-4">
                           <p className="text-sm font-semibold text-rose-800">
@@ -1072,7 +1075,7 @@ export default function HTTP() {
               transition={{ duration: 0.25 }}
             >
               <Section title="Interactive Browser Request Lab" icon={ShieldCheck}>
-                <p className="mb-4 leading-7 text-slate-700">
+                <p className="mb-4 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                   Test all four request types to unlock the quiz.
                 </p>
 
@@ -1087,8 +1090,8 @@ export default function HTTP() {
                   <PhaseSteps phase={phase} />
 
                   <div>
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                    <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                         Choose what the browser wants
                       </h3>
                       <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -1126,7 +1129,7 @@ export default function HTTP() {
 
                   <RequestChecklist loadedResources={loadedResources} />
 
-                  <div className="relative grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="relative grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
                     <AnimatePresence mode="wait">
                       <motion.div
                         key={`${phase}-${currentRequest.id}`}
@@ -1144,7 +1147,7 @@ export default function HTTP() {
                     <div className="space-y-4">
                       <div className="rounded-2xl border border-slate-200 bg-white p-4">
                         <div className="mb-3 flex items-center gap-2">
-                          <RequestIcon className="h-5 w-5 text-slate-700" />
+                          <RequestIcon className="h-5 w-5 shrink-0 text-slate-700" />
                           <h4 className="font-semibold" style={{ color: ST_EDS.navy }}>
                             Current request details
                           </h4>
@@ -1160,7 +1163,7 @@ export default function HTTP() {
                           </p>
                           <p>
                             <span className="font-semibold">Path:</span>{" "}
-                            <span className="font-mono">{currentRequest.path}</span>
+                            <span className="break-all font-mono">{currentRequest.path}</span>
                           </p>
                           <p>
                             <span className="font-semibold">Expected status:</span>{" "}
@@ -1192,14 +1195,14 @@ export default function HTTP() {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-slate-900/45 p-4 backdrop-blur-[2px]"
+                          className="absolute inset-0 z-20 flex items-center justify-center rounded-3xl bg-slate-900/45 p-3 backdrop-blur-[2px] sm:p-4"
                         >
                           <motion.div
                             initial={{ scale: 0.96, y: 8, opacity: 0 }}
                             animate={{ scale: 1, y: 0, opacity: 1 }}
                             exit={{ scale: 0.98, opacity: 0 }}
                             transition={{ duration: 0.25 }}
-                            className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl"
+                            className="w-full max-w-md rounded-3xl bg-white p-5 text-center shadow-2xl sm:p-6"
                           >
                             <div className="flex items-start justify-between">
                               <div />
@@ -1217,7 +1220,7 @@ export default function HTTP() {
                               <CheckCircle2 className="h-8 w-8 text-emerald-700" />
                             </div>
 
-                            <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
+                            <h3 className="mt-4 text-xl font-bold sm:text-2xl" style={{ color: ST_EDS.navy }}>
                               Activity Complete
                             </h3>
 
@@ -1273,17 +1276,17 @@ export default function HTTP() {
                   </div>
                 </div>
 
-                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-8 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <button
                     type="button"
                     onClick={() => setModulePage(0)}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous Page
                   </button>
 
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center text-sm text-slate-600">
                     {activityUnlocked
                       ? "Activity complete — you can move to the quiz."
                       : "Complete all four request types to unlock the quiz."}
@@ -1293,7 +1296,7 @@ export default function HTTP() {
                     type="button"
                     onClick={() => setModulePage(2)}
                     disabled={!activityUnlocked}
-                    className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
                         ? "bg-[#073674] hover:bg-[#0a4aa3]"
                         : "cursor-not-allowed bg-slate-300"
@@ -1317,8 +1320,6 @@ export default function HTTP() {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-
-
                 <div className="space-y-5">
                   {quizQuestions.map((q, i) => {
                     const userAnswer = selectedAnswers[i];
@@ -1327,7 +1328,7 @@ export default function HTTP() {
                     return (
                       <div
                         key={q.question}
-                        className="rounded-2xl border border-slate-200 p-5"
+                        className="rounded-2xl border border-slate-200 p-4 sm:p-5"
                       >
                         <h3 className="font-semibold text-slate-900">
                           {i + 1}. {q.question}
@@ -1392,7 +1393,7 @@ export default function HTTP() {
                   })}
                 </div>
 
-                <div className="mt-6 flex gap-3">
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                   <button
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
@@ -1418,12 +1419,12 @@ export default function HTTP() {
                 )}
 
                 {submittedQuiz && (
-                  <div className="mt-6 rounded-2xl bg-slate-50 p-5">
+                  <div className="mt-6 rounded-2xl bg-slate-50 p-4 sm:p-5">
                     <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
 
-                    <p className="mt-2 text-slate-600">
+                    <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
                       {score === quizQuestions.length
                         ? "Excellent work — you understand how HTTP helps browsers and servers communicate."
                         : score >= 5
@@ -1442,14 +1443,15 @@ export default function HTTP() {
                         <ChevronLeft className="h-4 w-4" />
                         Back to Activity
                       </button>
-<a href="/#module5"> <button
+
+                      <button
                         type="button"
+                        onClick={goToNextModule}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
                       >
                         Go to Next Module
                         <ChevronRight className="h-4 w-4" />
-                      </button></a>
-                     
+                      </button>
                     </div>
                   </div>
                 )}
