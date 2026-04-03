@@ -24,6 +24,7 @@ import {
 import { AnimatePresence, motion, useMotionValue } from "framer-motion";
 import { markActivityComplete, markQuizPassed } from "../utils/progress";
 import m2Diagram from "../assets/m2diagram.png";
+import { useNavigate } from "react-router-dom";
 
 const ST_EDS = {
   navy: "#073674",
@@ -136,32 +137,27 @@ const overviewCards = [
   {
     step: 1,
     title: "Check both devices are ready",
-    text:
-      "TCP begins with a 3-way handshake so both sides know they can communicate properly.",
+    text: "TCP begins with a 3-way handshake so both sides know they can communicate properly.",
   },
   {
     step: 2,
     title: "Send the packets",
-    text:
-      "Once the connection is established, data can be sent as packets across the network.",
+    text: "Once the connection is established, data can be sent as packets across the network.",
   },
   {
     step: 3,
     title: "Track order and missing data",
-    text:
-      "TCP uses packet numbers so the receiver knows the correct order and can detect if something is missing.",
+    text: "TCP uses packet numbers so the receiver knows the correct order and can detect if something is missing.",
   },
   {
     step: 4,
     title: "Resend only what is missing",
-    text:
-      "If one packet is lost, TCP can request that missing packet again instead of restarting everything.",
+    text: "If one packet is lost, TCP can request that missing packet again instead of restarting everything.",
   },
   {
     step: 5,
     title: "Rebuild the original message",
-    text:
-      "The receiver uses the packet numbers to rebuild the full message in the right order.",
+    text: "The receiver uses the packet numbers to rebuild the full message in the right order.",
   },
 ];
 
@@ -219,15 +215,15 @@ function buildShuffledQuiz(questions) {
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
-      <div className="mb-5 flex items-center gap-3">
+    <section className="rounded-[24px] border border-white/20 bg-white p-4 shadow-xl sm:rounded-[28px] sm:p-5 lg:rounded-[30px] lg:p-6">
+      <div className="mb-4 flex items-center gap-3 sm:mb-5">
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl sm:h-11 sm:w-11"
           style={{ backgroundColor: `${ST_EDS.gold}20` }}
         >
           <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+        <h2 className="text-lg font-bold sm:text-xl" style={{ color: ST_EDS.navy }}>
           {title}
         </h2>
       </div>
@@ -243,8 +239,8 @@ function StepChip({ label, active, complete }) {
         active
           ? "bg-[#073674] text-white"
           : complete
-          ? "bg-emerald-100 text-emerald-700"
-          : "bg-slate-100 text-slate-500"
+            ? "bg-emerald-100 text-emerald-700"
+            : "bg-slate-100 text-slate-500"
       }`}
     >
       {label}
@@ -256,15 +252,15 @@ function Device({ type, title, subtitle }) {
   const isClient = type === "client";
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <div className="flex flex-col items-center gap-2 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 sm:h-16 sm:w-16">
         {isClient ? (
-          <Laptop className="h-9 w-9" style={{ color: ST_EDS.blue }} />
+          <Laptop className="h-8 w-8 sm:h-9 sm:w-9" style={{ color: ST_EDS.blue }} />
         ) : (
-          <Server className="h-9 w-9 text-emerald-600" />
+          <Server className="h-8 w-8 sm:h-9 sm:w-9 text-emerald-600" />
         )}
       </div>
-      <p className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+      <p className="text-lg font-bold sm:text-xl" style={{ color: ST_EDS.navy }}>
         {title}
       </p>
       <p className="text-sm text-slate-500">{subtitle}</p>
@@ -277,10 +273,10 @@ function StatusBox({ title, body, tone = "neutral" }) {
     tone === "success"
       ? "bg-emerald-50 text-emerald-800 border-emerald-200"
       : tone === "info"
-      ? "bg-[#eef5ff] text-[#0a4aa3] border-[#bfd7ff]"
-      : tone === "danger"
-      ? "bg-rose-50 text-rose-800 border-rose-200"
-      : "bg-slate-50 text-slate-700 border-slate-200";
+        ? "bg-[#eef5ff] text-[#0a4aa3] border-[#bfd7ff]"
+        : tone === "danger"
+          ? "bg-rose-50 text-rose-800 border-rose-200"
+          : "bg-slate-50 text-slate-700 border-slate-200";
 
   return (
     <div className={`rounded-2xl border p-4 ${styles}`}>
@@ -305,7 +301,7 @@ function DraggablePacketLane({
     const updateWidth = () => {
       if (!laneRef.current) return;
       const width = laneRef.current.offsetWidth;
-      const distance = Math.max(180, width - 250);
+      const distance = Math.max(120, width - 190);
       setTravelDistance(distance);
       x.set(0);
     };
@@ -316,7 +312,7 @@ function DraggablePacketLane({
   }, [x]);
 
   const isRight = direction === "right";
-  const startClass = isRight ? "left-4 md:left-6" : "right-4 md:right-6";
+  const startClass = isRight ? "left-3 sm:left-4 md:left-6" : "right-3 sm:right-4 md:right-6";
   const threshold = travelDistance * 0.56;
 
   const handleDragEnd = () => {
@@ -345,23 +341,23 @@ function DraggablePacketLane({
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <div className="mb-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-slate-400 sm:text-xs">
         <span>Client</span>
         <span>Server</span>
       </div>
 
       <div
         ref={laneRef}
-        className="relative h-28 overflow-hidden rounded-3xl border border-slate-200 bg-white px-4 shadow-sm md:px-6"
+        className="relative h-24 overflow-hidden rounded-3xl border border-slate-200 bg-white px-3 shadow-sm sm:h-28 sm:px-4 md:px-6"
       >
         <div
-          className={`absolute left-8 right-8 top-1/2 h-2 -translate-y-1/2 rounded-full ${
+          className={`absolute left-6 right-6 top-1/2 h-2 -translate-y-1/2 rounded-full ${
             connected ? "bg-emerald-300" : "bg-slate-200"
           }`}
         />
 
-        <div className="absolute left-3 top-1/2 h-14 w-24 -translate-y-1/2 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50/80" />
-        <div className="absolute right-3 top-1/2 h-14 w-24 -translate-y-1/2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/80" />
+        <div className="absolute left-2 top-1/2 h-12 w-16 -translate-y-1/2 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50/80 sm:left-3 sm:h-14 sm:w-20 md:w-24" />
+        <div className="absolute right-2 top-1/2 h-12 w-16 -translate-y-1/2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/80 sm:right-3 sm:h-14 sm:w-20 md:w-24" />
 
         <motion.div
           drag="x"
@@ -375,10 +371,10 @@ function DraggablePacketLane({
           onDragEnd={handleDragEnd}
           className={`absolute top-1/2 z-10 -translate-y-1/2 ${startClass} cursor-grab active:cursor-grabbing`}
         >
-          <div className="inline-flex min-w-[128px] items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="inline-flex min-w-[102px] items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm sm:min-w-[118px] sm:gap-2 sm:px-4 sm:py-3">
             {!isRight && <ArrowLeft className="h-4 w-4 text-slate-500" />}
             <GripHorizontal className="h-4 w-4 text-slate-400" />
-            <span className="font-semibold text-slate-800">{label}</span>
+            <span className="text-sm font-semibold text-slate-800 sm:text-base">{label}</span>
             {isRight && <ArrowRight className="h-4 w-4 text-slate-500" />}
           </div>
         </motion.div>
@@ -395,10 +391,10 @@ function PacketDeck({ packets, side = "right" }) {
   return (
     <div
       className={`absolute top-1/2 -translate-y-1/2 ${
-        isRight ? "right-8" : "left-8"
+        isRight ? "right-4 sm:right-6 md:right-8" : "left-4 sm:left-6 md:left-8"
       }`}
     >
-      <div className="relative h-12 w-28">
+      <div className="relative h-10 w-20 sm:h-11 sm:w-24 md:h-12 md:w-28">
         {packets.map((packet, index) => (
           <motion.div
             key={`${side}-${packet}`}
@@ -406,12 +402,12 @@ function PacketDeck({ packets, side = "right" }) {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ delay: index * 0.07, duration: 0.2 }}
             className="absolute top-0"
-            style={{ left: `${index * 16}px`, zIndex: index + 1 }}
+            style={{ left: `${index * 14}px`, zIndex: index + 1 }}
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm sm:h-10 sm:w-10 md:h-11 md:w-11">
               <div className="flex flex-col items-center">
                 <Package className="h-3.5 w-3.5" />
-                <span className="mt-0.5 text-xs font-bold">{packet}</span>
+                <span className="mt-0.5 text-[10px] font-bold sm:text-xs">{packet}</span>
               </div>
             </div>
           </motion.div>
@@ -436,26 +432,27 @@ function ConnectionTrack({
   const endX = isRight ? "78%" : "22%";
 
   const deliveredPackets =
-    deckPackets ?? (slipPacket ? packets.filter((p) => p !== slipPacket) : packets);
+    deckPackets ??
+    (slipPacket ? packets.filter((p) => p !== slipPacket) : packets);
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
+    <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div className="mb-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-slate-400 sm:text-xs">
         <span>{isRight ? "Client sending" : "Server sending back"}</span>
         <span>{isRight ? "Server receiving" : "Client receiving"}</span>
       </div>
 
-      <div className="relative h-40 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+      <div className="relative h-32 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 sm:h-36 md:h-40">
         <div
-          className={`absolute left-8 right-8 top-1/2 h-2 -translate-y-1/2 rounded-full ${
+          className={`absolute left-5 right-5 top-1/2 h-2 -translate-y-1/2 rounded-full ${
             connected ? "bg-emerald-300" : "bg-slate-200"
           }`}
         />
-        <div className="absolute left-6 top-1/2 h-14 w-14 -translate-y-1/2 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50" />
-        <div className="absolute right-6 top-1/2 h-14 w-14 -translate-y-1/2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50" />
+        <div className="absolute left-4 top-1/2 h-12 w-12 -translate-y-1/2 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50 sm:left-5 sm:h-14 sm:w-14 md:left-6" />
+        <div className="absolute right-4 top-1/2 h-12 w-12 -translate-y-1/2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50 sm:right-5 sm:h-14 sm:w-14 md:right-6" />
 
         {lineLabel && (
-          <div className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm ring-1 ring-slate-200">
+          <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold text-slate-600 shadow-sm ring-1 ring-slate-200 sm:top-4 sm:px-3 sm:text-xs">
             {lineLabel}
           </div>
         )}
@@ -493,7 +490,7 @@ function ConnectionTrack({
                 <button
                   type="button"
                   onClick={onSlipClick}
-                  className={`flex h-16 w-16 items-center justify-center rounded-2xl border shadow-md transition ${
+                  className={`flex h-14 w-14 items-center justify-center rounded-2xl border shadow-md transition sm:h-16 sm:w-16 ${
                     foundMissing
                       ? "border-emerald-300 bg-emerald-50 text-emerald-700"
                       : "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100"
@@ -505,7 +502,7 @@ function ConnectionTrack({
                   </div>
                 </button>
               ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm sm:h-16 sm:w-16">
                   <div className="flex flex-col items-center">
                     <Package className="h-4 w-4" />
                     <span className="mt-1 text-sm font-bold">{packet}</span>
@@ -522,7 +519,10 @@ function ConnectionTrack({
             animate={{ opacity: 1 }}
             transition={{ delay: packets.length * 0.4 + 0.1, duration: 0.25 }}
           >
-            <PacketDeck packets={deliveredPackets} side={isRight ? "right" : "left"} />
+            <PacketDeck
+              packets={deliveredPackets}
+              side={isRight ? "right" : "left"}
+            />
           </motion.div>
         )}
       </div>
@@ -536,7 +536,7 @@ function PacketButton({ number, onClick, success, disabled }) {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-16 w-16 items-center justify-center rounded-2xl border transition ${
+      className={`flex h-14 w-14 items-center justify-center rounded-2xl border transition sm:h-16 sm:w-16 ${
         success
           ? "border-emerald-300 bg-emerald-50 text-emerald-700"
           : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
@@ -573,18 +573,24 @@ function QuizOption({ option, isSelected, isCorrect, submitted, onClick }) {
 }
 
 function ModuleProgress({ currentPage }) {
-  const pages = [{ label: "Overview" }, { label: "Activity" }, { label: "Quiz" }];
+  const pages = [
+    { label: "Overview" },
+    { label: "Activity" },
+    { label: "Quiz" },
+  ];
 
   return (
-    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-[24px] border border-white/20 bg-white p-4 shadow-xl sm:rounded-[28px] lg:rounded-[30px]">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
           Module Progress
         </h2>
-        <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
+        <span className="text-sm text-slate-500">
+          Page {currentPage + 1} of 3
+        </span>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         {pages.map((page, index) => {
           const active = currentPage === index;
           const complete = currentPage > index;
@@ -592,12 +598,12 @@ function ModuleProgress({ currentPage }) {
           return (
             <div
               key={page.label}
-              className={`rounded-2xl border p-4 ${
+              className={`rounded-2xl border p-3 sm:p-4 ${
                 active
                   ? "border-[#073674] bg-[#073674] text-white"
                   : complete
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                  : "border-slate-200 bg-slate-50 text-slate-600"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-slate-200 bg-slate-50 text-slate-600"
               }`}
             >
               <div className="mb-2 flex items-center justify-between">
@@ -616,13 +622,15 @@ function ModuleProgress({ currentPage }) {
 }
 
 export default function TCP() {
+  const navigate = useNavigate();
+
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState([]);
 
   const [phase, setPhase] = useState("syn");
   const [feedback, setFeedback] = useState(
-    "Drag SYN from the client side into the server area to begin the TCP connection."
+    "Drag SYN from the client side into the server area to begin the TCP connection.",
   );
 
   const [slippedFound, setSlippedFound] = useState(false);
@@ -670,7 +678,7 @@ export default function TCP() {
   const score = useMemo(() => {
     return quizQuestions.reduce(
       (total, q, i) => total + (selectedAnswers[i] === q.answer ? 1 : 0),
-      0
+      0,
     );
   }, [selectedAnswers, quizQuestions]);
 
@@ -682,7 +690,9 @@ export default function TCP() {
 
   const allAnswered =
     quizQuestions.length > 0 &&
-    quizQuestions.every((_, index) => typeof selectedAnswers[index] === "string");
+    quizQuestions.every(
+      (_, index) => typeof selectedAnswers[index] === "string",
+    );
 
   const activeStep = (() => {
     switch (phase) {
@@ -721,7 +731,7 @@ export default function TCP() {
     if (packet === "SYN" && phase === "syn") {
       setPhase("synack");
       setFeedback(
-        "The server received SYN. Now drag SYN-ACK back to the client. This means the server received the first message and is replying."
+        "The server received SYN. Now drag SYN-ACK back to the client. This means the server received the first message and is replying.",
       );
       return;
     }
@@ -729,7 +739,7 @@ export default function TCP() {
     if (packet === "SYN-ACK" && phase === "synack") {
       setPhase("ack");
       setFeedback(
-        "Great. Now drag ACK to the server to complete the handshake. This final message confirms both sides are ready."
+        "Great. Now drag ACK to the server to complete the handshake. This final message confirms both sides are ready.",
       );
       return;
     }
@@ -737,7 +747,7 @@ export default function TCP() {
     if (packet === "ACK" && phase === "ack") {
       setPhase("connected");
       setFeedback(
-        "The TCP connection is now established. Both devices are ready, so reliable packet transfer can begin."
+        "The TCP connection is now established. Both devices are ready, so reliable packet transfer can begin.",
       );
     }
   };
@@ -745,7 +755,7 @@ export default function TCP() {
   const handleSlipClick = () => {
     setSlippedFound(true);
     setFeedback(
-      "Correct. Packet 3 is the missing packet. Packets 1, 2, and 4 already arrived, so TCP only needs to request packet 3 again."
+      "Correct. Packet 3 is the missing packet. Packets 1, 2, and 4 already arrived, so TCP only needs to request packet 3 again.",
     );
   };
 
@@ -762,7 +772,7 @@ export default function TCP() {
       if (next.length === 4) {
         setPhase("done");
         setFeedback(
-          "Excellent. TCP rebuilt the packets in the correct order and the full data arrived successfully."
+          "Excellent. TCP rebuilt the packets in the correct order and the full data arrived successfully.",
         );
       } else {
         setFeedback(`Good. Now place packet ${expected + 1} next.`);
@@ -775,7 +785,7 @@ export default function TCP() {
   const resetSimulation = () => {
     setPhase("syn");
     setFeedback(
-      "Drag SYN from the client side into the server area to begin the TCP connection."
+      "Drag SYN from the client side into the server area to begin the TCP connection.",
     );
     setSlippedFound(false);
     setPacketOrder([]);
@@ -794,32 +804,32 @@ export default function TCP() {
     phase === "done" || slippedFound
       ? "success"
       : connectionEstablished
-      ? "info"
-      : "neutral";
+        ? "info"
+        : "neutral";
 
   const stripTitle =
     phase === "syn"
       ? "Step 1: Send SYN"
       : phase === "synack"
-      ? "Step 2: Return SYN-ACK"
-      : phase === "ack"
-      ? "Step 3: Send ACK"
-      : phase === "connected"
-      ? "Connection established"
-      : phase === "send"
-      ? "Packets are moving"
-      : phase === "slip" && slippedFound
-      ? "Missing packet found"
-      : phase === "slip"
-      ? "Find the missing packet"
-      : phase === "resend"
-      ? "Packet 3 resent"
-      : phase === "rebuild"
-      ? "Rebuild the data"
-      : "TCP delivery complete";
+        ? "Step 2: Return SYN-ACK"
+        : phase === "ack"
+          ? "Step 3: Send ACK"
+          : phase === "connected"
+            ? "Connection established"
+            : phase === "send"
+              ? "Packets are moving"
+              : phase === "slip" && slippedFound
+                ? "Missing packet found"
+                : phase === "slip"
+                  ? "Find the missing packet"
+                  : phase === "resend"
+                    ? "Packet 3 resent"
+                    : phase === "rebuild"
+                      ? "Rebuild the data"
+                      : "TCP delivery complete";
 
   const goToNextModule = () => {
-    alert("Great job! You finished this module. You can now move to the next one.");
+    navigate("/#module-3");
   };
 
   return (
@@ -829,30 +839,32 @@ export default function TCP() {
         background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
       }}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
-        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-5 sm:gap-7 sm:py-6 md:px-6 lg:gap-8 lg:py-8">
+        <header className="rounded-[24px] border border-white/20 bg-white/10 p-4 text-white shadow-2xl backdrop-blur-sm sm:rounded-[28px] sm:p-5 lg:rounded-[32px] lg:p-6">
           <span
-            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            className="inline-block rounded-full px-3 py-1 text-xs font-semibold sm:px-4 sm:text-sm"
             style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
           >
             St Edmund&apos;s College Canberra
           </span>
 
-          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
+          <h1 className="mt-4 text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl">
             Transmission Control Protocol (TCP)
           </h1>
 
-          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
-            Learn how TCP creates a reliable connection, checks both devices are ready,
-            handles missing packets, and rebuilds data in the correct order.
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-100 sm:text-base sm:leading-7">
+            Learn how TCP creates a reliable connection, checks both devices are
+            ready, handles missing packets, and rebuilds data in the correct
+            order.
           </p>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
               <ShieldCheck className="mb-2 h-5 w-5" />
               <p className="font-semibold">Reliable transfer</p>
               <p className="mt-1 text-sm text-slate-200">
-                See how TCP confirms both devices are ready before normal transfer begins.
+                See how TCP confirms both devices are ready before normal
+                transfer begins.
               </p>
             </div>
 
@@ -864,7 +876,7 @@ export default function TCP() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm sm:col-span-2 xl:col-span-1">
               <Trophy className="mb-2 h-5 w-5" />
               <p className="font-semibold">Quiz feedback</p>
               <p className="mt-1 text-sm text-slate-200">
@@ -887,29 +899,35 @@ export default function TCP() {
             >
               <div ref={overviewRef}>
                 <Section title="What is TCP?" icon={HelpCircle}>
-                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-4 sm:p-5">
                     <div className="flex items-start gap-3">
                       <div
                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
                         style={{ backgroundColor: "#dce9ff" }}
                       >
-                        <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
+                        <Target
+                          className="h-5 w-5"
+                          style={{ color: ST_EDS.navy }}
+                        />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3
+                          className="text-base font-semibold sm:text-lg"
+                          style={{ color: ST_EDS.navy }}
+                        >
                           What you are learning
                         </h3>
-                        <p className="mt-2 leading-7 text-slate-700">
-                          TCP is a protocol used to make data transfer reliable. It checks
-                          that both devices are ready before normal transfer begins, uses
-                          packet numbers to keep track of order, and can resend missing
-                          packets if one is lost.
+                        <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
+                          TCP is a protocol used to make data transfer reliable.
+                          It checks that both devices are ready before normal
+                          transfer begins, uses packet numbers to keep track of
+                          order, and can resend missing packets if one is lost.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-6 grid gap-3 md:grid-cols-5">
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     {overviewCards.map((card) => (
                       <div
                         key={card.step}
@@ -921,7 +939,10 @@ export default function TCP() {
                         >
                           {card.step}
                         </div>
-                        <h3 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3
+                          className="text-sm font-semibold"
+                          style={{ color: ST_EDS.navy }}
+                        >
                           {card.title}
                         </h3>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -931,26 +952,39 @@ export default function TCP() {
                     ))}
                   </div>
 
-                  <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                  <div className="mt-8 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <Lightbulb
+                          className="h-5 w-5"
+                          style={{ color: ST_EDS.gold }}
+                        />
+                        <h3
+                          className="text-base font-semibold sm:text-lg"
+                          style={{ color: ST_EDS.navy }}
+                        >
                           Real-life analogy
                         </h3>
                       </div>
-                      <p className="mt-3 leading-7 text-slate-700">
-                        Think of sending numbered pages in a letter. First, both people
-                        make sure they are ready to communicate. If one page goes missing,
-                        only that page is sent again. The page numbers help the receiver
-                        put everything back in the right order.
+                      <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
+                        Think of sending numbered pages in a letter. First, both
+                        people make sure they are ready to communicate. If one
+                        page goes missing, only that page is sent again. The
+                        page numbers help the receiver put everything back in
+                        the right order.
                       </p>
                     </div>
 
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
-                        <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <Info
+                          className="h-5 w-5"
+                          style={{ color: ST_EDS.blue }}
+                        />
+                        <h3
+                          className="text-base font-semibold sm:text-lg"
+                          style={{ color: ST_EDS.navy }}
+                        >
                           Key ideas to remember
                         </h3>
                       </div>
@@ -964,53 +998,83 @@ export default function TCP() {
                               className="mt-0.5 h-4 w-4 shrink-0"
                               style={{ color: ST_EDS.navy }}
                             />
-                            <p className="text-sm leading-6 text-slate-700">{idea}</p>
+                            <p className="text-sm leading-6 text-slate-700">
+                              {idea}
+                            </p>
                           </div>
                         ))}
                       </div>
                     </div>
                   </div>
 
-                  <div className="rounded-3xl border border-slate-200 bg-white p-5 mt-8">
-                    <img src={m2Diagram} alt="TCP diagram" className="w-full rounded-2xl" />
+                  <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-3 sm:p-5">
+                    <img
+                      src={m2Diagram}
+                      alt="TCP diagram"
+                      className="w-full rounded-2xl"
+                    />
                   </div>
 
-                  <div className="mt-8 rounded-3xl border border-[#bfd7ff] bg-[#eef5ff] p-5">
-                    <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
+                  <div className="mt-8 rounded-3xl border border-[#bfd7ff] bg-[#eef5ff] p-4 sm:p-5">
+                    <h3
+                      className="font-semibold"
+                      style={{ color: ST_EDS.navy }}
+                    >
                       What do SYN, SYN-ACK, and ACK mean?
                     </h3>
-                    <div className="mt-3 grid gap-3 md:grid-cols-3">
+                    <div className="mt-3 grid gap-3 lg:grid-cols-3">
                       <div className="rounded-2xl bg-white/80 p-4">
-                        <p className="font-semibold" style={{ color: ST_EDS.navy }}>SYN</p>
+                        <p
+                          className="font-semibold"
+                          style={{ color: ST_EDS.navy }}
+                        >
+                          SYN
+                        </p>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
-                          The client starts the connection and says it wants to communicate.
+                          The client starts the connection and says it wants to
+                          communicate.
                         </p>
                       </div>
                       <div className="rounded-2xl bg-white/80 p-4">
-                        <p className="font-semibold" style={{ color: ST_EDS.navy }}>SYN-ACK</p>
+                        <p
+                          className="font-semibold"
+                          style={{ color: ST_EDS.navy }}
+                        >
+                          SYN-ACK
+                        </p>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
-                          The server replies to say it received the message and is ready too.
+                          The server replies to say it received the message and
+                          is ready too.
                         </p>
                       </div>
                       <div className="rounded-2xl bg-white/80 p-4">
-                        <p className="font-semibold" style={{ color: ST_EDS.navy }}>ACK</p>
+                        <p
+                          className="font-semibold"
+                          style={{ color: ST_EDS.navy }}
+                        >
+                          ACK
+                        </p>
                         <p className="mt-2 text-sm leading-6 text-slate-700">
-                          The client sends a final confirmation so the connection becomes established.
+                          The client sends a final confirmation so the
+                          connection becomes established.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
+                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-4 sm:p-5">
                     <div className="mb-3 flex items-center gap-2">
                       <XCircle className="h-5 w-5 text-rose-700" />
-                      <h3 className="text-lg font-semibold text-rose-900">
+                      <h3 className="text-base font-semibold text-rose-900 sm:text-lg">
                         Common mistakes to avoid
                       </h3>
                     </div>
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="grid gap-3 lg:grid-cols-3">
                       {misconceptionCards.map((item) => (
-                        <div key={item.wrong} className="rounded-2xl bg-white/80 p-4">
+                        <div
+                          key={item.wrong}
+                          className="rounded-2xl bg-white/80 p-4"
+                        >
                           <p className="text-sm font-semibold text-rose-800">
                             Incorrect idea
                           </p>
@@ -1032,15 +1096,20 @@ export default function TCP() {
                     <h3 className="font-semibold" style={{ color: "#7a5800" }}>
                       What happens next?
                     </h3>
-                    <p className="mt-2 text-sm leading-6" style={{ color: "#7a5800" }}>
-                      On the next page, you will complete the handshake, send the packets,
-                      find a missing one, resend it, and rebuild the full message in order.
+                    <p
+                      className="mt-2 text-sm leading-6"
+                      style={{ color: "#7a5800" }}
+                    >
+                      On the next page, you will complete the handshake, send
+                      the packets, find a missing one, resend it, and rebuild
+                      the full message in order.
                     </p>
                   </div>
 
                   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                     <p className="text-sm leading-6 text-slate-700">
-                      Scroll to the bottom of this page to unlock the TCP simulation.
+                      Scroll to the bottom of this page to unlock the TCP
+                      simulation.
                     </p>
                   </div>
                 </Section>
@@ -1075,9 +1144,9 @@ export default function TCP() {
             >
               <Section title="Interactive TCP Simulation" icon={ShieldCheck}>
                 <div className="relative">
-                  <p className="mb-5 leading-7 text-slate-700">
-                    Complete the handshake, send the packets, find the missing one, request
-                    it again, and rebuild the message in order.
+                  <p className="mb-5 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
+                    Complete the handshake, send the packets, find the missing
+                    one, request it again, and rebuild the message in order.
                   </p>
 
                   <div className="mb-5 flex flex-wrap gap-2">
@@ -1091,9 +1160,13 @@ export default function TCP() {
                     ))}
                   </div>
 
-                  <StatusBox title={stripTitle} body={feedback} tone={stripTone} />
+                  <StatusBox
+                    title={stripTitle}
+                    body={feedback}
+                    tone={stripTone}
+                  />
 
-                  <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                  <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4 sm:p-5 lg:p-6">
                     <div className="mb-4 flex justify-center">
                       <div
                         className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -1108,10 +1181,14 @@ export default function TCP() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[160px_minmax(0,1fr)_160px] lg:items-start">
-                      <Device type="client" title="Client" subtitle="Your Device" />
+                    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[140px_minmax(0,1fr)_140px] xl:items-start 2xl:grid-cols-[160px_minmax(0,1fr)_160px]">
+                      <Device
+                        type="client"
+                        title="Client"
+                        subtitle="Your Device"
+                      />
 
-                      <div className="flex min-h-[330px] flex-col justify-start">
+                      <div className="flex min-h-[280px] flex-col justify-start sm:min-h-[300px] lg:min-h-[330px]">
                         <AnimatePresence mode="wait">
                           {phase === "syn" && (
                             <motion.div
@@ -1139,7 +1216,9 @@ export default function TCP() {
                               <DraggablePacketLane
                                 label="SYN-ACK"
                                 direction="left"
-                                onSuccess={() => handleHandshakeSuccess("SYN-ACK")}
+                                onSuccess={() =>
+                                  handleHandshakeSuccess("SYN-ACK")
+                                }
                                 helperText="Drag SYN-ACK back to the client."
                                 connected
                               />
@@ -1171,17 +1250,17 @@ export default function TCP() {
                               exit={{ opacity: 0, y: -10 }}
                               className="space-y-4"
                             >
-                              <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                                <div className="mb-3 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                                <div className="mb-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-slate-400 sm:text-xs">
                                   <span>Client ready</span>
                                   <span>Server ready</span>
                                 </div>
 
-                                <div className="relative h-36 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
-                                  <div className="absolute left-8 right-8 top-1/2 h-2 -translate-y-1/2 rounded-full bg-emerald-300" />
-                                  <div className="absolute left-6 top-1/2 h-14 w-14 -translate-y-1/2 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50" />
-                                  <div className="absolute right-6 top-1/2 h-14 w-14 -translate-y-1/2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50" />
-                                  <div className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
+                                <div className="relative h-28 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 sm:h-32 md:h-36">
+                                  <div className="absolute left-5 right-5 top-1/2 h-2 -translate-y-1/2 rounded-full bg-emerald-300" />
+                                  <div className="absolute left-4 top-1/2 h-12 w-12 -translate-y-1/2 rounded-2xl border-2 border-dashed border-blue-300 bg-blue-50 sm:left-5 sm:h-14 sm:w-14 md:left-6" />
+                                  <div className="absolute right-4 top-1/2 h-12 w-12 -translate-y-1/2 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50 sm:right-5 sm:h-14 sm:w-14 md:right-6" />
+                                  <div className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200 sm:top-4 sm:px-3 sm:text-xs">
                                     Reliable connection ready
                                   </div>
                                 </div>
@@ -1193,7 +1272,7 @@ export default function TCP() {
                                   onClick={() => {
                                     setPhase("send");
                                     setFeedback(
-                                      "The client now sends the data packets to the server one by one."
+                                      "The client now sends the data packets to the server one by one.",
                                     );
                                   }}
                                   className="rounded-2xl bg-[#073674] px-5 py-2 text-white transition hover:bg-[#0a4aa3]"
@@ -1225,7 +1304,7 @@ export default function TCP() {
                                   onClick={() => {
                                     setPhase("slip");
                                     setFeedback(
-                                      "The server sends the data back to the client. Packet 3 slips off the line. Tap the fallen packet."
+                                      "The server sends the data back to the client. Packet 3 slips off the line. Tap the fallen packet.",
                                     );
                                   }}
                                   className="rounded-2xl bg-[#073674] px-5 py-2 text-white transition hover:bg-[#0a4aa3]"
@@ -1262,7 +1341,7 @@ export default function TCP() {
                                     if (!slippedFound) return;
                                     setPhase("resend");
                                     setFeedback(
-                                      "Only packet 3 is resent. The other packets already arrived correctly."
+                                      "Only packet 3 is resent. The other packets already arrived correctly.",
                                     );
                                   }}
                                   className={`rounded-2xl px-5 py-2 text-white transition ${
@@ -1299,7 +1378,7 @@ export default function TCP() {
                                   onClick={() => {
                                     setPhase("rebuild");
                                     setFeedback(
-                                      "Click the packets in order: 1, 2, 3, 4. This shows how TCP rebuilds the full message."
+                                      "Click the packets in order: 1, 2, 3, 4. This shows how TCP rebuilds the full message.",
                                     );
                                   }}
                                   className="rounded-2xl bg-[#073674] px-5 py-2 text-white transition hover:bg-[#0a4aa3]"
@@ -1317,7 +1396,7 @@ export default function TCP() {
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
                             >
-                              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                              <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
                                 <p className="text-center text-sm font-semibold text-slate-700">
                                   Rebuild the data in TCP sequence order: 1, 2, 3, 4
                                 </p>
@@ -1329,7 +1408,10 @@ export default function TCP() {
                                       number={num}
                                       onClick={() => handleRebuildClick(num)}
                                       success={packetOrder.includes(num)}
-                                      disabled={packetOrder.includes(num) || phase === "done"}
+                                      disabled={
+                                        packetOrder.includes(num) ||
+                                        phase === "done"
+                                      }
                                     />
                                   ))}
                                 </div>
@@ -1364,7 +1446,11 @@ export default function TCP() {
                         </AnimatePresence>
                       </div>
 
-                      <Device type="server" title="Server" subtitle="Web Server" />
+                      <Device
+                        type="server"
+                        title="Server"
+                        subtitle="Web Server"
+                      />
                     </div>
                   </div>
 
@@ -1395,14 +1481,14 @@ export default function TCP() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-4 backdrop-blur-[3px]"
+                        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-3 backdrop-blur-[3px] sm:p-4"
                       >
                         <motion.div
                           initial={{ scale: 0.96, y: 10, opacity: 0 }}
                           animate={{ scale: 1, y: 0, opacity: 1 }}
                           exit={{ scale: 0.98, opacity: 0 }}
                           transition={{ duration: 0.25 }}
-                          className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl"
+                          className="w-full max-w-md rounded-3xl bg-white p-5 text-center shadow-2xl sm:p-6"
                         >
                           <div className="flex items-start justify-between">
                             <div />
@@ -1420,13 +1506,17 @@ export default function TCP() {
                             <CheckCircle2 className="h-8 w-8 text-emerald-700" />
                           </div>
 
-                          <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
+                          <h3
+                            className="mt-4 text-xl font-bold sm:text-2xl"
+                            style={{ color: ST_EDS.navy }}
+                          >
                             Activity Complete
                           </h3>
 
                           <p className="mt-3 text-sm leading-6 text-slate-600">
-                            You successfully completed the full TCP process, including the
-                            handshake, missing packet detection, retransmission, and rebuild.
+                            You successfully completed the full TCP process,
+                            including the handshake, missing packet detection,
+                            retransmission, and rebuild.
                           </p>
 
                           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
@@ -1453,17 +1543,17 @@ export default function TCP() {
                   </AnimatePresence>
                 </div>
 
-                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-8 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <button
                     type="button"
                     onClick={() => setModulePage(0)}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous Page
                   </button>
 
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center text-sm text-slate-600">
                     {activityUnlocked
                       ? "Activity complete — you can move to the quiz."
                       : "Complete the full TCP simulation to unlock the quiz."}
@@ -1473,7 +1563,7 @@ export default function TCP() {
                     type="button"
                     onClick={() => setModulePage(2)}
                     disabled={!activityUnlocked}
-                    className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
                         ? "bg-[#073674] hover:bg-[#0a4aa3]"
                         : "cursor-not-allowed bg-slate-300"
@@ -1497,8 +1587,6 @@ export default function TCP() {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-
-
                 <div className="space-y-5">
                   {quizQuestions.map((q, i) => {
                     const userAnswer = selectedAnswers[i];
@@ -1507,7 +1595,7 @@ export default function TCP() {
                     return (
                       <div
                         key={q.question}
-                        className="rounded-2xl border border-slate-200 p-5"
+                        className="rounded-2xl border border-slate-200 p-4 sm:p-5"
                       >
                         <h3 className="font-semibold text-slate-900">
                           {i + 1}. {q.question}
@@ -1541,7 +1629,9 @@ export default function TCP() {
                           >
                             <p
                               className={`text-sm font-semibold ${
-                                wasCorrect ? "text-emerald-800" : "text-rose-800"
+                                wasCorrect
+                                  ? "text-emerald-800"
+                                  : "text-rose-800"
                               }`}
                             >
                               {wasCorrect ? "Correct" : "Incorrect"}
@@ -1550,11 +1640,15 @@ export default function TCP() {
                             {!wasCorrect && (
                               <div className="mt-2 space-y-1 text-sm text-slate-700">
                                 <p>
-                                  <span className="font-semibold">You answered:</span>{" "}
+                                  <span className="font-semibold">
+                                    You answered:
+                                  </span>{" "}
                                   {userAnswer || "No answer selected"}
                                 </p>
                                 <p>
-                                  <span className="font-semibold">Correct answer:</span>{" "}
+                                  <span className="font-semibold">
+                                    Correct answer:
+                                  </span>{" "}
                                   {q.answer}
                                 </p>
                               </div>
@@ -1572,12 +1666,12 @@ export default function TCP() {
                   })}
                 </div>
 
-                <div className="mt-6 flex gap-3">
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                   <button
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
                     disabled={!allAnswered}
-                    className="rounded-2xl bg-[#073674] px-5 py-2 text-white hover:bg-[#0a4aa3] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-2xl bg-[#073674] px-5 py-2.5 text-white transition hover:bg-[#0a4aa3] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Submit Quiz
                   </button>
@@ -1585,7 +1679,7 @@ export default function TCP() {
                   <button
                     type="button"
                     onClick={resetQuiz}
-                    className="rounded-2xl border border-slate-300 px-5 py-2 text-slate-700 hover:bg-slate-50"
+                    className="rounded-2xl border border-slate-300 px-5 py-2.5 text-slate-700 transition hover:bg-slate-50"
                   >
                     Reset Quiz
                   </button>
@@ -1601,20 +1695,23 @@ export default function TCP() {
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-6 rounded-2xl bg-slate-50 p-5"
+                    className="mt-6 rounded-2xl bg-slate-50 p-4 sm:p-5"
                   >
-                    <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
+                    <h3
+                      className="text-lg font-semibold"
+                      style={{ color: ST_EDS.navy }}
+                    >
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
 
-                    <p className="mt-2 text-slate-600">
+                    <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
                       {score === quizQuestions.length
                         ? "Excellent work — you clearly understand how TCP establishes reliability, handles missing packets, and rebuilds data."
                         : score >= 6
-                        ? "Good job — you understand most of TCP, but review the handshake sequence and exactly what happens when a packet goes missing."
-                        : score >= 4
-                        ? "Decent effort — revisit the interactive simulation, especially the difference between connection setup, retransmission, and rebuilding."
-                        : "This quiz is meant to reward real understanding. Go back through the full module and pay close attention to the order of steps."}
+                          ? "Good job — you understand most of TCP, but review the handshake sequence and exactly what happens when a packet goes missing."
+                          : score >= 4
+                            ? "Decent effort — revisit the interactive simulation, especially the difference between connection setup, retransmission, and rebuilding."
+                            : "Go back through the simulation carefully. Focus on the handshake first, then on how TCP deals with one missing packet without resending everything."}
                     </p>
 
                     <div className="mt-5 flex flex-col gap-3 sm:flex-row">
@@ -1627,13 +1724,14 @@ export default function TCP() {
                         Back to Activity
                       </button>
 
-                     <a href="/#module2"><button
+                      <button
                         type="button"
+                        onClick={goToNextModule}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
                       >
                         Go to Next Module
                         <ChevronRight className="h-4 w-4" />
-                      </button></a> 
+                      </button>
                     </div>
                   </motion.div>
                 )}

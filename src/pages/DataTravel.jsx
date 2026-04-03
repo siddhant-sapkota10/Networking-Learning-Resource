@@ -29,7 +29,6 @@ import { markActivityComplete, markQuizPassed } from "../utils/progress";
 import m1Diagram from "../assets/m1diagram.png";
 import { useNavigate } from "react-router-dom";
 
-
 const ST_EDS = {
   navy: "#073674",
   blue: "#0A4AA3",
@@ -272,15 +271,15 @@ function buildShuffledQuiz() {
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
-      <div className="mb-5 flex items-center gap-3">
+    <section className="rounded-[24px] sm:rounded-[28px] lg:rounded-[30px] border border-white/20 bg-white p-4 shadow-xl sm:p-5 lg:p-6">
+      <div className="mb-4 flex items-center gap-3 sm:mb-5">
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl sm:h-11 sm:w-11"
           style={{ backgroundColor: `${ST_EDS.gold}20` }}
         >
           <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+        <h2 className="text-lg font-bold sm:text-xl" style={{ color: ST_EDS.navy }}>
           {title}
         </h2>
       </div>
@@ -347,7 +346,7 @@ function StageChip({ item, active, complete, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-2xl border px-4 py-3 text-left transition ${
+      className={`rounded-2xl border px-3 py-3 text-left transition sm:px-4 ${
         active
           ? `${accent.soft} shadow-sm`
           : complete
@@ -363,7 +362,7 @@ function StageChip({ item, active, complete, onClick }) {
           <Circle className="h-5 w-5" />
         ) : null}
       </div>
-      <p className="text-sm font-semibold">{item.title}</p>
+      <p className="text-sm font-semibold leading-5">{item.title}</p>
     </button>
   );
 }
@@ -405,15 +404,15 @@ function ModuleProgress({ currentPage }) {
   const pages = [{ label: "Overview" }, { label: "Activity" }, { label: "Quiz" }];
 
   return (
-    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-[24px] sm:rounded-[28px] lg:rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
           Module Progress
         </h2>
         <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         {pages.map((page, index) => {
           const active = currentPage === index;
           const complete = currentPage > index;
@@ -421,7 +420,7 @@ function ModuleProgress({ currentPage }) {
           return (
             <div
               key={page.label}
-              className={`rounded-2xl border p-4 ${
+              className={`rounded-2xl border p-3 sm:p-4 ${
                 active
                   ? "border-[#073674] bg-[#073674] text-white"
                   : complete
@@ -545,7 +544,7 @@ export default function DataTravel() {
   };
 
   const goToNextModule = () => {
-   navigate("/");
+    navigate("/");
   };
 
   return (
@@ -555,25 +554,25 @@ export default function DataTravel() {
         background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
       }}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8 md:px-6">
-        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-5 sm:gap-7 sm:py-6 md:px-6 lg:gap-8 lg:py-8">
+        <header className="rounded-[24px] sm:rounded-[28px] lg:rounded-[32px] border border-white/20 bg-white/10 p-4 text-white shadow-2xl backdrop-blur-sm sm:p-5 lg:p-6">
           <span
-            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            className="inline-block rounded-full px-3 py-1 text-xs font-semibold sm:px-4 sm:text-sm"
             style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
           >
             St Edmund&apos;s College Canberra
           </span>
 
-          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
+          <h1 className="mt-4 text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl">
             How Data Travels Through the Internet
           </h1>
 
-          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-100 sm:text-base sm:leading-7">
             Follow a clear step-by-step explanation, learn through visuals, then test
             your understanding in an interactive activity and quiz.
           </p>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
               <BookOpen className="mb-2 h-5 w-5" />
               <p className="font-semibold">Clear explanation</p>
@@ -590,7 +589,7 @@ export default function DataTravel() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm sm:col-span-2 xl:col-span-1">
               <Trophy className="mb-2 h-5 w-5" />
               <p className="font-semibold">Quiz challenge</p>
               <p className="mt-1 text-sm text-slate-200">
@@ -613,7 +612,7 @@ export default function DataTravel() {
             >
               <div ref={overviewRef}>
                 <Section title="General Overview" icon={BookOpen}>
-                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-4 sm:p-5">
                     <div className="flex items-start gap-3">
                       <div
                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
@@ -622,10 +621,10 @@ export default function DataTravel() {
                         <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           What you are learning
                         </h3>
-                        <p className="mt-2 leading-7 text-slate-700">
+                        <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                           This module explains the basic journey of data when you open a
                           website or video: your device sends a request, the request moves
                           through the network, the server responds, and the data returns in
@@ -635,7 +634,7 @@ export default function DataTravel() {
                     </div>
                   </div>
 
-                  <div className="mt-6 grid gap-3 md:grid-cols-5">
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     {overviewCards.map((card) => (
                       <div
                         key={card.step}
@@ -655,15 +654,15 @@ export default function DataTravel() {
                     ))}
                   </div>
 
-                  <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                  <div className="mt-8 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
                         <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Real-life analogy
                         </h3>
                       </div>
-                      <p className="mt-3 leading-7 text-slate-700">
+                      <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                         Think about ordering food online. You place the order, the
                         restaurant receives it, prepares it, and sends it back to you.
                         The internet works in a similar way. Your device asks for
@@ -672,10 +671,10 @@ export default function DataTravel() {
                       </p>
                     </div>
 
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
                         <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Key ideas to remember
                         </h3>
                       </div>
@@ -696,7 +695,7 @@ export default function DataTravel() {
                     </div>
                   </div>
 
-                  <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-5">
+                  <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-3 sm:p-5">
                     <img
                       src={m1Diagram}
                       alt="Data travel diagram"
@@ -704,14 +703,14 @@ export default function DataTravel() {
                     />
                   </div>
 
-                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
+                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-4 sm:p-5">
                     <div className="mb-3 flex items-center gap-2">
                       <XCircle className="h-5 w-5 text-rose-700" />
-                      <h3 className="text-lg font-semibold text-rose-900">
+                      <h3 className="text-base font-semibold text-rose-900 sm:text-lg">
                         Common mistakes to avoid
                       </h3>
                     </div>
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="grid gap-3 lg:grid-cols-3">
                       {misconceptionCards.map((item) => (
                         <div key={item.wrong} className="rounded-2xl bg-white/80 p-4">
                           <p className="text-sm font-semibold text-rose-800">Incorrect idea</p>
@@ -776,12 +775,12 @@ export default function DataTravel() {
             >
               <Section title="Interactive Learning Activity" icon={MousePointerClick}>
                 <div className="relative">
-                  <p className="mb-5 leading-7 text-slate-700">
+                  <p className="mb-5 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                     Move through each step to follow the request to the server, then watch
                     the packets return and rebuild the content on your device.
                   </p>
 
-                  <div className="mb-5 flex items-center justify-between text-sm text-slate-600">
+                  <div className="mb-5 flex items-center justify-between gap-3 text-sm text-slate-600">
                     <span>Journey progress</span>
                     <span>
                       Stop {currentStop + 1} of {stops.length}
@@ -796,7 +795,7 @@ export default function DataTravel() {
                     />
                   </div>
 
-                  <div className="mb-6 grid gap-3 md:grid-cols-5">
+                  <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     {stops.map((item, index) => (
                       <StageChip
                         key={item.key}
@@ -808,21 +807,21 @@ export default function DataTravel() {
                     ))}
                   </div>
 
-                  <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-                    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-                      <div className="mb-4 flex items-center justify-between gap-3">
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                  <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+                    <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 sm:p-5 lg:p-6">
+                      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Packet Journey
                         </h3>
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${accent.pill}`}
+                          className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${accent.pill}`}
                         >
                           {stop.badge}
                         </span>
                       </div>
 
-                      <div className="rounded-3xl border border-slate-200 bg-white px-4 py-6 md:px-6">
-                        <div className="hidden md:block">
+                      <div className="rounded-3xl border border-slate-200 bg-white px-3 py-5 sm:px-4 md:px-5 lg:px-6">
+                        <div className="hidden lg:block">
                           <div className="relative pt-10">
                             <div className="absolute left-[12.5%] top-[70px] h-1 w-[75%] rounded-full bg-slate-200" />
 
@@ -927,7 +926,7 @@ export default function DataTravel() {
                           </div>
                         </div>
 
-                        <div className="grid gap-3 md:hidden">
+                        <div className="grid gap-3 lg:hidden">
                           {stops.map((item, index) => {
                             const Icon = item.icon;
                             const active = currentStop === index;
@@ -974,18 +973,18 @@ export default function DataTravel() {
                             <div className="overflow-hidden rounded-2xl border border-slate-200">
                               <div className="aspect-video bg-slate-900 p-4">
                                 <div className="flex h-full flex-col justify-between">
-                                  <div className="flex items-center justify-between">
-                                    <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] text-white sm:text-xs">
                                       Website / video
                                     </span>
-                                    <span className="text-xs text-slate-300">
+                                    <span className="text-[11px] text-slate-300 sm:text-xs">
                                       Rebuilt from packets
                                     </span>
                                   </div>
 
                                   <div className="flex flex-1 items-center justify-center">
-                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 shadow-lg">
-                                      <Play className="ml-1 h-7 w-7 fill-white text-white" />
+                                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-600 shadow-lg sm:h-16 sm:w-16">
+                                      <Play className="ml-1 h-6 w-6 fill-white text-white sm:h-7 sm:w-7" />
                                     </div>
                                   </div>
 
@@ -1006,9 +1005,9 @@ export default function DataTravel() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-6">
+                    <div className="flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 lg:p-6">
                       <div>
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           What is happening here?
                         </h3>
                         <p className="mt-1 text-sm text-slate-500">
@@ -1024,7 +1023,7 @@ export default function DataTravel() {
                             className={`mt-5 rounded-2xl border p-4 ${accent.soft}`}
                           >
                             <h4 className="font-semibold">{title}</h4>
-                            <p className="mt-2 leading-7">{body}</p>
+                            <p className="mt-2 text-sm leading-6 sm:text-base sm:leading-7">{body}</p>
                           </motion.div>
                         </AnimatePresence>
 
@@ -1053,7 +1052,7 @@ export default function DataTravel() {
                       </div>
 
                       <div className="mt-6">
-                        <div className="flex items-center justify-center gap-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
                           <button
                             type="button"
                             onClick={() => setCurrentStop((prev) => Math.max(0, prev - 1))}
@@ -1106,14 +1105,14 @@ export default function DataTravel() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-4 backdrop-blur-[3px]"
+                        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-3 sm:p-4 backdrop-blur-[3px]"
                       >
                         <motion.div
                           initial={{ scale: 0.96, y: 10, opacity: 0 }}
                           animate={{ scale: 1, y: 0, opacity: 1 }}
                           exit={{ scale: 0.98, opacity: 0 }}
                           transition={{ duration: 0.25 }}
-                          className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl"
+                          className="w-full max-w-md rounded-3xl bg-white p-5 text-center shadow-2xl sm:p-6"
                         >
                           <div className="flex items-start justify-between">
                             <div />
@@ -1131,7 +1130,7 @@ export default function DataTravel() {
                             <CheckCircle2 className="h-8 w-8 text-emerald-700" />
                           </div>
 
-                          <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
+                          <h3 className="mt-4 text-xl font-bold sm:text-2xl" style={{ color: ST_EDS.navy }}>
                             Activity Complete
                           </h3>
 
@@ -1164,17 +1163,17 @@ export default function DataTravel() {
                   </AnimatePresence>
                 </div>
 
-                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-8 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <button
                     type="button"
                     onClick={() => setModulePage(0)}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous Page
                   </button>
 
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center text-sm text-slate-600">
                     {activityUnlocked
                       ? "Activity complete — you can move to the quiz."
                       : "Complete the full animation to unlock the quiz."}
@@ -1184,7 +1183,7 @@ export default function DataTravel() {
                     type="button"
                     onClick={() => setModulePage(2)}
                     disabled={!activityUnlocked}
-                    className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
                         ? "bg-[#073674] hover:bg-[#0a4aa3]"
                         : "cursor-not-allowed bg-slate-300"
@@ -1208,8 +1207,6 @@ export default function DataTravel() {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-
-
                 <div className="space-y-5">
                   {quizQuestions.map((q, qIndex) => {
                     const userAnswer = selectedAnswers[qIndex];
@@ -1218,7 +1215,7 @@ export default function DataTravel() {
                     return (
                       <div
                         key={q.question}
-                        className="rounded-2xl border border-slate-200 p-5"
+                        className="rounded-2xl border border-slate-200 p-4 sm:p-5"
                       >
                         <h3 className="font-semibold text-slate-900">
                           {qIndex + 1}. {q.question}
@@ -1283,7 +1280,7 @@ export default function DataTravel() {
                   })}
                 </div>
 
-                <div className="mt-6 flex flex-wrap gap-3">
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                   <button
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
@@ -1312,12 +1309,12 @@ export default function DataTravel() {
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-6 rounded-2xl bg-slate-50 p-5"
+                    className="mt-6 rounded-2xl bg-slate-50 p-4 sm:p-5"
                   >
                     <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
-                    <p className="mt-2 leading-7 text-slate-600">
+                    <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
                       {score === quizQuestions.length
                         ? "Excellent work — you clearly understood the full data journey and the role of each part."
                         : score >= 6
@@ -1336,14 +1333,15 @@ export default function DataTravel() {
                         <ChevronLeft className="h-4 w-4" />
                         Back to Activity
                       </button>
-<a href="/#module1">   <button
+
+                      <button
                         type="button"
+                        onClick={goToNextModule}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
                       >
                         Go to Next Module
                         <ChevronRight className="h-4 w-4" />
-                      </button></a>
-                   
+                      </button>
                     </div>
                   </motion.div>
                 )}

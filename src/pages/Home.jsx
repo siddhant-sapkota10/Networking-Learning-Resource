@@ -19,10 +19,10 @@ const ROAD_PATH_D =
   "M85 130 C130 320, 40 520, 85 800 C130 1080, 40 1360, 85 1640 C130 1860, 40 1960, 85 2010"
 
 const PELICAN_STORAGE_KEY = "roadmap-last-index"
+
 const CHECKPOINT_OFFSET = 42
 const START_GAP = 320
 const FINISH_GAP = 320
-const LG_BREAKPOINT = 1024
 
 function Pelican({ point, isComplete, isIntroAnimating }) {
   if (!point) return null
@@ -60,10 +60,6 @@ export default function Home() {
   const [pelicanPoint, setPelicanPoint] = useState(null)
   const [isIntroAnimating, setIsIntroAnimating] = useState(false)
   const [introReady, setIntroReady] = useState(false)
-  const [isLargeScreen, setIsLargeScreen] = useState(() => {
-    if (typeof window === "undefined") return true
-    return window.innerWidth >= LG_BREAKPOINT
-  })
 
   const roadmapSectionRef = useRef(null)
   const roadmapInnerRef = useRef(null)
@@ -73,17 +69,6 @@ export default function Home() {
   const introTimeoutsRef = useRef([])
   const hasScrolledForHashRef = useRef(false)
   const hasAutoFocusedRef = useRef(false)
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsLargeScreen(window.innerWidth >= LG_BREAKPOINT)
-    }
-
-    handleResize()
-    window.addEventListener("resize", handleResize)
-
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
 
   useEffect(() => {
     const load = () => {
@@ -105,13 +90,6 @@ export default function Home() {
       introTimeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId))
     }
   }, [])
-
-  useEffect(() => {
-    if (!isLargeScreen) {
-      setIntroReady(true)
-      setIsIntroAnimating(false)
-    }
-  }, [isLargeScreen])
 
   const completedCount = useMemo(
     () => modules.filter((module) => module.completed).length,
@@ -145,13 +123,8 @@ export default function Home() {
   }, [isAllComplete, totalModules, currentModuleIndex])
 
   const shouldRunIntroAnimation = useMemo(() => {
-    return (
-      isLargeScreen &&
-      completedCount === 0 &&
-      activeCheckpointIndex === 1 &&
-      totalModules > 0
-    )
-  }, [isLargeScreen, completedCount, activeCheckpointIndex, totalModules])
+    return completedCount === 0 && activeCheckpointIndex === 1 && totalModules > 0
+  }, [completedCount, activeCheckpointIndex, totalModules])
 
   useEffect(() => {
     if (modules.length === 0) return
@@ -184,7 +157,7 @@ export default function Home() {
       }
     }
 
-    const delay = shouldRunIntroAnimation ? 700 : 400
+    const delay = shouldRunIntroAnimation ? 700 : 1050
     const timeoutId = window.setTimeout(() => {
       scrollToTarget()
       hasScrolledForHashRef.current = true
@@ -206,8 +179,7 @@ export default function Home() {
     if (!targetRow) return
 
     const shouldDelayForMotion =
-      isLargeScreen &&
-      (shouldRunIntroAnimation || isIntroAnimating || activeCheckpointIndex > 1)
+      shouldRunIntroAnimation || isIntroAnimating || activeCheckpointIndex > 1
 
     const delay = shouldDelayForMotion ? 900 : 250
 
@@ -226,17 +198,9 @@ export default function Home() {
     shouldRunIntroAnimation,
     isIntroAnimating,
     activeCheckpointIndex,
-    isLargeScreen,
   ])
 
   useLayoutEffect(() => {
-    if (!isLargeScreen) {
-      setMarkerPoints([])
-      setPelicanPoint(null)
-      setIntroReady(true)
-      return
-    }
-
     let frameId = null
     let resizeObserver = null
 
@@ -393,7 +357,7 @@ export default function Home() {
       window.removeEventListener("resize", scheduleUpdate)
       if (resizeObserver) resizeObserver.disconnect()
     }
-  }, [modules, activeCheckpointIndex, shouldRunIntroAnimation, isLargeScreen])
+  }, [modules, activeCheckpointIndex, shouldRunIntroAnimation])
 
   const startPoint = markerPoints[0]
   const finishPoint = markerPoints[markerPoints.length - 1]
@@ -434,8 +398,6 @@ export default function Home() {
               <p className="mt-1 text-sm text-slate-200">
                 {isAllComplete
                   ? "You finished the full learning resource."
-                  : !isLargeScreen
-                  ? "On mobile, modules are available directly below."
                   : shouldRunIntroAnimation && !introReady
                   ? "The roadmap is opening..."
                   : isIntroAnimating
@@ -483,7 +445,7 @@ export default function Home() {
                 hasScrolledForHashRef.current = false
                 hasAutoFocusedRef.current = false
                 setIsIntroAnimating(false)
-                setIntroReady(!isLargeScreen)
+                setIntroReady(false)
                 setModules(getModuleState(modulesData))
               }}
               className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-5 py-3 text-white transition hover:bg-white/10"
@@ -504,18 +466,6 @@ export default function Home() {
           <h2 className="mb-12 text-3xl font-bold text-white">
             Networking Roadmap
           </h2>
-
-          {!isLargeScreen && (
-            <div className="mb-8 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
-              <p className="text-sm font-semibold uppercase tracking-wide text-white/80">
-                Mobile View
-              </p>
-              <p className="mt-2 text-sm text-slate-100">
-                The desktop pelican roadmap is hidden on smaller screens, so your
-                modules are available directly below.
-              </p>
-            </div>
-          )}
 
           <div ref={roadmapInnerRef} className="relative">
             <div
@@ -583,7 +533,7 @@ export default function Home() {
               isIntroAnimating={isIntroAnimating}
             />
 
-            {startPoint && isLargeScreen && (
+            {startPoint && (
               <div
                 className="pointer-events-none absolute z-10 hidden lg:block -translate-x-1/2"
                 style={{
@@ -597,7 +547,7 @@ export default function Home() {
               </div>
             )}
 
-            {finishPoint && isLargeScreen && (
+            {finishPoint && (
               <div
                 className="pointer-events-none absolute z-10 hidden lg:block -translate-x-1/2"
                 style={{
@@ -611,16 +561,13 @@ export default function Home() {
               </div>
             )}
 
-            <div className="space-y-10 pt-2 pb-8 lg:space-y-28 lg:pt-[180px] lg:pb-[220px]">
+            <div className="space-y-28 pt-[180px] pb-[220px]">
               {modules.map((module, index) => {
                 const isLeft = index % 2 === 0
                 const isCurrent = module.unlocked && !module.completed
 
                 const shouldTemporarilyLockFirstCard =
-                  isLargeScreen &&
-                  index === 0 &&
-                  shouldRunIntroAnimation &&
-                  !introReady
+                  index === 0 && shouldRunIntroAnimation && !introReady
 
                 const effectiveUnlocked = shouldTemporarilyLockFirstCard
                   ? false
@@ -634,11 +581,7 @@ export default function Home() {
                       rowRefs.current[index] = el
                     }}
                     className={`roadmap-anchor-target relative flex min-h-[250px] items-center ${
-                      isLargeScreen
-                        ? isLeft
-                          ? "justify-start"
-                          : "justify-end"
-                        : "justify-center"
+                      isLeft ? "justify-start" : "justify-end"
                     }`}
                   >
                     <div className="w-full lg:w-[43%]">
@@ -673,5 +616,6 @@ export default function Home() {
         </div>
       </section>
     </main>
+    
   )
 }

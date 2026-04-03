@@ -24,6 +24,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { markActivityComplete, markQuizPassed } from "../utils/progress";
 import m4Diagram from "../assets/m4diagram.png";
+import { useNavigate } from "react-router-dom";
 
 const ST_EDS = {
   navy: "#073674",
@@ -246,15 +247,15 @@ function buildShuffledQuiz(questions) {
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-[30px] border border-white/20 bg-white p-6 shadow-xl">
-      <div className="mb-5 flex items-center gap-3">
+    <section className="rounded-[24px] border border-white/20 bg-white p-4 shadow-xl sm:rounded-[28px] sm:p-5 lg:rounded-[30px] lg:p-6">
+      <div className="mb-4 flex items-center gap-3 sm:mb-5">
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl sm:h-11 sm:w-11"
           style={{ backgroundColor: `${ST_EDS.gold}20` }}
         >
           <Icon className="h-5 w-5" style={{ color: ST_EDS.navy }} />
         </div>
-        <h2 className="text-xl font-bold" style={{ color: ST_EDS.navy }}>
+        <h2 className="text-lg font-bold sm:text-xl" style={{ color: ST_EDS.navy }}>
           {title}
         </h2>
       </div>
@@ -449,15 +450,15 @@ function ModuleProgress({ currentPage }) {
   ];
 
   return (
-    <div className="rounded-[30px] border border-white/20 bg-white p-4 shadow-xl">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="rounded-[24px] border border-white/20 bg-white p-4 shadow-xl sm:rounded-[28px] lg:rounded-[30px]">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-sm font-semibold" style={{ color: ST_EDS.navy }}>
           Module Progress
         </h2>
         <span className="text-sm text-slate-500">Page {currentPage + 1} of 3</span>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         {pages.map((page, index) => {
           const active = currentPage === index;
           const complete = currentPage > index;
@@ -465,7 +466,7 @@ function ModuleProgress({ currentPage }) {
           return (
             <div
               key={page.label}
-              className={`rounded-2xl border p-4 ${
+              className={`rounded-2xl border p-3 sm:p-4 ${
                 active
                   ? "border-[#073674] bg-[#073674] text-white"
                   : complete
@@ -489,6 +490,8 @@ function ModuleProgress({ currentPage }) {
 }
 
 export default function DNS() {
+  const navigate = useNavigate();
+
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submittedQuiz, setSubmittedQuiz] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState([]);
@@ -703,6 +706,9 @@ export default function DNS() {
     setQuizQuestions(buildShuffledQuiz(baseQuizQuestions));
   };
 
+  const goToNextModule = () => {
+    navigate("/#module-5");
+  };
 
   return (
     <div
@@ -711,24 +717,24 @@ export default function DNS() {
         background: `linear-gradient(180deg, ${ST_EDS.navy} 0%, ${ST_EDS.blue} 35%, ${ST_EDS.blue2} 100%)`,
       }}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-8">
-        <header className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white shadow-2xl backdrop-blur-sm">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-5 sm:gap-7 sm:py-6 md:px-6 lg:gap-8 lg:py-8">
+        <header className="rounded-[24px] border border-white/20 bg-white/10 p-4 text-white shadow-2xl backdrop-blur-sm sm:rounded-[28px] sm:p-5 lg:rounded-[32px] lg:p-6">
           <span
-            className="inline-block rounded-full px-4 py-1 text-sm font-semibold"
+            className="inline-block rounded-full px-3 py-1 text-xs font-semibold sm:px-4 sm:text-sm"
             style={{ backgroundColor: ST_EDS.gold, color: ST_EDS.navy }}
           >
             St Edmund&apos;s College Canberra
           </span>
 
-          <h1 className="mt-4 text-3xl font-extrabold md:text-4xl">
+          <h1 className="mt-4 text-2xl font-extrabold leading-tight sm:text-3xl md:text-4xl">
             Domain Name System (DNS)
           </h1>
-          <p className="mt-3 max-w-3xl leading-7 text-slate-100">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-100 sm:text-base sm:leading-7">
             Learn how DNS translates easy website names into the numeric IP
             addresses computers use to find the correct web server.
           </p>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
               <Globe className="mb-2 h-5 w-5" />
               <p className="font-semibold">Website names</p>
@@ -745,7 +751,7 @@ export default function DNS() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+            <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-sm sm:col-span-2 xl:col-span-1">
               <Trophy className="mb-2 h-5 w-5" />
               <p className="font-semibold">Quiz feedback</p>
               <p className="mt-1 text-sm text-slate-200">
@@ -768,7 +774,7 @@ export default function DNS() {
             >
               <div ref={overviewRef}>
                 <Section title="What is DNS?" icon={HelpCircle}>
-                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-5">
+                  <div className="rounded-3xl border border-[#dbe7fb] bg-[#f5f9ff] p-4 sm:p-5">
                     <div className="flex items-start gap-3">
                       <div
                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
@@ -777,10 +783,10 @@ export default function DNS() {
                         <Target className="h-5 w-5" style={{ color: ST_EDS.navy }} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           What you are learning
                         </h3>
-                        <p className="mt-2 leading-7 text-slate-700">
+                        <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                           This module explains how DNS helps the browser find the
                           correct server. People use website names like{" "}
                           <span className="font-semibold">youtube.com</span>, but
@@ -791,7 +797,7 @@ export default function DNS() {
                     </div>
                   </div>
 
-                  <div className="mt-6 grid gap-3 md:grid-cols-5">
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     {overviewSteps.map((step) => (
                       <div
                         key={step.step}
@@ -813,15 +819,15 @@ export default function DNS() {
                     ))}
                   </div>
 
-                  <div className="mt-8 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                  <div className="mt-8 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
                         <Lightbulb className="h-5 w-5" style={{ color: ST_EDS.gold }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Real-life analogy
                         </h3>
                       </div>
-                      <p className="mt-3 leading-7 text-slate-700">
+                      <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                         Think about your contacts app. You tap a name like{" "}
                         <span className="font-semibold">Mum</span>, but your phone
                         uses the stored number behind that name. DNS works the same
@@ -830,10 +836,10 @@ export default function DNS() {
                       </p>
                     </div>
 
-                    <div className="rounded-3xl border border-slate-200 bg-white p-5">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
                       <div className="flex items-center gap-2">
                         <Info className="h-5 w-5" style={{ color: ST_EDS.blue }} />
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Key ideas to remember
                         </h3>
                       </div>
@@ -854,19 +860,19 @@ export default function DNS() {
                     </div>
                   </div>
 
-                  <div className="rounded-3xl border border-slate-200 bg-white p-5 mt-8 flex items-center justify-center">
+                  <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-3 sm:p-5 flex items-center justify-center">
                     <img src={m4Diagram} alt="DNS diagram" className="max-w-full rounded-2xl" />
                   </div>
 
-                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-5">
+                  <div className="mt-8 rounded-3xl border border-rose-200 bg-rose-50 p-4 sm:p-5">
                     <div className="mb-3 flex items-center gap-2">
                       <XCircle className="h-5 w-5 text-rose-700" />
-                      <h3 className="text-lg font-semibold text-rose-900">
+                      <h3 className="text-base font-semibold text-rose-900 sm:text-lg">
                         Common mistakes to avoid
                       </h3>
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="grid gap-3 lg:grid-cols-3">
                       {misconceptionCards.map((item) => (
                         <div key={item.wrong} className="rounded-2xl bg-white/80 p-4">
                           <p className="text-sm font-semibold text-rose-800">
@@ -937,7 +943,7 @@ export default function DNS() {
             >
               <Section title="Interactive DNS Lookup" icon={ShieldCheck}>
                 <div className="relative">
-                  <p className="mb-5 leading-7 text-slate-700">
+                  <p className="mb-5 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                     Choose a website name, ask DNS to look it up, reveal the IP
                     address, and then connect to the correct server.
                   </p>
@@ -957,7 +963,7 @@ export default function DNS() {
 
                   <StatusBox title={statusTitle} body={lookupMessage} tone={statusTone} />
 
-                  <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
                     <div className="space-y-5">
                       <BrowserBar
                         domain={currentSite.domain}
@@ -968,8 +974,8 @@ export default function DNS() {
                       />
 
                       <div>
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                          <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                             Choose a website
                           </h3>
                           <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -991,9 +997,9 @@ export default function DNS() {
                         </div>
                       </div>
 
-                      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <div className="mb-4 flex items-center justify-between">
-                          <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                             DNS lookup activity
                           </h3>
                           <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
@@ -1063,11 +1069,11 @@ export default function DNS() {
                               exit={{ opacity: 0, y: -8 }}
                               className="space-y-4"
                             >
-                              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
                                 <div className="grid items-center gap-4 md:grid-cols-[minmax(0,1fr)_60px_minmax(0,1fr)]">
                                   <div className="rounded-2xl border border-[#bfd7ff] bg-[#eef5ff] p-4 text-center">
                                     <Globe className="mx-auto h-6 w-6 text-[#0a4aa3]" />
-                                    <p className="mt-2 font-semibold text-[#073674]">
+                                    <p className="mt-2 font-semibold text-[#073674] break-all">
                                       {currentSite.domain}
                                     </p>
                                     <p className="mt-1 text-xs text-[#0a4aa3]">
@@ -1093,7 +1099,7 @@ export default function DNS() {
                                     className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center"
                                   >
                                     <Network className="mx-auto h-6 w-6 text-emerald-700" />
-                                    <p className="mt-2 font-mono text-sm font-semibold text-emerald-900">
+                                    <p className="mt-2 break-all font-mono text-sm font-semibold text-emerald-900">
                                       {currentSite.ip}
                                     </p>
                                     <p className="mt-1 text-xs text-emerald-700">
@@ -1103,8 +1109,8 @@ export default function DNS() {
                                 </div>
                               </div>
 
-                              <div className="rounded-3xl border border-slate-200 bg-white p-5">
-                                <h4 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                              <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5">
+                                <h4 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                                   What did DNS just do?
                                 </h4>
                                 <p className="mt-1 text-sm leading-6 text-slate-600">
@@ -1164,11 +1170,11 @@ export default function DNS() {
                               exit={{ opacity: 0, y: -8 }}
                               className="space-y-4"
                             >
-                              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                                <div className="grid items-center gap-5 md:grid-cols-[140px_minmax(0,1fr)_140px]">
+                              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+                                <div className="grid items-center gap-5 lg:grid-cols-[140px_minmax(0,1fr)_140px]">
                                   <div className="rounded-3xl border border-[#bfd7ff] bg-[#eef5ff] p-4 text-center">
                                     <Globe className="mx-auto h-7 w-7 text-[#0a4aa3]" />
-                                    <p className="mt-2 text-sm font-semibold text-[#073674]">
+                                    <p className="mt-2 break-all text-sm font-semibold text-[#073674]">
                                       {currentSite.domain}
                                     </p>
                                     <p className="mt-1 text-xs text-[#0a4aa3]">
@@ -1184,8 +1190,8 @@ export default function DNS() {
                                       transition={{ duration: 1, ease: "easeInOut" }}
                                       className="absolute top-1/2 -translate-y-1/2"
                                     >
-                                      <div className="rounded-2xl border border-emerald-200 bg-white px-4 py-2 text-center shadow-sm">
-                                        <p className="font-mono text-sm font-semibold text-slate-800">
+                                      <div className="rounded-2xl border border-emerald-200 bg-white px-3 py-2 text-center shadow-sm sm:px-4">
+                                        <p className="break-all font-mono text-sm font-semibold text-slate-800">
                                           {currentSite.ip}
                                         </p>
                                         <p className="text-xs text-slate-500">Matched IP</p>
@@ -1205,7 +1211,7 @@ export default function DNS() {
                                 </div>
                               </div>
 
-                              <div className="grid gap-3 md:grid-cols-2">
+                              <div className="grid gap-3 lg:grid-cols-2">
                                 <StatusBox
                                   title="DNS translation complete"
                                   body={`${currentSite.domain} was translated into ${currentSite.ip}.`}
@@ -1271,8 +1277,8 @@ export default function DNS() {
                         active={lookupPhase === "connected"}
                       />
 
-                      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Did you know?
                         </h3>
                         <div className="mt-3 grid gap-2">
@@ -1289,8 +1295,8 @@ export default function DNS() {
                         </div>
                       </div>
 
-                      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h3 className="text-lg font-semibold" style={{ color: ST_EDS.navy }}>
+                      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+                        <h3 className="text-base font-semibold sm:text-lg" style={{ color: ST_EDS.navy }}>
                           Website progress
                         </h3>
                         <div className="mt-3 grid gap-2">
@@ -1304,11 +1310,11 @@ export default function DNS() {
                               }`}
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <span className="font-semibold">{site.domain}</span>
+                                <span className="font-semibold break-all">{site.domain}</span>
                                 {completedSites[index] ? (
-                                  <CheckCircle2 className="h-4 w-4 text-emerald-700" />
+                                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
                                 ) : (
-                                  <span className="text-xs">Not yet</span>
+                                  <span className="shrink-0 text-xs">Not yet</span>
                                 )}
                               </div>
                             </div>
@@ -1335,14 +1341,14 @@ export default function DNS() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-4 backdrop-blur-[3px]"
+                        className="absolute inset-0 z-30 flex items-center justify-center rounded-3xl bg-slate-900/45 p-3 backdrop-blur-[3px] sm:p-4"
                       >
                         <motion.div
                           initial={{ scale: 0.96, y: 10, opacity: 0 }}
                           animate={{ scale: 1, y: 0, opacity: 1 }}
                           exit={{ scale: 0.98, opacity: 0 }}
                           transition={{ duration: 0.25 }}
-                          className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl"
+                          className="w-full max-w-md rounded-3xl bg-white p-5 text-center shadow-2xl sm:p-6"
                         >
                           <div className="flex items-start justify-between">
                             <div />
@@ -1360,7 +1366,7 @@ export default function DNS() {
                             <CheckCircle2 className="h-8 w-8 text-emerald-700" />
                           </div>
 
-                          <h3 className="mt-4 text-2xl font-bold" style={{ color: ST_EDS.navy }}>
+                          <h3 className="mt-4 text-xl font-bold sm:text-2xl" style={{ color: ST_EDS.navy }}>
                             Activity Complete
                           </h3>
 
@@ -1393,17 +1399,17 @@ export default function DNS() {
                   </AnimatePresence>
                 </div>
 
-                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-8 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <button
                     type="button"
                     onClick={() => setModulePage(0)}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-slate-700 transition hover:bg-slate-50"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous Page
                   </button>
 
-                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center text-sm text-slate-600">
                     {activityUnlocked
                       ? "Activity complete — you can move to the quiz."
                       : "Complete one full DNS lookup to unlock the quiz."}
@@ -1413,7 +1419,7 @@ export default function DNS() {
                     type="button"
                     onClick={() => setModulePage(2)}
                     disabled={!activityUnlocked}
-                    className={`inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-white transition ${
                       activityUnlocked
                         ? "bg-[#073674] hover:bg-[#0a4aa3]"
                         : "cursor-not-allowed bg-slate-300"
@@ -1437,8 +1443,6 @@ export default function DNS() {
               transition={{ duration: 0.25 }}
             >
               <Section title="Quick Quiz" icon={HelpCircle}>
-
-
                 <div className="space-y-5">
                   {quizQuestions.map((q, i) => {
                     const userAnswer = selectedAnswers[i];
@@ -1447,7 +1451,7 @@ export default function DNS() {
                     return (
                       <div
                         key={q.question}
-                        className="rounded-2xl border border-slate-200 p-5"
+                        className="rounded-2xl border border-slate-200 p-4 sm:p-5"
                       >
                         <h3 className="font-semibold text-slate-900">
                           {i + 1}. {q.question}
@@ -1512,7 +1516,7 @@ export default function DNS() {
                   })}
                 </div>
 
-                <div className="mt-6 flex gap-3">
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                   <button
                     type="button"
                     onClick={() => setSubmittedQuiz(true)}
@@ -1541,13 +1545,13 @@ export default function DNS() {
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-6 rounded-2xl bg-slate-50 p-5"
+                    className="mt-6 rounded-2xl bg-slate-50 p-4 sm:p-5"
                   >
                     <h3 className="font-semibold" style={{ color: ST_EDS.navy }}>
                       Your Score: {score} / {quizQuestions.length}
                     </h3>
 
-                    <p className="mt-2 text-slate-600">
+                    <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
                       {score === quizQuestions.length
                         ? "Excellent work — you clearly understand how DNS translates names into IP addresses and helps the browser find the correct server."
                         : score >= 6
@@ -1566,15 +1570,15 @@ export default function DNS() {
                         <ChevronLeft className="h-4 w-4" />
                         Back to Activity
                       </button>
-<a href="/#module4">  <button
+
+                      <button
                         type="button"
                         onClick={goToNextModule}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-white transition hover:bg-emerald-700"
                       >
                         Go to Next Module
                         <ChevronRight className="h-4 w-4" />
-                      </button></a>
-                    
+                      </button>
                     </div>
                   </motion.div>
                 )}
